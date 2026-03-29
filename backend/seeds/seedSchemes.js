@@ -1,8 +1,13 @@
 const fs = require("fs");
+const https = require("https");
 const path = require("path");
 const mongoose = require("mongoose");
 
 const { Scheme } = require("../models/Scheme");
+const {
+  scrapeMyScheme,
+  SCRAPER_OUTPUT_PATH,
+} = require("./scrapers/myschemeScraper");
 
 const DEFAULT_SOURCE_ORDER = [
   "huggingface",
@@ -14,6 +19,10 @@ const DEFAULT_SOURCE_ORDER = [
 
 const DATA_DIR = path.join(__dirname, "data");
 const HF_CSV_PATH = process.env.HF_CSV_PATH || "C:\\Users\\ace_ansh\\OneDrive\\Desktop\\Indian_Govenment_Scheme.csv";
+const HF_DATASET_REPO = process.env.HF_DATASET_REPO || "";
+const HF_DATASET_FILE = process.env.HF_DATASET_FILE || "";
+const HF_DATASET_REF = process.env.HF_DATASET_REF || "main";
+const HF_TOKEN = process.env.HF_TOKEN || process.env.HUGGINGFACE_TOKEN || "";
 
 const STATE_NAME_TO_CODE = {
   "andaman and nicobar islands": "AN",
@@ -86,6 +95,63 @@ function readJsonArray(filePath) {
   }
 
   return parsed;
+}
+
+function readTextFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return "";
+  }
+
+  return fs.readFileSync(filePath, "utf8");
+}
+
+function fetchText(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const request = https.get(
+      url,
+      {
+        headers,
+      },
+      (response) => {
+        if (
+          response.statusCode &&
+          response.statusCode >= 300 &&
+          response.statusCode < 400 &&
+          response.headers.location
+        ) {
+          response.resume();
+          resolve(fetchText(response.headers.location, headers));
+          return;
+        }
+
+        if (!response.statusCode || response.statusCode >= 400) {
+          let errorBody = "";
+          response.on("data", (chunk) => {
+            errorBody += chunk.toString();
+          });
+          response.on("end", () => {
+            reject(
+              new Error(
+                `Request failed for ${url} with status ${response.statusCode}: ${errorBody.slice(0, 200)}`
+              )
+            );
+          });
+          return;
+        }
+
+        let data = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+        response.on("end", () => {
+          resolve(data);
+        });
+      }
+    );
+
+    request.on("error", reject);
+  });
 }
 
 function parseCsv(text) {
@@ -431,6 +497,65 @@ function csvRowToScheme(row) {
   );
 }
 
+function jsonRowToScheme(row) {
+  return normalizeScheme(row, row?.source ?? "manual");
+}
+
+function huggingFaceRowToScheme(row) {
+  if (
+    row?.scheme_name ||
+    row?.eligibility_criteria ||
+    row?.["Official Website"] ||
+    row?.application_process
+  ) {
+    return csvRowToScheme(row);
+  }
+
+  return jsonRowToScheme(row);
+}
+
+function parseDatasetContent(fileName, content) {
+  if (/\.csv$/i.test(fileName)) {
+    return parseCsv(content);
+  }
+
+  const parsed = JSON.parse(content);
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  if (Array.isArray(parsed?.data)) {
+    return parsed.data;
+  }
+
+  throw new Error(`Unsupported Hugging Face dataset content format for ${fileName}`);
+}
+
+async function loadHuggingFaceRemoteSource() {
+  if (!HF_DATASET_REPO || !HF_DATASET_FILE) {
+    return [];
+  }
+
+  const encodedRepo = HF_DATASET_REPO
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const encodedRef = encodeURIComponent(HF_DATASET_REF);
+  const encodedFile = HF_DATASET_FILE
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+  const url = `https://huggingface.co/datasets/${encodedRepo}/resolve/${encodedRef}/${encodedFile}?download=true`;
+  const headers = HF_TOKEN
+    ? {
+        Authorization: `Bearer ${HF_TOKEN}`,
+      }
+    : {};
+  const content = await fetchText(url, headers);
+  const rows = parseDatasetContent(HF_DATASET_FILE, content);
+  return rows.map(huggingFaceRowToScheme);
+}
+
 function normalizeEligibility(eligibility = {}) {
   const parsedEligibility =
     typeof eligibility === "string" ? parseEligibility(eligibility) : eligibility;
@@ -512,6 +637,11 @@ function normalizeScheme(rawScheme, sourceName) {
 }
 
 async function loadHuggingFaceSource() {
+  const remoteRows = await loadHuggingFaceRemoteSource();
+  if (remoteRows.length) {
+    return remoteRows;
+  }
+
   if (fs.existsSync(HF_CSV_PATH)) {
     const csvRows = parseCsv(fs.readFileSync(HF_CSV_PATH, "utf8"));
     return csvRows.map(csvRowToScheme);
@@ -522,7 +652,12 @@ async function loadHuggingFaceSource() {
 }
 
 async function loadPuppeteerSource() {
-  const filePath = path.join(DATA_DIR, "puppeteer-schemes.json");
+  const scrapedSchemes = await scrapeMyScheme();
+  if (scrapedSchemes.length) {
+    return scrapedSchemes.map((scheme) => normalizeScheme(scheme, "myscheme"));
+  }
+
+  const filePath = SCRAPER_OUTPUT_PATH || path.join(DATA_DIR, "puppeteer-schemes.json");
   return readJsonArray(filePath).map((scheme) => normalizeScheme(scheme, "myscheme"));
 }
 
@@ -625,7 +760,9 @@ module.exports = {
   csvRowToScheme,
   parseEligibility,
   parseCsv,
+  loadHuggingFaceRemoteSource,
   normalizeScheme,
+  parseDatasetContent,
   seedSchemes,
   normalizeState,
   upsertScheme,
