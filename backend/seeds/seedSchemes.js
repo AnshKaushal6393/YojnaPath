@@ -1,3 +1,5 @@
+require("../config/env");
+
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
@@ -18,7 +20,7 @@ const DEFAULT_SOURCE_ORDER = [
 ];
 
 const DATA_DIR = path.join(__dirname, "data");
-const HF_CSV_PATH = process.env.HF_CSV_PATH || "C:\\Users\\ace_ansh\\OneDrive\\Desktop\\Indian_Govenment_Scheme.csv";
+const HF_CSV_PATH = process.env.HF_CSV_PATH || "";
 const HF_DATASET_REPO = process.env.HF_DATASET_REPO || "";
 const HF_DATASET_FILE = process.env.HF_DATASET_FILE || "";
 const HF_DATASET_REF = process.env.HF_DATASET_REF || "main";
