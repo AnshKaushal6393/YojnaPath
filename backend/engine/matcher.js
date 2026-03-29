@@ -10,108 +10,61 @@ const EDUCATION_LEVELS = [
   "postgraduate",
 ];
 
-const GAP_MESSAGE_BUILDERS = {
-  occupation: (profile, scheme) => {
-    const allowed = scheme?.eligibility?.occupation ?? [];
-    return {
-      en: `This scheme is only for ${allowed.join(", ")} occupations.`,
-      hi: `यह योजना केवल ${allowed.join(", ")} व्यवसाय श्रेणियों के लिए है।`,
-    };
-  },
-  beneficiaryType: (profile, scheme) => {
-    const allowed = scheme?.eligibility?.beneficiaryType ?? [];
-    return {
-      en: `This scheme is only for ${allowed.join(", ")} beneficiary groups.`,
-      hi: `यह योजना केवल ${allowed.join(", ")} लाभार्थी समूहों के लिए है।`,
-    };
-  },
-  caste: (profile, scheme) => {
-    const allowed = scheme?.eligibility?.caste ?? [];
-    return {
-      en: `This scheme is limited to ${allowed.join(", ")} caste categories.`,
-      hi: `यह योजना केवल ${allowed.join(", ")} जाति श्रेणियों के लिए उपलब्ध है।`,
-    };
-  },
-  gender: (profile, scheme) => {
-    const allowed = scheme?.eligibility?.gender ?? [];
-    return {
-      en: `This scheme is meant for ${allowed.join(", ")} applicants only.`,
-      hi: `यह योजना केवल ${allowed.join(", ")} आवेदकों के लिए है।`,
-    };
-  },
-  maxAnnualIncome: (profile, scheme) => {
-    const limit = scheme?.eligibility?.maxAnnualIncome ?? 0;
-    return {
-      en: `Annual income must be Rs. ${limit.toLocaleString("en-IN")} or below.`,
-      hi: `वार्षिक आय Rs. ${limit.toLocaleString("en-IN")} या उससे कम होनी चाहिए।`,
-    };
-  },
-  minAge: (profile, scheme) => {
-    const minAge = scheme?.eligibility?.minAge ?? 0;
-    return {
-      en: `Applicant must be at least ${minAge} years old.`,
-      hi: `आवेदक की आयु कम से कम ${minAge} वर्ष होनी चाहिए।`,
-    };
-  },
-  maxAge: (profile, scheme) => {
-    const maxAge = scheme?.eligibility?.maxAge ?? 0;
-    return {
-      en: `Applicant age must be ${maxAge} years or less.`,
-      hi: `आवेदक की आयु ${maxAge} वर्ष या उससे कम होनी चाहिए।`,
-    };
-  },
-  landOwned: (profile, scheme) => {
-    const min = scheme?.eligibility?.landOwned?.min ?? 0;
-    const max = scheme?.eligibility?.landOwned?.max;
-    const maxTextEn = max == null ? "any" : `${max}`;
-    const maxTextHi = max == null ? "कोई भी" : `${max}`;
-    return {
-      en: `Land ownership must be between ${min} and ${maxTextEn} acres.`,
-      hi: `भूमि स्वामित्व ${min} से ${maxTextHi} एकड़ के बीच होना चाहिए।`,
-    };
-  },
-  minDisabilityPct: (profile, scheme) => {
-    const minPct = scheme?.eligibility?.minDisabilityPct ?? 0;
-    return {
-      en: `Disability certificate must show at least ${minPct}% disability.`,
-      hi: `दिव्यांगता प्रमाणपत्र में कम से कम ${minPct}% दिव्यांगता दर्ज होनी चाहिए।`,
-    };
-  },
-  minEducation: (profile, scheme) => {
-    const minEducation = scheme?.eligibility?.minEducation ?? "";
-    return {
-      en: `Minimum education required is ${minEducation}.`,
-      hi: `न्यूनतम शैक्षणिक योग्यता ${minEducation} होनी चाहिए।`,
-    };
-  },
-  mustBeStudent: (profile, scheme) => {
-    const required = scheme?.eligibility?.mustBeStudent;
-    return required
-      ? {
-          en: "Applicant must currently be a student.",
-          hi: "आवेदक वर्तमान में छात्र होना चाहिए।",
-        }
-      : {
-          en: "This scheme is not open to current students.",
-          hi: "यह योजना वर्तमान छात्रों के लिए उपलब्ध नहीं है।",
-        };
-  },
-  mustHaveBankAccount: () => ({
-    en: "A bank account is required to receive this scheme benefit.",
-    hi: "इस योजना का लाभ लेने के लिए बैंक खाता होना जरूरी है।",
-  }),
-  mustHaveAadhaar: () => ({
-    en: "An Aadhaar card is required for this scheme.",
-    hi: "इस योजना के लिए आधार कार्ड जरूरी है।",
-  }),
-  state: (profile, scheme) => {
-    const state = scheme?.state ?? "";
-    return {
-      en: `This scheme is only available in ${state}.`,
-      hi: `यह योजना केवल ${state} राज्य में उपलब्ध है।`,
-    };
-  },
+const EDUCATION_LABELS = {
+  none: { en: "no formal education", hi: "कोई औपचारिक शिक्षा नहीं" },
+  "5th": { en: "5th pass", hi: "5वीं पास" },
+  "8th": { en: "8th pass", hi: "8वीं पास" },
+  "10th": { en: "10th pass", hi: "10वीं पास" },
+  "12th": { en: "12th pass", hi: "12वीं पास" },
+  graduate: { en: "graduate", hi: "स्नातक" },
+  postgraduate: { en: "postgraduate", hi: "स्नातकोत्तर" },
 };
+
+const STATE_NAMES = {
+  central: "Central",
+  UP: "Uttar Pradesh",
+  MP: "Madhya Pradesh",
+  RJ: "Rajasthan",
+  MH: "Maharashtra",
+  BR: "Bihar",
+  WB: "West Bengal",
+  TN: "Tamil Nadu",
+  KA: "Karnataka",
+  GJ: "Gujarat",
+  AP: "Andhra Pradesh",
+  HR: "Haryana",
+  PB: "Punjab",
+  DL: "Delhi",
+  CG: "Chhattisgarh",
+  JH: "Jharkhand",
+};
+
+const STATE_NAMES_HI = {
+  central: "केंद्रीय",
+  UP: "उत्तर प्रदेश",
+  MP: "मध्य प्रदेश",
+  RJ: "राजस्थान",
+  MH: "महाराष्ट्र",
+  BR: "बिहार",
+  WB: "पश्चिम बंगाल",
+  TN: "तमिलनाडु",
+  KA: "कर्नाटक",
+  GJ: "गुजरात",
+  AP: "आंध्र प्रदेश",
+  HR: "हरियाणा",
+  PB: "पंजाब",
+  DL: "दिल्ली",
+  CG: "छत्तीसगढ़",
+  JH: "झारखंड",
+};
+
+function fmt(amount) {
+  return `Rs. ${Number(amount || 0).toLocaleString("en-IN")}`;
+}
+
+function fmtHi(amount) {
+  return `${Number(amount || 0).toLocaleString("en-IN")} रुपये`;
+}
 
 function getEducationRank(level) {
   if (!level) {
@@ -121,13 +74,22 @@ function getEducationRank(level) {
   return EDUCATION_LEVELS.indexOf(level);
 }
 
+function getEducationLabel(level, locale = "en") {
+  const labels = EDUCATION_LABELS[level];
+  if (!labels) {
+    return level ?? "";
+  }
+
+  return locale === "hi" ? labels.hi : labels.en;
+}
+
 function buildRuleChecks(profile, scheme) {
   const e = scheme?.eligibility ?? {};
   const profileOccupation = profile?.occupation ?? null;
   const profileBeneficiaryType = profile?.beneficiaryType ?? null;
   const profileCaste = profile?.caste ?? null;
   const profileGender = profile?.gender ?? null;
-  const profileIncome = profile?.income ?? null;
+  const profileIncome = profile?.annual_income ?? profile?.income ?? null;
   const profileAge = profile?.age ?? null;
   const profileLandAcres = profile?.landAcres ?? 0;
   const profileDisabilityPct = profile?.disabilityPct ?? 0;
@@ -240,14 +202,153 @@ function totalCriteria(scheme) {
   }, 0);
 }
 
-function failedCriteria(profile, scheme) {
-  return buildRuleChecks(profile, scheme)
-    .filter((check) => check.applies && !check.passed)
-    .map((check) => check.key);
+function getFailedCriteria(profile, scheme) {
+  const e = scheme?.eligibility ?? {};
+  const profileIncome = profile?.annual_income ?? profile?.income ?? null;
+  const fails = [];
+
+  if (e.occupation?.length && !e.occupation.includes(profile?.occupation)) {
+    fails.push({ type: "occupation", required: e.occupation });
+  }
+
+  if (e.beneficiaryType?.length && !e.beneficiaryType.includes(profile?.beneficiaryType)) {
+    fails.push({ type: "beneficiaryType", required: e.beneficiaryType });
+  }
+
+  if (e.caste?.length && !e.caste.includes(profile?.caste)) {
+    fails.push({ type: "caste", required: e.caste });
+  }
+
+  if (e.gender?.length && !e.gender.includes(profile?.gender)) {
+    fails.push({ type: "gender", required: e.gender });
+  }
+
+  if (e.maxAnnualIncome != null && profileIncome > e.maxAnnualIncome) {
+    fails.push({ type: "maxAnnualIncome", limit: e.maxAnnualIncome });
+  }
+
+  if (e.minAge != null && (profile?.age ?? null) < e.minAge) {
+    fails.push({ type: "minAge", required: e.minAge });
+  }
+
+  if (e.maxAge != null && (profile?.age ?? null) > e.maxAge) {
+    fails.push({ type: "maxAge", limit: e.maxAge });
+  }
+
+  if (e.landOwned) {
+    if ((profile?.landAcres ?? 0) < (e.landOwned.min ?? 0)) {
+      fails.push({ type: "landMin", required: e.landOwned.min });
+    }
+
+    if ((profile?.landAcres ?? 0) > (e.landOwned.max ?? Infinity)) {
+      fails.push({ type: "landMax", limit: e.landOwned.max });
+    }
+  }
+
+  if (e.minDisabilityPct != null && (profile?.disabilityPct ?? 0) < e.minDisabilityPct) {
+    fails.push({ type: "disabilityPct", required: e.minDisabilityPct });
+  }
+
+  if (
+    e.minEducation != null &&
+    getEducationRank(profile?.education ?? null) < getEducationRank(e.minEducation)
+  ) {
+    fails.push({ type: "minEducation", required: e.minEducation });
+  }
+
+  if (e.mustBeStudent != null && (profile?.isStudent ?? false) !== e.mustBeStudent) {
+    fails.push({ type: "mustBeStudent", required: e.mustBeStudent });
+  }
+
+  if (
+    e.mustHaveBankAccount != null &&
+    (profile?.hasBankAccount ?? false) !== e.mustHaveBankAccount
+  ) {
+    fails.push({ type: "mustHaveBankAccount", required: e.mustHaveBankAccount });
+  }
+
+  if (e.mustHaveAadhaar != null && (profile?.hasAadhaar ?? false) !== e.mustHaveAadhaar) {
+    fails.push({ type: "mustHaveAadhaar", required: e.mustHaveAadhaar });
+  }
+
+  if (scheme?.state && scheme.state !== "central" && scheme.state !== profile?.state) {
+    fails.push({ type: "state", required: scheme.state });
+  }
+
+  return fails;
 }
 
-function buildGapMessage(profile, criterionKey, scheme) {
-  const builder = GAP_MESSAGE_BUILDERS[criterionKey];
+const GAP_MESSAGES = {
+  occupation: (profile, fail) => ({
+    en: `Only for ${fail.required.join("/")} occupations.`,
+    hi: `केवल ${fail.required.join("/")} व्यवसाय श्रेणियों के लिए।`,
+  }),
+  beneficiaryType: (profile, fail) => ({
+    en: `Only for ${fail.required.join("/")} beneficiary groups.`,
+    hi: `केवल ${fail.required.join("/")} लाभार्थी समूहों के लिए।`,
+  }),
+  caste: (profile, fail) => ({
+    en: `Only for ${fail.required.join("/")} categories. You are ${(profile?.caste ?? "").toUpperCase()}.`,
+    hi: `केवल ${fail.required.join("/")} श्रेणियों के लिए। आप ${(profile?.caste ?? "").toUpperCase()} हैं।`,
+  }),
+  gender: (profile, fail) => ({
+    en: `Only for ${fail.required.join("/")} applicants.`,
+    hi: `केवल ${fail.required.join("/")} आवेदकों के लिए।`,
+  }),
+  maxAnnualIncome: (profile, fail) => ({
+    en: `Income is ${fmt(((profile?.annual_income ?? profile?.income) ?? 0) - fail.limit)} above the ${fmt(fail.limit)} limit.`,
+    hi: `आय सीमा से ${fmtHi(((profile?.annual_income ?? profile?.income) ?? 0) - fail.limit)} अधिक है।`,
+  }),
+  minAge: (profile, fail) => ({
+    en: `Minimum age is ${fail.required} years. You are ${profile?.age ?? 0}.`,
+    hi: `न्यूनतम आयु ${fail.required} वर्ष है। आपकी आयु ${profile?.age ?? 0} वर्ष है।`,
+  }),
+  maxAge: (profile, fail) => ({
+    en: `Age limit is ${fail.limit} years. You are ${profile?.age ?? 0}.`,
+    hi: `आयु सीमा ${fail.limit} वर्ष है। आपकी आयु ${profile?.age ?? 0} वर्ष है।`,
+  }),
+  landMin: (profile, fail) => ({
+    en: `At least ${fail.required} acres of land is required. You have ${profile?.landAcres ?? 0} acres.`,
+    hi: `कम से कम ${fail.required} एकड़ भूमि चाहिए। आपके पास ${profile?.landAcres ?? 0} एकड़ है।`,
+  }),
+  landMax: (profile, fail) => ({
+    en: `Land limit is ${fail.limit} acres. You have ${profile?.landAcres ?? 0} acres.`,
+    hi: `भूमि सीमा ${fail.limit} एकड़ है। आपके पास ${profile?.landAcres ?? 0} एकड़ है।`,
+  }),
+  disabilityPct: (profile, fail) => ({
+    en: `Needs ${fail.required}% disability. Certificate shows ${profile?.disabilityPct ?? 0}%.`,
+    hi: `${fail.required}% दिव्यांगता चाहिए। प्रमाणपत्र में ${profile?.disabilityPct ?? 0}% है।`,
+  }),
+  minEducation: (profile, fail) => ({
+    en: `Minimum education is ${getEducationLabel(fail.required, "en")}.`,
+    hi: `न्यूनतम शैक्षणिक योग्यता ${getEducationLabel(fail.required, "hi")} है।`,
+  }),
+  mustBeStudent: (profile, fail) =>
+    fail.required
+      ? {
+          en: "Applicant must currently be a student.",
+          hi: "आवेदक वर्तमान में छात्र होना चाहिए।",
+        }
+      : {
+          en: "This scheme is not open to current students.",
+          hi: "यह योजना वर्तमान छात्रों के लिए उपलब्ध नहीं है।",
+        },
+  mustHaveBankAccount: () => ({
+    en: "A bank account is required for this scheme.",
+    hi: "इस योजना के लिए बैंक खाता जरूरी है।",
+  }),
+  mustHaveAadhaar: () => ({
+    en: "An Aadhaar card is required for this scheme.",
+    hi: "इस योजना के लिए आधार कार्ड जरूरी है।",
+  }),
+  state: (profile, fail) => ({
+    en: `Only for ${STATE_NAMES[fail.required] ?? fail.required} residents.`,
+    hi: `केवल ${STATE_NAMES_HI[fail.required] ?? fail.required} निवासियों के लिए।`,
+  }),
+};
+
+function buildGapMessage(profile, fail) {
+  const builder = GAP_MESSAGES[fail?.type];
 
   if (!builder) {
     return {
@@ -256,84 +357,74 @@ function buildGapMessage(profile, criterionKey, scheme) {
     };
   }
 
-  return builder(profile, scheme);
+  return builder(profile, fail);
 }
 
 function sortByRelevance(a, b) {
-  if (b.score !== a.score) {
-    return b.score - a.score;
+  if (b.matchScore !== a.matchScore) {
+    return b.matchScore - a.matchScore;
   }
 
   if (b.totalCriteria !== a.totalCriteria) {
     return b.totalCriteria - a.totalCriteria;
   }
 
-  return (b.scheme?.benefitAmount ?? 0) - (a.scheme?.benefitAmount ?? 0);
+  return (b.benefitAmount ?? 0) - (a.benefitAmount ?? 0);
 }
 
 async function getMatchingSchemes(profile, options = {}) {
   const {
     schemeModel = Scheme,
     nearMissGap = 1,
-    limitMatches = null,
-    limitNearMisses = null,
+    limitMatches = 50,
+    limitNearMisses = 10,
   } = options;
 
-  const schemes = await schemeModel
-    .find({ active: true })
-    .lean();
-
-  const matches = [];
+  const allSchemes = await schemeModel.find({ active: true }).lean();
+  const matched = [];
   const nearMisses = [];
 
-  for (const scheme of schemes) {
-    const eligible = matchScheme(profile, scheme);
-    const score = matchScore(profile, scheme);
-    const criteriaCount = totalCriteria(scheme);
-    const unmetCriteria = failedCriteria(profile, scheme);
-    const result = {
-      scheme,
-      eligible,
-      score,
-      totalCriteria: criteriaCount,
-      unmetCriteria,
-    };
-
-    if (eligible) {
-      matches.push(result);
+  for (const scheme of allSchemes) {
+    if (matchScheme(profile, scheme)) {
+      matched.push({
+        ...scheme,
+        matchScore: matchScore(profile, scheme),
+        totalCriteria: totalCriteria(scheme),
+      });
       continue;
     }
 
-    if (
-      criteriaCount > 0 &&
-      unmetCriteria.length > 0 &&
-      unmetCriteria.length <= nearMissGap
-    ) {
-      nearMisses.push(result);
+    const fails = getFailedCriteria(profile, scheme);
+    if (fails.length > 0 && fails.length <= nearMissGap) {
+      nearMisses.push({
+        ...scheme,
+        failedCriteria: fails,
+        missedCriterion: buildGapMessage(profile, fails[0]),
+        totalCriteria: totalCriteria(scheme),
+        matchScore: matchScore(profile, scheme),
+      });
     }
   }
 
-  matches.sort(sortByRelevance);
+  matched.sort(sortByRelevance);
   nearMisses.sort(sortByRelevance);
 
   return {
-    profile,
-    totals: {
-      activeSchemesChecked: schemes.length,
-      matched: matches.length,
-      nearMisses: nearMisses.length,
-    },
-    matches: limitMatches == null ? matches : matches.slice(0, limitMatches),
-    nearMisses:
-      limitNearMisses == null ? nearMisses : nearMisses.slice(0, limitNearMisses),
+    count: matched.length,
+    schemes: matched.slice(0, limitMatches),
+    nearMissCount: nearMisses.length,
+    nearMisses: nearMisses.slice(0, limitNearMisses),
+    totalScanned: allSchemes.length,
   };
 }
 
 module.exports = {
   EDUCATION_LEVELS,
-  GAP_MESSAGE_BUILDERS,
+  GAP_MESSAGES,
+  STATE_NAMES,
+  STATE_NAMES_HI,
   buildGapMessage,
-  failedCriteria,
+  getFailedCriteria,
   getMatchingSchemes,
   matchScore,
   matchScheme,
