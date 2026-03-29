@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const STATE_CODES = [
   "central",
+  "AN",
   "UP",
   "MP",
   "RJ",
@@ -17,6 +18,25 @@ const STATE_CODES = [
   "DL",
   "CG",
   "JH",
+  "AR",
+  "AS",
+  "CH",
+  "DH",
+  "GA",
+  "HP",
+  "KL",
+  "LA",
+  "LD",
+  "MN",
+  "ML",
+  "MZ",
+  "NL",
+  "OD",
+  "PY",
+  "SK",
+  "TS",
+  "TR",
+  "UK",
 ];
 
 const SCHEME_CATEGORIES = [

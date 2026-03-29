@@ -13,6 +13,62 @@ const DEFAULT_SOURCE_ORDER = [
 ];
 
 const DATA_DIR = path.join(__dirname, "data");
+const HF_CSV_PATH = process.env.HF_CSV_PATH || "C:\\Users\\ace_ansh\\OneDrive\\Desktop\\Indian_Govenment_Scheme.csv";
+
+const STATE_NAME_TO_CODE = {
+  "andaman and nicobar islands": "AN",
+  "andhra pradesh": "AP",
+  "arunachal pradesh": "AR",
+  assam: "AS",
+  bihar: "BR",
+  chandigarh: "CH",
+  chhattisgarh: "CG",
+  "dadra and nagar haveli and daman and diu": "DH",
+  delhi: "DL",
+  goa: "GA",
+  gujarat: "GJ",
+  haryana: "HR",
+  "himachal pradesh": "HP",
+  jharkhand: "JH",
+  karnataka: "KA",
+  kerala: "KL",
+  ladakh: "LA",
+  lakshadweep: "LD",
+  "madhya pradesh": "MP",
+  maharashtra: "MH",
+  manipur: "MN",
+  meghalaya: "ML",
+  mizoram: "MZ",
+  nagaland: "NL",
+  odisha: "OD",
+  puducherry: "PY",
+  punjab: "PB",
+  rajasthan: "RJ",
+  sikkim: "SK",
+  "tamil nadu": "TN",
+  telangana: "TS",
+  tripura: "TR",
+  "uttar pradesh": "UP",
+  uttarakhand: "UK",
+  "west bengal": "WB",
+  central: "central",
+  india: "central",
+  nationwide: "central",
+  national: "central",
+};
+
+const CATEGORY_KEYWORDS = [
+  { keywords: ["agriculture", "farmer", "kisan", "horticulture"], category: "agriculture" },
+  { keywords: ["health", "medical", "hospital", "nutrition"], category: "health" },
+  { keywords: ["finance", "bank", "credit", "loan"], category: "finance" },
+  { keywords: ["housing", "home", "shelter"], category: "housing" },
+  { keywords: ["women", "girl", "maternal"], category: "women" },
+  { keywords: ["education", "learning", "school", "student", "scholarship"], category: "education" },
+  { keywords: ["disability", "disabled", "divyang", "pwd"], category: "disability" },
+  { keywords: ["senior", "elderly", "old age", "retired"], category: "senior" },
+  { keywords: ["artisan", "craft", "weaver", "handicraft"], category: "artisan" },
+  { keywords: ["labour", "labor", "worker", "employment", "migrant"], category: "labour" },
+];
 
 function readJsonArray(filePath) {
   if (!fs.existsSync(filePath)) {
@@ -30,6 +86,70 @@ function readJsonArray(filePath) {
   }
 
   return parsed;
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let current = "";
+  let row = [];
+  let inQuotes = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const nextChar = text[index + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      row.push(current);
+      current = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && nextChar === "\n") {
+        index += 1;
+      }
+      row.push(current);
+      current = "";
+      if (row.some((cell) => cell !== "")) {
+        rows.push(row);
+      }
+      row = [];
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current.length || row.length) {
+    row.push(current);
+    if (row.some((cell) => cell !== "")) {
+      rows.push(row);
+    }
+  }
+
+  if (!rows.length) {
+    return [];
+  }
+
+  const [headerRow, ...dataRows] = rows;
+  return dataRows.map((cells) => {
+    const record = {};
+    headerRow.forEach((header, headerIndex) => {
+      const key = header || `column_${headerIndex}`;
+      record[key] = (cells[headerIndex] ?? "").trim();
+    });
+    return record;
+  });
 }
 
 function ensureLocalizedText(value, fallback = "") {
@@ -164,6 +284,153 @@ function parseEligibility(text) {
   return eligibility;
 }
 
+function slugify(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 60);
+}
+
+function normalizeState(stateName, level) {
+  const normalizedState = String(stateName ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalizedState || /central/i.test(level ?? "")) {
+    return "central";
+  }
+
+  return STATE_NAME_TO_CODE[normalizedState] ?? "central";
+}
+
+function inferCategories(rawCategory = "", tags = "", textBlob = "") {
+  const combined = `${rawCategory} ${tags} ${textBlob}`.toLowerCase();
+  const matches = CATEGORY_KEYWORDS
+    .filter(({ keywords }) => keywords.some((keyword) => combined.includes(keyword)))
+    .map(({ category }) => category);
+
+  return [...new Set(matches)].slice(0, 3);
+}
+
+function extractBenefitAmount(text) {
+  const normalized = String(text ?? "").replace(/,/g, "");
+  const matches = [...normalized.matchAll(/(\d+(?:\.\d+)?)\s*(lakh|lac|lakhs)?/gi)];
+  if (!matches.length) {
+    return null;
+  }
+
+  const values = matches
+    .map((match) => {
+      const numericValue = Number(match[1]);
+      if (!Number.isFinite(numericValue)) {
+        return null;
+      }
+      return /lakh|lac/i.test(match[2] ?? "") ? numericValue * 100000 : numericValue;
+    })
+    .filter((value) => value != null);
+
+  if (!values.length) {
+    return null;
+  }
+
+  return Math.max(...values);
+}
+
+function inferBenefitType(text) {
+  const normalized = String(text ?? "").toLowerCase();
+  if (/\bloan\b|\bcredit\b/.test(normalized)) {
+    return "loan";
+  }
+  if (/\binsurance\b/.test(normalized)) {
+    return "insurance";
+  }
+  if (/\bsubsidy\b/.test(normalized)) {
+    return "subsidy";
+  }
+  if (/\bscholarship\b/.test(normalized)) {
+    return "scholarship";
+  }
+  if (/\bequipment\b|\binstrument\b/.test(normalized)) {
+    return "equipment";
+  }
+  if (/\bfinancial assistance\b|\brs\b|\brupees\b|\bper month\b|\bper year\b/.test(normalized)) {
+    return "cash_transfer";
+  }
+  return "service";
+}
+
+function parseDocuments(text) {
+  const lines = String(text ?? "")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*\d+[\.\)\t-]?\s*/, "").trim())
+    .filter(Boolean);
+
+  if (!lines.length) {
+    return [];
+  }
+
+  return lines.map((line) => ensureLocalizedText(line));
+}
+
+function parseTags(text) {
+  return String(text ?? "")
+    .split(",")
+    .map((tag) => tag.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function inferApplyMode(applicationProcess = "", officialWebsite = "") {
+  const normalized = `${applicationProcess} ${officialWebsite}`.toLowerCase();
+  const hasOnlineSignal = /portal|register|login|online|website/.test(normalized);
+  const hasOfflineSignal = /visit|office|centre|center|submit.*office|anganwadi/.test(normalized);
+
+  if (hasOnlineSignal && hasOfflineSignal) {
+    return "both";
+  }
+  if (hasOfflineSignal) {
+    return "offline";
+  }
+  return "online";
+}
+
+function csvRowToScheme(row) {
+  const state = normalizeState(row.state, row.level);
+  const schemeName = row.scheme_name || "Untitled Scheme";
+  const categories = inferCategories(
+    row.category,
+    row.tags,
+    `${row.brief_description} ${row.detailed_description} ${row.target_beneficiaries}`
+  );
+  const benefitText = row.benefits || row.brief_description || "";
+
+  return normalizeScheme(
+    {
+      schemeId: `${state}_${slugify(schemeName).toUpperCase()}`,
+      name: { en: schemeName, hi: schemeName },
+      description: {
+        en: row.detailed_description || row.brief_description || "",
+        hi: row.brief_description || row.detailed_description || "",
+      },
+      ministry: row.nodal_ministry || row.implementing_agency || "Unknown",
+      categories: categories.length ? categories : ["finance"],
+      state,
+      eligibilityText: row.eligibility_criteria || "",
+      benefitAmount: extractBenefitAmount(benefitText),
+      benefitType: inferBenefitType(benefitText),
+      documents: parseDocuments(row.documents_required),
+      applyUrl: row["Official Website"] || row["Application Form"] || "",
+      applyMode: inferApplyMode(row.application_process, row["Official Website"]),
+      tags: parseTags(row.tags),
+      active: true,
+      verified: false,
+      source: "manual",
+    },
+    "manual"
+  );
+}
+
 function normalizeEligibility(eligibility = {}) {
   const parsedEligibility =
     typeof eligibility === "string" ? parseEligibility(eligibility) : eligibility;
@@ -245,6 +512,11 @@ function normalizeScheme(rawScheme, sourceName) {
 }
 
 async function loadHuggingFaceSource() {
+  if (fs.existsSync(HF_CSV_PATH)) {
+    const csvRows = parseCsv(fs.readFileSync(HF_CSV_PATH, "utf8"));
+    return csvRows.map(csvRowToScheme);
+  }
+
   const filePath = path.join(DATA_DIR, "huggingface-schemes.json");
   return readJsonArray(filePath).map((scheme) => normalizeScheme(scheme, "manual"));
 }
@@ -350,8 +622,11 @@ if (require.main === module) {
 module.exports = {
   DEFAULT_SOURCE_ORDER,
   SOURCE_LOADERS,
+  csvRowToScheme,
   parseEligibility,
+  parseCsv,
   normalizeScheme,
   seedSchemes,
+  normalizeState,
   upsertScheme,
 };
