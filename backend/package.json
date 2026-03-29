@@ -1,0 +1,14 @@
+{
+  "name": "yojnapath-backend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "seed:schemes": "node seeds/seedSchemes.js",
+    "scrape:myscheme": "node seeds/scrapers/myschemeScraper.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.12.0",
+    "puppeteer": "^24.7.1"
+  }
+}
