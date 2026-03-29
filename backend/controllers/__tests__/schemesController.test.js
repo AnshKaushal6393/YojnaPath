@@ -17,6 +17,10 @@ jest.mock("../../services/topSchemesCache", () => ({
   },
 }));
 
+jest.mock("../../services/analyticsService", () => ({
+  recordMatchAnalytics: jest.fn(),
+}));
+
 const { Scheme } = require("../../models/Scheme");
 const { getMatchingSchemes, matchScheme } = require("../../engine/matcher");
 const { topSchemesCache } = require("../../services/topSchemesCache");

@@ -7,10 +7,11 @@ const {
   getUrgentSchemes,
   matchSchemes,
 } = require("../controllers/schemesController");
+const { matchLimiter } = require("../middleware/rateLimit");
 
 const router = express.Router();
 
-router.post("/match", matchSchemes);
+router.post("/match", matchLimiter, matchSchemes);
 router.get("/all", getAllSchemesLightweight);
 router.get("/urgent", getUrgentSchemes);
 router.get("/top/:userType", getTopSchemesByUserType);

@@ -1,5 +1,6 @@
 require("../config/env");
 
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
 const { JWT_EXPIRES_IN } = require("../config/constants");
@@ -8,7 +9,7 @@ const { getOtpStore } = require("../services/otpStore");
 const { findOrCreateUserByPhone } = require("../services/userService");
 
 function generateOtp() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(crypto.randomInt(100000, 1000000));
 }
 
 function normalizePhone(phone) {

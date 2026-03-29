@@ -5,6 +5,7 @@ const express = require("express");
 const authRoutes = require("./routes/auth");
 const applicationsRoutes = require("./routes/applications");
 const kioskRoutes = require("./routes/kiosk");
+const { generalApiLimiter } = require("./middleware/rateLimit");
 const profileRoutes = require("./routes/profile");
 const publicRoutes = require("./routes/public");
 const savedRoutes = require("./routes/saved");
@@ -13,6 +14,7 @@ const schemesRoutes = require("./routes/schemes");
 const app = express();
 
 app.use(express.json());
+app.use("/api", generalApiLimiter);
 
 app.get("/health", (req, res) => {
   res.json({ ok: true });
