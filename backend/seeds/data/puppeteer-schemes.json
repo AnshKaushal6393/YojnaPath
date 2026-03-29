@@ -1,0 +1,230 @@
+[
+  {
+    "schemeId": "MYSCHEME_NOS_SWD",
+    "name": {
+      "en": "National Overseas Scholarship For Students With Disabilities",
+      "hi": "विकलांग छात्रों के लिए राष्ट्रीय विदेशी छात्रवृत्ति"
+    },
+    "description": {
+      "en": "A scholarship scheme by the Ministry of Social Justice & Empowerment for regular, full-time students with disabilities to obtain higher education viz., Master's degree, or Ph.D. courses from foreign universities, in one of the specified fields of study.\n\n The students with the specified disabilities defined in Schedule of the \"Rights of Persons with Disabilities Act, 2016\" will be eligible under this scheme. This includes persons with visual, hearing, speech, loco-motor, mental retardation, and other disabilities. NOS is implemented offline by the DEPwD.\n\n At times SwDs are deprived of harnessing their latent skills and thereby miss the opportunity. This scheme aims to support SwDs to study further in order to prepare themselves to earn their livelihood and to find a dignified place for themselves in the society as they face several barriers physical, financial, psychological, mental in pursuing studies and living with dignity.",
+      "hi": "सामाजिक न्याय और अधिकारिता मंत्रालय द्वारा नियमित, पूर्णकालिक विकलांग छात्रों के लिए उच्च शिक्षा प्राप्त करने के लिए एक छात्रवृत्ति योजना, अर्थात अध्ययन के निर्दिष्ट क्षेत्रों में से किसी एक में विदेशी विश्वविद्यालयों से मास्टर डिग्री या पीएचडी पाठ्यक्रम।\n\n \"विकलांग व्यक्तियों के अधिकार अधिनियम, 2016\" की अनुसूची में परिभाषित निर्दिष्ट विकलांग छात्र इस योजना के तहत पात्र होंगे। इसमें दृश्य, श्रवण, बोलने, लोको-मोटर, मानसिक मंदता और अन्य विकलांग व्यक्ति शामिल हैं। एन. ओ. एस. को डी. ई. पी. डब्ल्यू. डी. द्वारा ऑफ़लाइन लागू किया जाता है।\n\n कभी-कभी एस. डब्ल्यू. डी. अपने अव्यक्त कौशल का उपयोग करने से वंचित हो जाते हैं और इस तरह अवसर खो देते हैं। इस योजना का उद्देश्य एस. डब्ल्यू. डी. को आगे अध्ययन करने में सहायता करना है ताकि वे अपनी आजीविका अर्जित करने के लिए खुद को तैयार कर सकें और समाज में अपने लिए एक सम्मानजनक स्थान पा सकें क्योंकि वे पढ़ाई करने और गरिमा के साथ रहने में कई शारीरिक, वित्तीय, मनोवैज्ञानिक, मानसिक बाधाओं का सामना करते हैं।"
+    },
+    "ministry": "Ministry Of Social Justice and Empowerment",
+    "categories": [
+      "education",
+      "disability"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 15400,
+    "benefitType": "insurance",
+    "documents": [
+      {
+        "en": "Duly completed Pro-forma in duplicate",
+        "hi": "डुप्लिकेट में उचित रूप से पूर्ण प्रो-फॉर्मा"
+      },
+      {
+        "en": "Certificate of Proof of Date of Birth (Birth Certificate or Certificate of Passing 10th standard)",
+        "hi": "जन्म तिथि का प्रमाण पत्र (जन्म प्रमाण पत्र या 10वीं कक्षा उत्तीर्ण करने का प्रमाण पत्र)"
+      },
+      {
+        "en": "Disability Certificate",
+        "hi": "निशक्तता प्रमाणपत्र"
+      },
+      {
+        "en": "Voter ID",
+        "hi": "मतदाता पहचान पत्र"
+      },
+      {
+        "en": "Aadhaar Card",
+        "hi": "आधार कार्ड"
+      },
+      {
+        "en": "Proof of residence, if the address mentioned in the application is different from the address mentioned in the Voter ID/Aadhaar Card.",
+        "hi": "निवास का प्रमाण, यदि आवेदन में उल्लिखित पता मतदाता पहचान पत्र/आधार कार्ड में उल्लिखित पते से अलग है।"
+      },
+      {
+        "en": "Copy of PAN Card of the applicant.",
+        "hi": "आवेदक के पैन कार्ड की प्रति।"
+      },
+      {
+        "en": "Copy of Bank Account linked with Aadhaar No.",
+        "hi": "आधार सं. से जुड़े बैंक खाते की प्रति।"
+      },
+      {
+        "en": "Copy of PAN Card of Father/Mother/Guardian/Spouse",
+        "hi": "पिता/माता/अभिभावक/पति/पत्नी के पैन कार्ड की प्रति"
+      },
+      {
+        "en": "Copy of Certificates and mark sheets in support of Educational qualifications.",
+        "hi": "शैक्षिक योग्यता के समर्थन में प्रमाण पत्रों और अंक पत्रों की प्रति।"
+      },
+      {
+        "en": "Income Tax Certificate in prescribed proforma",
+        "hi": "निर्धारित प्रारूप में आयकर प्रमाण पत्र"
+      },
+      {
+        "en": "Income Tax Return of the candidate/parents/guardians whose income is considered to determine the income ceiling.",
+        "hi": "उम्मीदवार/माता-पिता/अभिभावकों की आयकर विवरणी, जिनकी आय को आय सीमा निर्धारित करने के लिए माना जाता है।"
+      },
+      {
+        "en": "Details of the proposed study (in not more than 500 words)",
+        "hi": "प्रस्तावित अध्ययन का विवरण (500 शब्दों से अधिक नहीं)"
+      },
+      {
+        "en": "Copy of admission papers from the accredited universities/Institutions",
+        "hi": "मान्यता प्राप्त विश्वविद्यालयों/संस्थानों से प्रवेश पत्रों की प्रति"
+      },
+      {
+        "en": "Copies of offer of admission by the university/prospectus etc.",
+        "hi": "विश्वविद्यालय/विवरण पत्रिका आदि द्वारा प्रवेश के प्रस्ताव की प्रतियाँ।"
+      },
+      {
+        "en": "Self-attested certificate to the effect that you are not availing of any other scholarship for the same Course of study.",
+        "hi": "इस आशय का स्वप्रमाणित प्रमाण पत्र कि आप अध्ययन के उसी पाठ्यक्रम के लिए किसी अन्य छात्रवृत्ति का लाभ नहीं उठा रहे हैं।"
+      },
+      {
+        "en": "Income Certificate Form.",
+        "hi": "आय प्रमाणपत्र प्रपत्र।"
+      },
+      {
+        "en": "Source(s):",
+        "hi": "स्रोत (ओं):"
+      },
+      {
+        "en": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2(1).pdf",
+        "hi": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2 (1). पीडीएफ"
+      },
+      {
+        "en": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/Appl-Form%20-NOS(1).pdf",
+        "hi": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/Appl-Form%20-NOS (1). पीडीएफ"
+      }
+    ],
+    "applyUrl": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2(1).pdf",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": null,
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Scholarship",
+      "Student",
+      "Person With Disability",
+      "Higher Education",
+      "Degree",
+      "Empowerment",
+      "PhD",
+      "Post-Graduation"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scholarship scheme by the Ministry of Social Justice & Empowerment for regular, full-time students with disabilities to obtain higher education viz., Master's degree, or Ph.D. courses from foreign universities, in one of the specified fields of study.\n\n The students with the specified disabilities defined in Schedule of the \"Rights of Persons with Disabilities Act, 2016\" will be eligible under this scheme. This includes persons with visual, hearing, speech, loco-motor, mental retardation, and other disabilities. NOS is implemented offline by the DEPwD.\n\n At times SwDs are deprived of harnessing their latent skills and thereby miss the opportunity. This scheme aims to support SwDs to study further in order to prepare themselves to earn their livelihood and to find a dignified place for themselves in the society as they face several barriers physical, financial, psychological, mental in pursuing studies and living with dignity.",
+      "detailsHi": "सामाजिक न्याय और अधिकारिता मंत्रालय द्वारा नियमित, पूर्णकालिक विकलांग छात्रों के लिए उच्च शिक्षा प्राप्त करने के लिए एक छात्रवृत्ति योजना, अर्थात अध्ययन के निर्दिष्ट क्षेत्रों में से किसी एक में विदेशी विश्वविद्यालयों से मास्टर डिग्री या पीएचडी पाठ्यक्रम।\n\n \"विकलांग व्यक्तियों के अधिकार अधिनियम, 2016\" की अनुसूची में परिभाषित निर्दिष्ट विकलांग छात्र इस योजना के तहत पात्र होंगे। इसमें दृश्य, श्रवण, बोलने, लोको-मोटर, मानसिक मंदता और अन्य विकलांग व्यक्ति शामिल हैं। एन. ओ. एस. को डी. ई. पी. डब्ल्यू. डी. द्वारा ऑफ़लाइन लागू किया जाता है।\n\n कभी-कभी एस. डब्ल्यू. डी. अपने अव्यक्त कौशल का उपयोग करने से वंचित हो जाते हैं और इस तरह अवसर खो देते हैं। इस योजना का उद्देश्य एस. डब्ल्यू. डी. को आगे अध्ययन करने में सहायता करना है ताकि वे अपनी आजीविका अर्जित करने के लिए खुद को तैयार कर सकें और समाज में अपने लिए एक सम्मानजनक स्थान पा सकें क्योंकि वे पढ़ाई करने और गरिमा के साथ रहने में कई शारीरिक, वित्तीय, मनोवैज्ञानिक, मानसिक बाधाओं का सामना करते हैं।",
+      "benefits": "Annual Maintenance Allowance: For United States of America (USA) & other countries except UK: $15400 (US Dollars); For United Kingdom (UK): 9900 GBP (Great Britain Pounds)\n Contingency Allowance: For United States of America (USA) & other countries except UK: $1500 (US Dollars); For United Kingdom (UK): 1100 GBP (Great Britain Pounds)\n Equipment Allowance: 1500 INR\n Tuition Fees: Actual as charged\n Visa Fees: Actual Visa Fees in INR\n Poll Tax: Actual as charged\n Medical Insurance Premium: Actual as charged\n Incidental Journey Allowance & Equipment Allowance: 20 US Dollars for each or its equivalent in INR.\n Air Passage: Air passage grant on actual basis from India to the nearest place to the educational institution and back to India, by economy class and shortest route in arrangements with the national carrier, shall be provided.\n Local Travel: Second or Coach Class railway fare from the port of disembarkation to the place of study and back.\n In case of far flung places not connected by rail, bus fare(s) from the place of residence to the nearest railway station, actual charge of crossing by ferry, airfare to the nearest rail-cum-air Station and/or second class railway fare by the shortest route to the port of embarkation and back will be permissible. For attending interviews by the candidates at the place decided by the Government of India, the second-class fare/ordinary class bus fare from the city of their place of residence to the city in which the interviews for selection have been decided by the Government of India will be permissible.",
+      "benefitsHi": "वार्षिक रखरखाव भत्ताः यूनाइटेड स्टेट्स ऑफ अमेरिका (यूएसए) और यूके को छोड़कर अन्य देशों के लिएः $15400 (यूएस डॉलर); यूनाइटेड किंगडम (यूके) के लिएः 9900 जीबीपी (ग्रेट ब्रिटेन पाउंड)\n आकस्मिक भत्ताः संयुक्त राज्य अमेरिका (यू. एस. ए.) और यू. के. को छोड़कर अन्य देशों के लिएः $1500 (यू. एस. डॉलर); यूनाइटेड किंगडम (यू. के.) के लिएः 1100 जी. बी. पी. (ग्रेट ब्रिटेन पाउंड)\n उपकरण भत्ताः 1500 रुपये\n ट्यूशन फीसः यथा प्रभारित वास्तविक\n वीजा शुल्कः वास्तविक वीजा शुल्क भारतीय रुपये में\n चुनाव करः यथा प्रभारित वास्तविक\n चिकित्सा बीमा प्रीमियमः यथा प्रभारित वास्तविक\n आकस्मिक यात्रा भत्ता और उपकरण भत्ताः आई. एन. आर. में प्रत्येक या उसके समकक्ष के लिए 20 अमेरिकी डॉलर।\n वायु मार्गः भारत से शैक्षणिक संस्थान के निकटतम स्थान तक और भारत में वापस आने के लिए वास्तविक आधार पर आर्थिक श्रेणी और राष्ट्रीय वाहक के साथ व्यवस्था में सबसे छोटे मार्ग से हवाई मार्ग अनुदान प्रदान किया जाएगा।\n स्थानीय यात्राः उतरने के बंदरगाह से अध्ययन स्थल तक और वापस आने के लिए द्वितीय या कोच श्रेणी का रेलवे किराया।\n दूरदराज के स्थानों के मामले में जो रेल से नहीं जुड़े हैं, निवास स्थान से निकटतम रेलवे स्टेशन तक बस किराया, नौका द्वारा पार करने का वास्तविक शुल्क, निकटतम रेल-सह-हवाई स्टेशन तक हवाई किराया और/या द्वितीय श्रेणी का रेलवे किराया सबसे छोटे मार्ग से जहाज पर चढ़ने और वापस जाने की अनुमति होगी। भारत सरकार द्वारा निर्धारित स्थान पर उम्मीदवारों द्वारा साक्षात्कार में भाग लेने के लिए, उनके निवास स्थान के शहर से उस शहर के लिए द्वितीय श्रेणी का किराया/साधारण श्रेणी का बस किराया, जिसमें चयन के लिए साक्षात्कार भारत सरकार द्वारा तय किया गया है, स्वीकार्य होगा।",
+      "eligibility": "",
+      "eligibilityHi": "The applicant must be a student.\n The applicant must be Admitted into (or received an unconditional offer of admission) Masters's level courses and Ph.D. courses abroad in institutions/universities accredited by the Government/authorized body of that country.\n The Disability Percentage of the applicant must be 40% & above.\n The applicant must be 35 years or lesser in age, as on the first day of the month of advertisement of the scheme.\n The Total Family Income of the applicant (from all sources) must not exceed ₹ 6 lakh per annum.",
+      "exclusions": "Bachelors Level courses, in any discipline, are not covered under this scheme.\n candidates already staying or studying or having completed studies abroad by utilizing any other scholarship from State Government, other agency, or through their own funds are not eligible to apply under this scheme.\n Not more than two children with disabilities of the same parents will be entitled to receive benefits of the scheme. Provided in case the second child is a _twin, the 'scholarship under this scheme will be admissible to both the twins.\n The candidate is not eligible for a scholarship to pursue the same level (Masters/Ph.D.) of course for which he/she has already acquired the qualification from any University/Institution either in India or abroad.\n Scholarship for studying in any class will be available for only one year. If a student has to repeat a class, she / he would not get scholarship for that class for a second (or subsequent) year.\n A scholarship holder under this scheme will not hold any other scholarship/ stipend. If awarded any other scholarship/ stipend, the student can exercise his/her option for either of the two scholarships/stipends, whichever is more beneficial to him/her and should inform the awarding authority through the Head of the Institution about the option made. No scholarship will be paid to the students under this scheme from the date he/she accepts another scholarship/stipend. The student can however, accept free lodging or a grant or ad-hoc monetary help from the State Government or any other source for the purchase of books, equipment or for meeting the expenses on board and lodging in addition to the scholarship amount paid under this scheme.",
+      "applicationProcess": "",
+      "faqs": "Is there a duration to the prescribed financial assistance?\nYes, the prescribed financial assistance will be provided up to the completion of the course / research or the following period, whichever is earlier:\nPhD - 04 years (Four years)\nMaster's Degree - 03 years (Three years)\n\n\nWhat all shall be covered under Contingency Allowance?\nThe Contingency allowance shall be for books/essential apparatus/ study tour/ travel cost for attending subject related conference, workshops etc./ typing and binding of thesis etc. \n\n\nAre there any terms to availing the Maintenance Allowance?\nThe payment of Maintenance Allowance is linked with furnishing of progress report. For first semester/six months, the maintenance allowance may be paid to the scholarship awardee in the first instance as an advance. Thereafter, the maintenance allowance for the next semester/six months may be paid only after receipt of the satisfactory progress report of the awardee for first six months/semester.\n\n\nAre the awardees are permitted to supplement their prescribed allowances by undertaking Research / Teaching Assistantship?\nYes, the awardees are permitted to do so upto $2400 per annum and for awardees in UK, 1560 GBP per annum.\n\n\nHow many scholarship slots are there in this scheme?\nIn each selection year, 20 fresh awards, subject to availability of funds, will be given under this scheme.\n\n\nIs there any earmarking for women candidates?\nYes, there is 30% of the awards for each year shall be earmarked for women candidates. However, in case, adequate women candidates are not available as per the stipulations of the scheme, then the unutilized slots will be utilized by selecting suitable male candidates.\n\n\nAre Bachelors Level courses also covered under this scheme?\nNo, Bachelors Level courses, in any discipline, are not covered under this scheme.\n\n\nI have completed my studies abroad on a scholarship from state govt. Am I eligible to apply for this scheme?\nNo, candidates already staying or studying or having completed studies abroad by utilizing any other scholarship from State Government, other agency, or through own funds are not eligible to apply under this scheme.\n\n\nHow many children of the same parents/guardians will be eligible for scholarship?\nNot more than two children of the same parents/guardians will be eligible for scholarship.\nA. The second child of the same parents/guardians will be considered only if slots are still available in the last cycle of the year in which the applicant has applied.\n\n\nI hold a Master’s Degree from an Institute in India. Am I eligible to apply for this scheme if I have an unconditional offer letter for a Master Degree from an institute located outside India?\nThe candidate is not eligible for scholarship to pursue the same level (Masters/Ph.D.) of course for which he/she has already acquired the qualification from any University/Institution either in India or abroad.\n\n\nHow would I know the status of my application?\n A list of selected / not-selected candidates will be uploaded on the portal. Individual email / messages will also be sent to all registered applicants.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Guidelines",
+        "url": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2(1).pdf"
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_RMEWF",
+    "name": {
+      "en": "RMEWF-Financial Assistance For Medical Treatment Of Ex-Servicemen",
+      "hi": "आर. एम. ई. डब्ल्यू. एफ.-पूर्व सैनिकों के चिकित्सा उपचार के लिए वित्तीय सहायता"
+    },
+    "description": {
+      "en": "A scheme to provide financial assistance to a non-pensioner Ex-Servicemen/widows of ranks up to Havildar/equivalent to meet routine medical expenses.\n\n With ever increasing costs of health care, it becomes extremely difficult for non-pensioner ESM to combat diseases especially in old age. At such age, medical expenses push such ESM into a state of poverty and loss of dignity. The scheme to provide financial assistance to non-pensioners, who are without any other sources of income and in state of penury,\n\n Treatment of Serious Diseases\n The expenditure incurred on treatment of various serious ailments is covered under a separate scheme",
+      "hi": "गैर-पेंशनभोगी पूर्व सैनिकों/हवलदार तक के रैंकों की विधवाओं को नियमित चिकित्सा खर्चों को पूरा करने के लिए वित्तीय सहायता प्रदान करने की योजना।\n\n स्वास्थ्य देखभाल की लगातार बढ़ती लागतों के साथ, गैर-पेंशनभोगी ई. एस. एम. के लिए विशेष रूप से वृद्धावस्था में बीमारियों का मुकाबला करना बेहद मुश्किल हो जाता है। ऐसी उम्र में, चिकित्सा खर्च ऐसे ई. एस. एम. को गरीबी और गरिमा के नुकसान की स्थिति में धकेल देते हैं। गैर-पेंशनभोगियों को वित्तीय सहायता प्रदान करने की योजना, जिनके पास आय का कोई अन्य स्रोत नहीं है और जो गरीबी की स्थिति में हैं\n\n गंभीर रोगों का उपचार\n विभिन्न गंभीर बीमारियों के इलाज पर होने वाला खर्च एक अलग योजना के तहत आता है"
+    },
+    "ministry": "Ministry Of Defence",
+    "categories": [
+      "health"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 30000,
+    "benefitType": "cash_transfer",
+    "documents": [
+      {
+        "en": "Copies of following documents duly attested by ZSWO must accompany the application:-",
+        "hi": "जेड. एस. डब्ल्यू. ओ. द्वारा विधिवत सत्यापित निम्नलिखित दस्तावेजों की प्रतियां आवेदन के साथ होनी चाहिएः -"
+      },
+      {
+        "en": "Discharge book/documents.",
+        "hi": "पुस्तक/दस्तावेजों का निर्वहन करें।"
+      },
+      {
+        "en": "I-Card issued by ZSB is must both for ESM & widows.",
+        "hi": "जेड. एस. बी. द्वारा जारी आई-कार्ड ई. एस. एम. और विधवाओं दोनों के लिए अनिवार्य है।"
+      },
+      {
+        "en": "Original medical bills countersigned by the attending doctor.",
+        "hi": "उपस्थित चिकित्सक द्वारा हस्ताक्षरित मूल चिकित्सा बिल।"
+      },
+      {
+        "en": "Hospital discharge summary countersigned by attending doctor.",
+        "hi": "अस्पताल से छुट्टी के सारांश पर उपस्थित डॉक्टर द्वारा जवाबी हस्ताक्षर किए गए।"
+      },
+      {
+        "en": "A certificate from the applicant stating that he/she has not taken any money/grant from the State or present employer in the form of reimbursement or medical allowance.",
+        "hi": "आवेदक से एक प्रमाण पत्र जिसमें कहा गया हो कि उसने राज्य या वर्तमान नियोक्ता से प्रतिपूर्ति या चिकित्सा भत्ते के रूप में कोई धन/अनुदान नहीं लिया है।"
+      },
+      {
+        "en": "Details of Bank A/c No (in PNB/SBI only) and IFS Code.",
+        "hi": "बैंक ए/सी संख्या (केवल पी. एन. बी./एस. बी. आई. में) और आई. एफ. एस. कोड का विवरण।"
+      }
+    ],
+    "applyUrl": "https://ksb.gov.in/medical-treatment-of-esm.htm ",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "1981-01-01",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Ex-Servicemen",
+      "Health Checkup",
+      "Medical Expenses",
+      "Health Treatment",
+      "Widow Of Ex-Servicemen"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scheme to provide financial assistance to a non-pensioner Ex-Servicemen/widows of ranks up to Havildar/equivalent to meet routine medical expenses.\n\n With ever increasing costs of health care, it becomes extremely difficult for non-pensioner ESM to combat diseases especially in old age. At such age, medical expenses push such ESM into a state of poverty and loss of dignity. The scheme to provide financial assistance to non-pensioners, who are without any other sources of income and in state of penury,\n\n Treatment of Serious Diseases\n The expenditure incurred on treatment of various serious ailments is covered under a separate scheme",
+      "detailsHi": "गैर-पेंशनभोगी पूर्व सैनिकों/हवलदार तक के रैंकों की विधवाओं को नियमित चिकित्सा खर्चों को पूरा करने के लिए वित्तीय सहायता प्रदान करने की योजना।\n\n स्वास्थ्य देखभाल की लगातार बढ़ती लागतों के साथ, गैर-पेंशनभोगी ई. एस. एम. के लिए विशेष रूप से वृद्धावस्था में बीमारियों का मुकाबला करना बेहद मुश्किल हो जाता है। ऐसी उम्र में, चिकित्सा खर्च ऐसे ई. एस. एम. को गरीबी और गरिमा के नुकसान की स्थिति में धकेल देते हैं। गैर-पेंशनभोगियों को वित्तीय सहायता प्रदान करने की योजना, जिनके पास आय का कोई अन्य स्रोत नहीं है और जो गरीबी की स्थिति में हैं\n\n गंभीर रोगों का उपचार\n विभिन्न गंभीर बीमारियों के इलाज पर होने वाला खर्च एक अलग योजना के तहत आता है",
+      "benefits": "A Financial assistance up to a maximum of Rs.30,000/- per year per eligible Ex-Servicemen/widow is provided in a financial year.",
+      "benefitsHi": "एक वित्तीय वर्ष में प्रति पात्र पूर्व सैनिक/विधवा को अधिकतम 30,000/- रुपये प्रति वर्ष की वित्तीय सहायता प्रदान की जाती है।",
+      "eligibility": "",
+      "eligibilityHi": "The following criteria must be fulfilled:-\n\n Applicant must be a non-pensioner ESM or his widow.\n Should be of rank Havildar/equivalent and below.\n Should be recommended by respective Zila Sainik Board (ZSB).\n Expenditure must be incurred at recognized government hospitals at rates approved under CGHS/ ECHS.",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "Can I Take The Benefit Of This Scheme For Treatment In Any Private Or Government Hospital?\nNo. the financial assistance will be provided for expenditure incurred at recognized government hospitals at rates approved under CGHS/ ECHS.\n\n\n\nCan I Give Bank Details Of Any Bank?\nNo. Account details of only State Bank of India (SBI) or Punjab National Bank (PNB) is valid for application. \n\n\n\nWhose Account Details Can Be Filled In The Registration Form?\nThe applicant has to fill his/her Aadhaar linked bank account number.\n\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Scheme Guidelines",
+        "url": "https://ksb.gov.in/medical-treatment-of-esm.htm "
+      }
+    ]
+  }
+]

@@ -333,7 +333,6 @@ schemeSchema.index(
     weights: { "name.en": 10, "name.hi": 10, tags: 3 },
   }
 );
-schemeSchema.index({ schemeId: 1 }, { unique: true });
 
 schemeSchema.pre("validate", function validateEligibilityRanges(next) {
   const e = this.eligibility;
