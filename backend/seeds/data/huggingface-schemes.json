@@ -1,0 +1,67 @@
+[
+  {
+    "schemeId": "PM_KISAN_001",
+    "name": {
+      "en": "PM Kisan Samman Nidhi",
+      "hi": "पीएम किसान सम्मान निधि"
+    },
+    "description": {
+      "en": "Income support scheme for eligible farmer families.",
+      "hi": "पात्र किसान परिवारों के लिए आय सहायता योजना।"
+    },
+    "ministry": "Agriculture",
+    "categories": ["agriculture"],
+    "state": "central",
+    "eligibility": {
+      "occupation": ["farmer"],
+      "beneficiaryType": [],
+      "caste": [],
+      "gender": [],
+      "maxAnnualIncome": 200000,
+      "minAge": 18,
+      "maxAge": null,
+      "landOwned": {
+        "min": 0,
+        "max": 999
+      },
+      "minDisabilityPct": null,
+      "minEducation": null,
+      "mustBeStudent": null,
+      "mustHaveBankAccount": true,
+      "mustHaveAadhaar": true
+    },
+    "benefitAmount": 6000,
+    "benefitType": "cash_transfer",
+    "documents": [
+      {
+        "en": "Aadhaar card",
+        "hi": "आधार कार्ड"
+      },
+      {
+        "en": "Land records",
+        "hi": "भूमि अभिलेख"
+      },
+      {
+        "en": "Bank passbook",
+        "hi": "बैंक पासबुक"
+      }
+    ],
+    "applyUrl": "https://pmkisan.gov.in",
+    "applyMode": "online",
+    "officeAddress": {
+      "en": "Block Agriculture Officer",
+      "hi": "खंड कृषि अधिकारी"
+    },
+    "deadline": {
+      "opens": null,
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": ["farmer", "cash transfer", "central scheme"],
+    "active": true,
+    "verified": true,
+    "source": "manual"
+  }
+]
