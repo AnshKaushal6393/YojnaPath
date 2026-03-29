@@ -1,0 +1,562 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+/*
+  Typography rules:
+  - Apply English/Hindi fonts at the element level, never mid-sentence.
+  - Use 400 for body, 500 for labels, 600-700 for headings.
+  - Do not use 300 or 800-900 weights on mobile UI.
+  - Hindi text blocks must use line-height 1.75 minimum.
+  - Keep readable text at 12px minimum; 10px is only for all-caps micro labels.
+*/
+
+/*
+  Color usage rules:
+  - Yojna Green is the primary action color for CTAs, hero areas, active states, and icons.
+  - Deep Green is only for hover and pressed primary states.
+  - Mint/Forest pair is for matched, success, and positive scheme surfaces.
+  - Use semantic colors for state communication: success, warning, danger, info.
+  - Use category colors only for scheme/category badges and light category surfaces.
+  - Kiosk mode may use the neutral dark surface token for special headers.
+  - Never use black text on tinted backgrounds; use the darker matching color ramp.
+  - Keep category colors fixed to meaning; do not swap category hues decoratively.
+  - Gray is only for structural or inactive UI, never active content emphasis.
+  - Left border colors are reserved for match status only:
+    green = matched, amber = near-miss, red = expired/discontinued.
+*/
+
+/*
+  Spacing rules:
+  - Use a 4px-based spacing system across the UI.
+  - Approved component exceptions: 10px and 14px for tighter card and nav rhythms.
+  - 44px is the minimum touch target for any tappable element.
+*/
+
+/*
+  Radius rules:
+  - 4px: badges, small chips, checkbox corners.
+  - 8px: desktop inputs, very small cards.
+  - 10px: buttons, standard inputs, medium components.
+  - 12px: scheme cards, profile form card, filter area.
+  - 14px: nav bar, hero section, prominent large cards.
+  - 20px: pills, language toggles, rounded filters.
+  - 50%: circle avatars and circular icon buttons.
+*/
+
+/*
+  Touch target rule:
+  - Every tappable element must be at least 44x44px.
+  - No exceptions: buttons, links, interactive cards, toggles, and icon buttons.
+  - Never set height below 44px on any interactive element.
+  - Use vertical padding to reach the 44px minimum even when text is small.
+  - Small icons must still sit inside a 44px hit area.
+*/
+
+/*
+  Form input rules:
+  - Do not use numeric text inputs for annual income or land size.
+  - Use fixed dropdown bands for recognition-based input.
+  - Show bilingual labels for high-comprehension fields.
+*/
+
+:root {
+  /* Brand */
+  --brand: #1D9E75;
+  --brand-deep: #0F6E56;
+  --brand-light: #E1F5EE;
+  --brand-text: #085041;
+
+  /* Surface */
+  --surface: #FFFFFF;
+  --surface-2: #F7F7F5;
+  --surface-3: #F0F0EE;
+  --border: #E8E8E8;
+  --border-med: #CCCCCC;
+
+  /* Text */
+  --text-1: #1A1A1A;
+  --text-2: #555555;
+  --text-3: #999999;
+  --text-inv: #FFFFFF;
+
+  /* Semantic */
+  --success: #1D9E75;
+  --success-bg: #E1F5EE;
+  --warning: #F0A030;
+  --warning-bg: #FFF3CD;
+  --danger: #E24B4A;
+  --danger-bg: #FCEBEB;
+  --info: #185FA5;
+  --info-bg: #E6F1FB;
+  --neutral-dark: #1A1A1A;
+
+  /* Category colors */
+  --cat-agriculture-bg: #EAF3DE;
+  --cat-agriculture-text: #27500A;
+  --cat-health-bg: #E6F1FB;
+  --cat-health-text: #0C447C;
+  --cat-finance-bg: #FAEEDA;
+  --cat-finance-text: #633806;
+  --cat-housing-bg: #EEEDFE;
+  --cat-housing-text: #3C3489;
+  --cat-women-bg: #FBEAF0;
+  --cat-women-text: #72243E;
+  --cat-education-bg: #EAF3DE;
+  --cat-education-text: #3B6D11;
+
+  /* Radius */
+  --r4: 4px;
+  --r8: 8px;
+  --r10: 10px;
+  --r12: 12px;
+  --r14: 14px;
+  --r20: 20px;
+  --r50: 50%;
+
+  /* Spacing (4px grid) */
+  --sp4: 4px;
+  --sp8: 8px;
+  --sp10: 10px;
+  --sp12: 12px;
+  --sp14: 14px;
+  --sp16: 16px;
+  --sp20: 20px;
+  --sp24: 24px;
+  --sp32: 32px;
+  --sp44: 44px;
+
+  /* Typography */
+  --font-en: "Noto Sans", -apple-system, sans-serif;
+  --font-hi: "Noto Sans Devanagari", "Noto Sans", sans-serif;
+
+  /* Font sizes */
+  --fs-10: 10px;
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-17: 17px;
+  --fs-18: 18px;
+  --fs-22: 22px;
+  --fs-28: 28px;
+
+  /* Transitions */
+  --transition: all 0.15s ease;
+
+  color: var(--text-1);
+  background-color: var(--surface-2);
+  font-family: var(--font-en);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(29, 158, 117, 0.08), transparent 36%),
+    var(--surface-2);
+  color: var(--text-1);
+  font-family: var(--font-en);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a[href],
+[role="button"],
+[role="link"],
+.interactive-card,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select {
+  min-height: var(--sp44);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--sp24);
+}
+
+.token-preview-card {
+  width: min(100%, 560px);
+  padding: var(--sp32);
+  border: 1px solid var(--border);
+  border-radius: var(--r14);
+  background-color: var(--surface);
+  box-shadow: 0 18px 40px rgba(15, 110, 86, 0.08);
+}
+
+.scheme-preview-stack {
+  margin-top: var(--sp24);
+}
+
+.demo-field-grid {
+  display: grid;
+  gap: var(--sp12);
+  margin-top: var(--sp20);
+}
+
+.demo-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp8);
+}
+
+.demo-select {
+  width: 100%;
+  min-height: var(--sp44);
+  padding: var(--sp12) var(--sp14);
+  border: 1px solid var(--border-med);
+  border-radius: var(--r10);
+  background-color: var(--surface);
+  color: var(--text-1);
+}
+
+.demo-submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp8);
+  width: 100%;
+  margin-top: var(--sp16);
+  padding: var(--sp12) var(--sp16);
+  border: none;
+  border-radius: var(--r10);
+  background-color: var(--brand);
+  color: var(--text-inv);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.demo-submit-button:hover:not(:disabled) {
+  background-color: var(--brand-deep);
+}
+
+.demo-submit-button:disabled {
+  cursor: wait;
+  opacity: 0.9;
+}
+
+.button-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: var(--text-inv);
+  border-radius: var(--r50);
+  animation: spin 0.75s linear infinite;
+}
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp8);
+  min-height: var(--sp44);
+  margin-top: var(--sp16);
+  padding: var(--sp8) var(--sp12);
+  border-radius: var(--r20);
+}
+
+.offline-banner__dismiss {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: var(--r50);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: var(--fs-18);
+  line-height: 1;
+}
+
+.eyebrow {
+  margin: 0 0 var(--sp8);
+  color: var(--brand);
+  font-size: var(--fs-12);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.token-preview-card h1 {
+  margin: 0 0 var(--sp12);
+  color: var(--brand-text);
+  font-size: var(--fs-28);
+  line-height: 1.15;
+}
+
+.body-text {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-15);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.type-body-en {
+  margin: 0;
+  color: var(--text-2);
+  font-family: var(--font-en);
+  font-size: var(--fs-15);
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.type-body-hi {
+  margin: 0;
+  color: var(--text-2);
+  font-family: var(--font-hi);
+  font-size: var(--fs-15);
+  font-weight: 400;
+  line-height: 1.75;
+}
+
+.type-label {
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-13);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.type-caption {
+  margin: 0;
+  color: var(--text-3);
+  font-size: var(--fs-12);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.type-micro {
+  margin: 0;
+  color: var(--brand-text);
+  font-size: var(--fs-10);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.type-benefit {
+  margin: 0;
+  color: var(--brand);
+  font-size: var(--fs-17);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hi,
+.lang-hi,
+[lang="hi"] {
+  font-family: var(--font-hi);
+  line-height: 1.75;
+}
+
+.state-success {
+  color: var(--success);
+  background-color: var(--success-bg);
+}
+
+.state-warning {
+  color: var(--warning);
+  background-color: var(--warning-bg);
+}
+
+.state-danger {
+  color: var(--danger);
+  background-color: var(--danger-bg);
+}
+
+.state-info {
+  color: var(--info);
+  background-color: var(--info-bg);
+}
+
+.category-agriculture {
+  color: var(--cat-agriculture-text);
+  background-color: var(--cat-agriculture-bg);
+}
+
+.category-health {
+  color: var(--cat-health-text);
+  background-color: var(--cat-health-bg);
+}
+
+.category-finance {
+  color: var(--cat-finance-text);
+  background-color: var(--cat-finance-bg);
+}
+
+.category-housing {
+  color: var(--cat-housing-text);
+  background-color: var(--cat-housing-bg);
+}
+
+.category-women {
+  color: var(--cat-women-text);
+  background-color: var(--cat-women-bg);
+}
+
+.category-education {
+  color: var(--cat-education-text);
+  background-color: var(--cat-education-bg);
+}
+
+.status-border-matched {
+  border-left: 4px solid var(--success);
+}
+
+.status-border-near-miss {
+  border-left: 4px solid var(--warning);
+}
+
+.status-border-expired {
+  border-left: 4px solid var(--danger);
+}
+
+.surface-structural {
+  background-color: var(--surface-2);
+  color: var(--text-2);
+}
+
+.surface-disabled {
+  background-color: var(--surface-3);
+  color: var(--text-3);
+}
+
+.tap-target {
+  min-width: var(--sp44);
+  min-height: var(--sp44);
+}
+
+.icon-hitbox {
+  width: var(--sp44);
+  height: var(--sp44);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.interactive-card {
+  display: block;
+  min-width: var(--sp44);
+  min-height: var(--sp44);
+}
+
+.scheme-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp12);
+  padding: var(--sp14);
+  border: 1px solid var(--border);
+  border-radius: var(--r12);
+  background-color: var(--surface);
+  box-shadow: 0 10px 24px rgba(8, 80, 65, 0.06);
+}
+
+.scheme-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp12);
+}
+
+.scheme-card__category-chip,
+.scheme-card__benefit-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sp44);
+  padding: var(--sp8) var(--sp12);
+  border-radius: var(--r20);
+}
+
+.scheme-card__benefit-chip {
+  margin-left: auto;
+  background-color: var(--brand-light);
+  color: var(--brand-text);
+}
+
+.scheme-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp10);
+}
+
+.scheme-card__title-en {
+  margin: 0;
+  color: var(--text-1);
+  font-family: var(--font-en);
+  font-size: var(--fs-14);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.scheme-card__title-hi {
+  margin: 0;
+  color: var(--text-3);
+  font-family: var(--font-hi);
+  font-size: var(--fs-12);
+  font-weight: 400;
+  line-height: 1.75;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.type-display {
+  margin: 0;
+  color: var(--brand);
+  font-family: var(--font-en);
+  font-size: var(--fs-28);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.type-h1 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-22);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.type-h2 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-18);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.type-h3 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: var(--fs-16);
+  font-weight: 500;
+  line-height: 1.35;
+}

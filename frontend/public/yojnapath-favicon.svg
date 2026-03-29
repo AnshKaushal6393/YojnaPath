@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YojnaPath logo">
+  <rect width="64" height="64" rx="18" fill="#E1F5EE"/>
+  <path d="M19 16h12.5l8 13.2L48 16h8.5L43.7 35.7V48H35V35.7z" fill="#1D9E75"/>
+  <path d="M16 16h9.6l10.4 17.2L29.9 48h-9.6l6.1-14.8z" fill="#0F6E56"/>
+</svg>
