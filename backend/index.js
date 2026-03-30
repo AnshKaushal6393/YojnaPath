@@ -1,6 +1,7 @@
 require("./config/env");
 
 const express = require("express");
+const { connectMongo } = require("./config/mongo");
 
 const authRoutes = require("./routes/auth");
 const applicationsRoutes = require("./routes/applications");
@@ -31,6 +32,11 @@ app.use("/api/schemes", schemesRoutes);
 const port = Number(process.env.PORT || 4000);
 
 if (require.main === module) {
+  connectMongo().catch((error) => {
+    console.warn(`[mongo] ${error.message}`);
+    console.warn("[mongo] Backend will continue with limited functionality until MongoDB is available.");
+  });
+
   app.listen(port, () => {
     console.log(`Backend listening on port ${port}`);
   });

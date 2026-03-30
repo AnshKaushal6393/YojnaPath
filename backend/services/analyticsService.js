@@ -2,6 +2,7 @@ require("../config/env");
 
 const Redis = require("ioredis");
 
+const { isMongoReady } = require("../config/mongo");
 const { IMPACT_CACHE_TTL_SECONDS } = require("../config/constants");
 const { getPool } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
@@ -45,6 +46,12 @@ class MemoryAnalyticsStore {
 
 let redis;
 let memoryStore;
+let redisUnavailable = false;
+let hasLoggedRedisError = false;
+
+function isMissingRelationError(error) {
+  return error?.code === "42P01";
+}
 
 function getMemoryStore() {
   if (!memoryStore) {
@@ -55,18 +62,21 @@ function getMemoryStore() {
 }
 
 async function getRedisClient() {
-  if (!process.env.REDIS_URL) {
+  if (!process.env.REDIS_URL || redisUnavailable) {
     return null;
   }
 
   if (!redis) {
     redis = new Redis(process.env.REDIS_URL, {
       lazyConnect: true,
+      enableOfflineQueue: false,
       maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
     });
 
     redis.on("error", (error) => {
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NODE_ENV === "development" && !hasLoggedRedisError) {
+        hasLoggedRedisError = true;
         console.warn(`[redis] ${error.message}`);
       }
     });
@@ -79,6 +89,11 @@ async function getRedisClient() {
 
     return redis;
   } catch (error) {
+    redisUnavailable = true;
+    if (redis) {
+      redis.disconnect();
+      redis = null;
+    }
     if (process.env.NODE_ENV === "development") {
       console.warn("[analytics] Falling back to memory analytics store because Redis is unavailable.");
     }
@@ -138,40 +153,68 @@ async function recordKioskUsage(kioskId) {
 }
 
 async function getUsersServedCount() {
-  const pool = getPool();
-  const result = await pool.query("SELECT COUNT(*)::int AS count FROM users");
-  return result.rows[0]?.count ?? 0;
+  try {
+    const pool = getPool();
+    const result = await pool.query("SELECT COUNT(*)::int AS count FROM users");
+    return result.rows[0]?.count ?? 0;
+  } catch (error) {
+    if (isMissingRelationError(error)) {
+      return 0;
+    }
+
+    throw error;
+  }
 }
 
 async function getProfilesGroupedBy(fieldName) {
-  const pool = getPool();
-  const result = await pool.query(
-    `SELECT ${fieldName}, COUNT(*)::int AS count FROM profiles GROUP BY ${fieldName}`
-  );
+  try {
+    const pool = getPool();
+    const result = await pool.query(
+      `SELECT ${fieldName}, COUNT(*)::int AS count FROM profiles GROUP BY ${fieldName}`
+    );
 
-  return result.rows.reduce((accumulator, row) => {
-    if (row[fieldName] != null) {
-      accumulator[row[fieldName]] = row.count;
+    return result.rows.reduce((accumulator, row) => {
+      if (row[fieldName] != null) {
+        accumulator[row[fieldName]] = row.count;
+      }
+      return accumulator;
+    }, {});
+  } catch (error) {
+    if (isMissingRelationError(error)) {
+      return {};
     }
-    return accumulator;
-  }, {});
+
+    throw error;
+  }
 }
 
 async function getTrackedBenefitValue() {
-  const pool = getPool();
-  const result = await pool.query("SELECT scheme_id FROM applications");
-  const schemeIds = [...new Set(result.rows.map((row) => row.scheme_id).filter(Boolean))];
-
-  if (schemeIds.length === 0) {
+  if (!isMongoReady()) {
     return 0;
   }
 
-  const schemes = await Scheme.find(
-    { schemeId: { $in: schemeIds } },
-    { schemeId: 1, benefitAmount: 1 }
-  ).lean();
+  try {
+    const pool = getPool();
+    const result = await pool.query("SELECT scheme_id FROM applications");
+    const schemeIds = [...new Set(result.rows.map((row) => row.scheme_id).filter(Boolean))];
 
-  return schemes.reduce((sum, scheme) => sum + Number(scheme.benefitAmount || 0), 0);
+    if (schemeIds.length === 0) {
+      return 0;
+    }
+
+    const schemes = await Scheme.find(
+      { schemeId: { $in: schemeIds } },
+      { schemeId: 1, benefitAmount: 1 }
+    ).lean();
+
+    return schemes.reduce((sum, scheme) => sum + Number(scheme.benefitAmount || 0), 0);
+  } catch (error) {
+    if (isMissingRelationError(error)) {
+      return 0;
+    }
+
+    throw error;
+  }
 }
 
 async function buildImpactStats() {
@@ -187,7 +230,7 @@ async function buildImpactStats() {
     getUsersServedCount(),
     getProfilesGroupedBy("occupation"),
     getProfilesGroupedBy("state"),
-    Scheme.countDocuments({}),
+    isMongoReady() ? Scheme.countDocuments({}) : 0,
     getTrackedBenefitValue(),
   ]);
 

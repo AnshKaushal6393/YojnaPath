@@ -1,3 +1,4 @@
+const { isMongoReady } = require("../config/mongo");
 const { Scheme } = require("../models/Scheme");
 const { getMatchingSchemes, matchScheme } = require("../engine/matcher");
 const { recordMatchAnalytics } = require("../services/analyticsService");
@@ -133,6 +134,10 @@ function buildCacheKey(userType, profile) {
 }
 
 async function matchSchemes(req, res) {
+  if (!isMongoReady()) {
+    return res.status(503).json({ message: "MongoDB is unavailable" });
+  }
+
   const startedAt = Date.now();
   const profile = getRequestProfile(req);
   const validationError = validateMatchProfile(profile);
@@ -151,6 +156,10 @@ async function matchSchemes(req, res) {
 }
 
 async function getSchemeById(req, res) {
+  if (!isMongoReady()) {
+    return res.status(503).json({ message: "MongoDB is unavailable" });
+  }
+
   const schemeId = String(req.params.id || "").trim().toUpperCase();
   const scheme = await Scheme.findOne({ schemeId }).lean();
 
@@ -162,6 +171,10 @@ async function getSchemeById(req, res) {
 }
 
 async function getUrgentSchemes(req, res) {
+  if (!isMongoReady()) {
+    return res.json([]);
+  }
+
   const profile = getRequestProfile(req);
   const validationError = validateMatchProfile(profile);
 
@@ -191,6 +204,10 @@ async function getUrgentSchemes(req, res) {
 }
 
 async function getTopSchemesByUserType(req, res) {
+  if (!isMongoReady()) {
+    return res.status(503).json({ message: "MongoDB is unavailable" });
+  }
+
   const userType = normalizeUserType(req.params.userType);
   const rawInput = {
     ...(req.method === "GET" ? req.query : {}),
@@ -235,6 +252,10 @@ async function getTopSchemesByUserType(req, res) {
 }
 
 async function getAllSchemesLightweight(req, res) {
+  if (!isMongoReady()) {
+    return res.json([]);
+  }
+
   const schemes = await Scheme.find(
     { active: true },
     {

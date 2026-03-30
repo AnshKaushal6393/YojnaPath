@@ -1,4 +1,4 @@
-const rateLimit = require("express-rate-limit");
+const { ipKeyGenerator, rateLimit } = require("express-rate-limit");
 
 function normalizePhone(phone) {
   return String(phone ?? "").replace(/\D/g, "");
@@ -9,7 +9,7 @@ const otpLimiter = rateLimit({
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => normalizePhone(req.body?.phone) || req.ip,
+  keyGenerator: (req) => normalizePhone(req.body?.phone) || ipKeyGenerator(req),
   message: { error: "Too many OTP requests. Wait 10 minutes." },
 });
 

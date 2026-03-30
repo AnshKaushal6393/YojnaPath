@@ -77,7 +77,7 @@ const CATEGORY_KEYWORDS = [
   { keywords: ["education", "learning", "school", "student", "scholarship"], category: "education" },
   { keywords: ["disability", "disabled", "divyang", "pwd"], category: "disability" },
   { keywords: ["senior", "elderly", "old age", "retired"], category: "senior" },
-  { keywords: ["artisan", "craft", "weaver", "handicraft"], category: "artisan" },
+  { keywords: ["artisan", "craft", "weaver", "handicraft"], category: "skill_and_employment" },
   { keywords: ["labour", "labor", "worker", "employment", "migrant"], category: "labour" },
 ];
 
@@ -488,7 +488,10 @@ function csvRowToScheme(row) {
       benefitAmount: extractBenefitAmount(benefitText),
       benefitType: inferBenefitType(benefitText),
       documents: parseDocuments(row.documents_required),
-      applyUrl: row["Official Website"] || row["Application Form"] || "",
+      applyUrl:
+        row["Official Website"] ||
+        row["Application Form"] ||
+        "https://www.myscheme.gov.in/search",
       applyMode: inferApplyMode(row.application_process, row["Official Website"]),
       tags: parseTags(row.tags),
       active: true,

@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import BottomNav from "./components/BottomNav";
 import HomeHero from "./components/HomeHero";
 import LastMatchSummary from "./components/LastMatchSummary";
 import RecentMatches from "./components/RecentMatches";
 import UrgencyBanner from "./components/UrgencyBanner";
 import UserTypeGrid from "./components/UserTypeGrid";
+import { fetchHomeData } from "./lib/homeApi";
 
 function formatCachedDate(date) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -17,8 +19,13 @@ export default function App() {
   const [language, setLanguage] = useState("en");
   const [hasProfile, setHasProfile] = useState(false);
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
-  const [openCard, setOpenCard] = useState("pm-kisan");
+  const [openCard, setOpenCard] = useState("");
   const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
+
+  const homeQuery = useQuery({
+    queryKey: ["home-data"],
+    queryFn: fetchHomeData,
+  });
 
   return (
     <main className="app-shell">
@@ -30,7 +37,7 @@ export default function App() {
           onProfileModeChange={setHasProfile}
         />
 
-        {!offlineBannerDismissed ? (
+        {!offlineBannerDismissed && homeQuery.isError ? (
           <div className="offline-banner state-info" role="status" aria-live="polite">
             <span className="type-caption">
               Offline - showing results saved on {cachedDateLabel}. Connect to internet for fresh
@@ -47,11 +54,26 @@ export default function App() {
           </div>
         ) : null}
 
-        {hasProfile ? <LastMatchSummary /> : <UserTypeGrid />}
+        {hasProfile ? (
+          <LastMatchSummary
+            impact={homeQuery.data?.impact}
+            health={homeQuery.data?.health}
+            isLoading={homeQuery.isLoading}
+            error={homeQuery.error}
+          />
+        ) : (
+          <UserTypeGrid />
+        )}
 
         <UrgencyBanner text="Deadline in 3 days - apply soon" />
 
-        <RecentMatches openCard={openCard} onToggle={setOpenCard} />
+        <RecentMatches
+          schemes={homeQuery.data?.recentMatches || []}
+          isLoading={homeQuery.isLoading}
+          error={homeQuery.error}
+          openCard={openCard}
+          onToggle={setOpenCard}
+        />
       </div>
 
       <BottomNav active="home" />

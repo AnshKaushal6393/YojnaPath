@@ -33,6 +33,8 @@ class MemoryTopSchemesCache {
 
 let redis;
 let memoryCache;
+let redisUnavailable = false;
+let hasLoggedRedisError = false;
 
 function getMemoryCache() {
   if (!memoryCache) {
@@ -43,18 +45,21 @@ function getMemoryCache() {
 }
 
 async function getRedisClient() {
-  if (!process.env.REDIS_URL) {
+  if (!process.env.REDIS_URL || redisUnavailable) {
     return null;
   }
 
   if (!redis) {
     redis = new Redis(process.env.REDIS_URL, {
       lazyConnect: true,
+      enableOfflineQueue: false,
       maxRetriesPerRequest: 1,
+      retryStrategy: () => null,
     });
 
     redis.on("error", (error) => {
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NODE_ENV === "development" && !hasLoggedRedisError) {
+        hasLoggedRedisError = true;
         console.warn(`[redis] ${error.message}`);
       }
     });
@@ -66,6 +71,11 @@ async function getRedisClient() {
     }
     return redis;
   } catch (error) {
+    redisUnavailable = true;
+    if (redis) {
+      redis.disconnect();
+      redis = null;
+    }
     if (process.env.NODE_ENV === "development") {
       console.warn("[cache] Falling back to memory cache because Redis is unavailable.");
     }
