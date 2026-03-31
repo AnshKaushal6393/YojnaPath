@@ -15,6 +15,9 @@ function formatTimestamp(value) {
 }
 
 export default function LastMatchSummary({ impact, health, isLoading, error }) {
+  const schemeCount = health?.schemeCount ?? impact?.schemesInDatabase ?? 0;
+  const lastUpdated = impact?.lastUpdated || health?.timestamp;
+
   if (isLoading) {
     return (
       <section className="home-section">
@@ -45,7 +48,7 @@ export default function LastMatchSummary({ impact, health, isLoading, error }) {
         <div className="summary-card__top">
           <div>
             <p className="type-micro">Live backend summary</p>
-            <h2 className="type-h2">{impact?.schemesInDatabase || 0} schemes available</h2>
+            <h2 className="type-h2">{schemeCount} schemes available</h2>
           </div>
           <div className="scheme-card__benefit-chip">
             <p className="type-benefit">v{health?.version || "0.0.0"}</p>
@@ -53,10 +56,9 @@ export default function LastMatchSummary({ impact, health, isLoading, error }) {
         </div>
 
         <p className="type-body-en">
-          Backend is connected. Public impact data and active scheme inventory are loading from the
-          live API.
+          Backend is connected. Public inventory and summary data are loading from the live API.
         </p>
-        <p className="type-caption">Updated on {formatTimestamp(impact?.lastUpdated)}</p>
+        <p className="type-caption">Updated on {formatTimestamp(lastUpdated)}</p>
 
         <button type="button" className="summary-card__button btn-primary tap-target">
           <span className="type-label">Explore live schemes</span>

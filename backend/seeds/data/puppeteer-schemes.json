@@ -1,5 +1,158 @@
 [
   {
+    "schemeId": "MYSCHEME_POST_DIS",
+    "name": {
+      "en": "Post Matric Scholarship Students With Disabilities",
+      "hi": "पोस्ट मैट्रिक छात्रवृत्ति विकलांग छात्र"
+    },
+    "description": {
+      "en": "A scholarship scheme by DoEPwD for students with disabilities pursuing a post-matric qualification from UGC/AICTE recognized universities, i.e. students of Class 11th, Class 12th, including Polytechnics, Post-Matriculation Diploma/Certificates and Bachelor’s Degree/Diploma in India and Master’s Degree/Diploma.\n\n The students with the specified disabilities defined in Schedule of the \"Rights of Persons with Disabilities Act, 2016\" will be eligible under this scheme. This includes persons with visual, hearing, speech, loco-motor, mental retardation, and other disabilities. NOS is implemented offline by the DEPwD.\n\n At times SwDs are deprived of harnessing their latent skills and thereby miss the opportunity. This scheme aims to support SwDs to study further in order to prepare themselves to earn their livelihood and to find a dignified place for themselves in the society as they face several barriers physical, financial, psychological, mental in pursuing studies and living with dignity.",
+      "hi": "डी. ओ. ई. पी. डब्ल्यू. डी. द्वारा यू. जी. सी./ए. आई. सी. टी. ई. द्वारा मान्यता प्राप्त विश्वविद्यालयों से मैट्रिक के बाद की योग्यता प्राप्त करने वाले विकलांग छात्रों के लिए छात्रवृत्ति योजना, यानी 11वीं, 12वीं कक्षा के छात्रों के लिए, जिसमें पॉलिटेक्निक, मैट्रिक के बाद का डिप्लोमा/प्रमाण पत्र और भारत में स्नातक की डिग्री/डिप्लोमा और मास्टर डिग्री/डिप्लोमा शामिल हैं।\n\n \"विकलांग व्यक्तियों के अधिकार अधिनियम, 2016\" की अनुसूची में परिभाषित निर्दिष्ट विकलांग छात्र इस योजना के तहत पात्र होंगे। इसमें दृश्य, श्रवण, बोलने, लोको-मोटर, मानसिक मंदता और अन्य विकलांग व्यक्ति शामिल हैं। एन. ओ. एस. को डी. ई. पी. डब्ल्यू. डी. द्वारा ऑफ़लाइन लागू किया जाता है।\n\n कभी-कभी एस. डब्ल्यू. डी. अपने अव्यक्त कौशल का उपयोग करने से वंचित हो जाते हैं और इस तरह अवसर खो देते हैं। इस योजना का उद्देश्य एस. डब्ल्यू. डी. को आगे अध्ययन करने में सहायता करना है ताकि वे अपनी आजीविका अर्जित करने के लिए खुद को तैयार कर सकें और समाज में अपने लिए एक सम्मानजनक स्थान पा सकें क्योंकि वे पढ़ाई करने और गरिमा के साथ रहने में कई शारीरिक, वित्तीय, मनोवैज्ञानिक, मानसिक बाधाओं का सामना करते हैं।"
+    },
+    "ministry": "Ministry Of Social Justice and Empowerment",
+    "categories": [
+      "education",
+      "disability"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 4000,
+    "benefitType": "insurance",
+    "documents": [
+      {
+        "en": "Photograph.",
+        "hi": "फोटोग्राफ।"
+      },
+      {
+        "en": "Proof of Age.",
+        "hi": "आयु का प्रमाण।"
+      },
+      {
+        "en": "Certificate of Disability (Rights of Persons with Disabilities Act 2016).",
+        "hi": "दिव्यांगता प्रमाण पत्र (विकलांग व्यक्तियों के अधिकार अधिनियम 2016)।"
+      },
+      {
+        "en": "Income Certificate.",
+        "hi": "आय प्रमाण पत्र।"
+      },
+      {
+        "en": "Tuition Fee Receipt.",
+        "hi": "ट्यूशन शुल्क रसीद।"
+      },
+      {
+        "en": "Last academic qualification certificate.",
+        "hi": "अंतिम शैक्षणिक योग्यता प्रमाण पत्र।"
+      },
+      {
+        "en": "Bank Details of the applicant or of the Parent/Guardian.",
+        "hi": "आवेदक या माता-पिता/अभिभावक का बैंक विवरण।"
+      }
+    ],
+    "applyUrl": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2(1).pdf",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": null,
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Persons With Disability",
+      "Post-Matric",
+      "Student",
+      "Scholarship",
+      "Diploma",
+      "Degree",
+      "Graduation",
+      "Post-Graduation"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scholarship scheme by DoEPwD for students with disabilities pursuing a post-matric qualification from UGC/AICTE recognized universities, i.e. students of Class 11th, Class 12th, including Polytechnics, Post-Matriculation Diploma/Certificates and Bachelor’s Degree/Diploma in India and Master’s Degree/Diploma.\n\n The students with the specified disabilities defined in Schedule of the \"Rights of Persons with Disabilities Act, 2016\" will be eligible under this scheme. This includes persons with visual, hearing, speech, loco-motor, mental retardation, and other disabilities. NOS is implemented offline by the DEPwD.\n\n At times SwDs are deprived of harnessing their latent skills and thereby miss the opportunity. This scheme aims to support SwDs to study further in order to prepare themselves to earn their livelihood and to find a dignified place for themselves in the society as they face several barriers physical, financial, psychological, mental in pursuing studies and living with dignity.",
+      "detailsHi": "डी. ओ. ई. पी. डब्ल्यू. डी. द्वारा यू. जी. सी./ए. आई. सी. टी. ई. द्वारा मान्यता प्राप्त विश्वविद्यालयों से मैट्रिक के बाद की योग्यता प्राप्त करने वाले विकलांग छात्रों के लिए छात्रवृत्ति योजना, यानी 11वीं, 12वीं कक्षा के छात्रों के लिए, जिसमें पॉलिटेक्निक, मैट्रिक के बाद का डिप्लोमा/प्रमाण पत्र और भारत में स्नातक की डिग्री/डिप्लोमा और मास्टर डिग्री/डिप्लोमा शामिल हैं।\n\n \"विकलांग व्यक्तियों के अधिकार अधिनियम, 2016\" की अनुसूची में परिभाषित निर्दिष्ट विकलांग छात्र इस योजना के तहत पात्र होंगे। इसमें दृश्य, श्रवण, बोलने, लोको-मोटर, मानसिक मंदता और अन्य विकलांग व्यक्ति शामिल हैं। एन. ओ. एस. को डी. ई. पी. डब्ल्यू. डी. द्वारा ऑफ़लाइन लागू किया जाता है।\n\n कभी-कभी एस. डब्ल्यू. डी. अपने अव्यक्त कौशल का उपयोग करने से वंचित हो जाते हैं और इस तरह अवसर खो देते हैं। इस योजना का उद्देश्य एस. डब्ल्यू. डी. को आगे अध्ययन करने में सहायता करना है ताकि वे अपनी आजीविका अर्जित करने के लिए खुद को तैयार कर सकें और समाज में अपने लिए एक सम्मानजनक स्थान पा सकें क्योंकि वे पढ़ाई करने और गरिमा के साथ रहने में कई शारीरिक, वित्तीय, मनोवैज्ञानिक, मानसिक बाधाओं का सामना करते हैं।",
+      "benefits": "Maintenance Allowance (₹ per Month):\n\n Group 1: All Bachelor’s/Post-Graduate Degree Courses in Medicine, Engineering/Technology, Planning/Architecture, Fashion Technology, Management, Business/Finance Administration, Computer Science/Applications, Agriculture, Veterinary and Allied Sciences; Hostellers – 1600; Day Scholars – 750\n Group 2: Professional Courses leading to Degree / Diploma, Certificate in areas like Pharmacy (B.Pharma), LLB, BFS, other para-medical branches like Rehabilitation, Diagnostics etc., Mass Communication, Hotel Management & Catering, Travel/Tourism/Hospitality, Interior Decoration, Nutrition & Dietetics, Commercial Art, Financial Services (e.g. Banking Insurance, Taxation etc.); Hostellers – 1100; Day Scholars – 700\n Group 3: All other courses leading to a Graduate Degree not covered under Group 1 and 2, e.g. BA/B.Sc/B.Com etc. Hostellers – 950; Day Scholars – 650\n Group 4: All Post-Matriculation Level Non-Degree courses for which entrance qualification is High School (Class 10th), e.g. Senior Secondary Certificate (Class 11th and 12th), both general and vocational stream, ITI courses, 3-year diploma courses in Polytechnics etc. Hostellers – 900; Day Scholars – 550\n\n Disability Allowances (₹/Annum):\n Visually Impaired – 4000.\n Hearing Impaired – 2000.\n Physically Disabled (OH) – 2000.\n Intellectual Disabilities – 4000.\n All other types of disability not covered above – 2000.\n\n Book Allowance: ₹1500/- per annum.",
+      "benefitsHi": "रखरखाव भत्ता (₹ प्रति माह):\n\n समूह 1: चिकित्सा, इंजीनियरिंग/प्रौद्योगिकी, योजना/वास्तुकला, फैशन प्रौद्योगिकी, प्रबंधन, व्यवसाय/वित्त प्रशासन, कंप्यूटर विज्ञान/अनुप्रयोग, कृषि, पशु चिकित्सा और संबद्ध विज्ञान में सभी स्नातक/स्नातकोत्तर डिग्री पाठ्यक्रम; छात्रावास-1600; दिन के छात्र-750\n समूह 2: डिग्री/डिप्लोमा, फार्मेसी (बी. फार्मा), एल. एल. बी., बी. एफ. एस. जैसे क्षेत्रों में प्रमाण पत्र, अन्य परा-चिकित्सा शाखाएँ जैसे पुनर्वास, निदान आदि, जन संचार, होटल प्रबंधन और खानपान, यात्रा/पर्यटन/आतिथ्य, आंतरिक सजावट, पोषण और आहार विज्ञान, वाणिज्यिक कला, वित्तीय सेवाएँ (जैसे बैंकिंग बीमा, कराधान आदि); छात्रावास-1100; दिन के छात्र-700\n समूह 3: स्नातक डिग्री के लिए जाने वाले अन्य सभी पाठ्यक्रम जो समूह 1 और 2 के अंतर्गत नहीं आते हैं, जैसे कि बीए/बीएससी/बी. कॉम आदि। छात्रावास-950; दिन के छात्र-650\n समूह 4: मैट्रिक के बाद के सभी स्तर के गैर-डिग्री पाठ्यक्रम जिनके लिए प्रवेश योग्यता हाई स्कूल (कक्षा 10 वीं) है, जैसे कि वरिष्ठ माध्यमिक प्रमाणपत्र (कक्षा 11 वीं और 12 वीं), दोनों सामान्य और व्यावसायिक धारा, आई. टी. आई. पाठ्यक्रम, पॉलिटेक्निक में 3-वर्षीय डिप्लोमा पाठ्यक्रम आदि। छात्रावास-900; दिन के छात्र-550\n\n विकलांग भत्ता (₹/वार्षिक):\n दृष्टिबाधित-4000।\n श्रवण बाधित-2000।\n शारीरिक रूप से अक्षम (ओएच)-2000।\n बौद्धिक अक्षमता-4000।\n अन्य सभी प्रकार की अक्षमताएँ जो 2000 से ऊपर नहीं हैं।\n\n पुस्तक भत्ताः 1500/- प्रति वर्ष।",
+      "eligibility": "",
+      "eligibilityHi": "The applicant must be a student.\n The applicant must be pursuing a post-matric qualification, i.e. Class 11th, Class 12th, including Polytechnics, Post-Matriculation Diploma/Certificates and Bachelor’s Degree/Diploma in India and Master’s Degree/Diploma.\n The applicant must be disabled, with disability percentage of 40% or above.\n The Total Annual income of parents/guardians of the applicant (from all sources) must not exceed ₹ 2.50 Lakh per Annum.\n The applicant must not be availing any other scholarship by the govt.\n The applicant must not be the third sibling of the family who has been given this scholarship.",
+      "exclusions": "Scholarship will not be given to more than two students from a family. Provided in case the second child is a twin, the scholarship will be admissible to both.\n A scholarship holder under this scheme cannot hold any other scholarship or stipend.\n If any candidate furnishes false information / document and is established as false. An action will be initiated for recovery of the amount spent with 15% compound interest thereon. Also, such candidate will be blacklisted for future and appropriate legal action can be taken.\n If a student has to repeat a class, he/she would not get any scholarship for that class for a second (or subsequent) year.",
+      "applicationProcess": "",
+      "faqs": "Am I eligible for this scholarship if two of my siblings are availing the benefits of this scheme?\nNo. You won't be eligible in this case.\n\n\nBy when shall the scholarship become payable?\nThe scholarship will become payable after the student has secured admission and has started attending the classes.\n\n\nIs there a validity to the scheme benefits?\nThe benefits are provided till the complete duration of the course.\n\n\nWhat would be the mode of payment of the scholarship?\nThe payment of the scholarship will be through DBT.\n\n\nWill the Maintenance Allowance be provided as lump sum or in installments?\nMaintenance allowance will be given as fixed lump sum\n\n\nWhat if there are more than one student with equal marks for the last available slot?\nIn such cases, the percentage of disability will be considered. The candidate with higher percentage of disability will get preference. In case there is still a tie, the age will be considered and the older candidate will get preference.\n\n\nWill I be eligible for the scholarship if I fail to get promoted to the next semester?\nYes, 50% of the total slots are reserved for girl students.\n\n\nCan I apply offline for the scholarship?\nNo. You need to visit https://scholarships.gov.in/ to apply.\n\n\nIs there any application fee?\nNo. The entire application process is completely free of cost.\n\n\nI am a renewal applicant. Am I allowed to migrate to another school during the period of the academic course?\nNo. Doing so may result in suspension or cancellation of the scholarship.\n\n\nWhat if a student violates school discipline or any other terms and conditions of the scholarship?\n In such cases, his/her scholarship may be suspended or cancelled.\n\n\nHow will the school be deciding if a student has been regular in attendance?\nThe criteria on the same will be decided by the competent authority of the school.\n\n\nDo I need to complete the application in one sitting?\nNo. You can save the application as draft and continue at a later time before the deadline.\n\n\nHow do I track the status of my application?\nYou can check the same anytime by visiting the Applicant Dashboard and clicking \"Track Status\" in the left pane.\n\n\nWhat should be the type and size of the documents to be uploaded?\nThe format should be.pdf or .jpeg. The size of each document should not be greater than 200 kb.\n\n\nIn what cases a Bonafide Certificate from the institute is needed?\nThe Bonafide Certificate is needed to be uploaded with the application in a case where the institute is located in a State/UT different from the domicile State/UT of the applicant.\n\n\nHow do I know if a field in the application form is mandatory?\nThe mandatory fields have a red asterisk (*) mark at the end.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Guidelines",
+        "url": "http://disabilityaffairs.gov.in/upload/uploadfiles/files/scholarship2(1).pdf"
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_SL",
+    "name": {
+      "en": "Skill Loan Scheme",
+      "hi": "कौशल ऋण योजना"
+    },
+    "description": {
+      "en": "The Skill Loan Scheme was launched in July 2015 to provide institutional credit to individuals for skill development courses aligned to National Occupations Standards and Qualification Packs and leading to a certificate/diploma/degree by training institutes as per National Skill Qualification Framework (NSQF).\n\n This scheme is applicable to all member banks of the Indian Banks’ Association (IBA) and any other banks and financial institutions as may be advised by the RBI. The scheme provides broad guidelines to the banks for operationalizing the skilling loan scheme.\n\n Salient features of the guidelines to banks for operationalizing the scheme: Eligibility –Any individual who has secured admission in a course run by Industrial Training Institutes (ITIs), Polytechnics or in a school recognized by Central or State education Boards or in a college affiliated to a recognized university, training partners affiliated to National Skill Development Corporation (NSDC) / Sector Skill Councils, State Skill Mission, State Skill Corporation\n Courses – Aligned to NSQF\n Quantum of Finance – Rs 5000-1,50,000\n Duration of Course – No minimum duration\n Rate of Interest – Base rate (MCLR) + an add on typically up to 1.5%\n Moratorium – Duration of the course\n Repayment Period – Between 3 to 7 years basis the amount of loan\n Loans upto ₹ 50,000 - Upto 3 years\n Loans between ₹ 50,000 to ₹ 1 lakh - Upto 5 years\n Loans above ₹ 1 lakh - Upto 7 years\n Coverage – Course Fees (directly to the training institute) along with expenses towards completion of the course (assessment, examination, study material, etc.)\n The scheme does not allow for a collateral to be charged from the beneficiary.\n MSDE, through a November 2015 notification, brought into force the Credit Guarantee Fund for Skill Development (CGFSSD) for all skill loans sanctioned on or after 15 July 2015, to be administered by the National Credit Guarantee Trust Company (NCGTC).\n Banks can apply to the NCGTC for credit guarantee against defaults and NCGTC will provide this guarantee at nominal fee which shall not exceed 0.5% of the amount outstanding. The guarantee cover will be for a maximum of 75% of the outstanding loan amount (including interest, if any).\n As per the information provided by Indian Bank’s Association (IBA) in respect of 21 Banks, a total skill loan of Rs 29.06 crore was disbursed during the year 2018-19 (as on September 2018).",
+      "hi": "कौशल ऋण योजना जुलाई 2015 में राष्ट्रीय व्यवसाय मानकों और योग्यता पैक से जुड़े कौशल विकास पाठ्यक्रमों के लिए व्यक्तियों को संस्थागत ऋण प्रदान करने के लिए शुरू की गई थी और राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण संस्थानों द्वारा प्रमाण पत्र/डिप्लोमा/डिग्री प्रदान की गई थी।\n\n यह योजना भारतीय बैंक संघ (आई. बी. ए.) के सभी सदस्य बैंकों और किसी भी अन्य बैंक और वित्तीय संस्थानों पर लागू होती है जैसा कि आर. बी. आई. द्वारा सलाह दी जा सकती है। यह योजना कौशल ऋण योजना के संचालन के लिए बैंकों को व्यापक दिशा-निर्देश प्रदान करती है।\n\n योजना के संचालन के लिए बैंकों को दिए गए दिशा-निर्देशों की मुख्य विशेषताएंः योग्यता-कोई भी व्यक्ति जिसने औद्योगिक प्रशिक्षण संस्थानों (आई. टी. आई.), पॉलिटेक्निक या केंद्रीय या राज्य शिक्षा बोर्डों द्वारा मान्यता प्राप्त स्कूल या किसी मान्यता प्राप्त विश्वविद्यालय से संबद्ध कॉलेज में प्रवेश प्राप्त किया हो, राष्ट्रीय कौशल विकास निगम (एन. एस. डी. सी.)/क्षेत्र कौशल परिषदों, राज्य कौशल मिशन, राज्य कौशल निगम से संबद्ध प्रशिक्षण भागीदार\n पाठ्यक्रम-एन. एस. क्यू. एफ. के अनुरूप\n वित्त की मात्रा-रुपये 5000-1,50,000\n पाठ्यक्रम की अवधि-कोई न्यूनतम अवधि नहीं\n ब्याज की दर-आधार दर (एम. सी. एल. आर.) + आम तौर पर डेढ़ प्रतिशत तक\n अधिस्थगन-पाठ्यक्रम की अवधि\n पुनर्भुगतान अवधि-ऋण की राशि के आधार पर 3 से 7 वर्षों के बीच\n ₹50,000 तक का ऋण-3 साल तक\n ₹50,000 से ₹1 लाख के बीच ऋण-5 साल तक\n ₹1 लाख से अधिक का ऋण-7 साल तक\n कवरेज-पाठ्यक्रम पूरा करने के खर्च (मूल्यांकन, परीक्षा, अध्ययन सामग्री, आदि) के साथ पाठ्यक्रम शुल्क (सीधे प्रशिक्षण संस्थान को)\n यह योजना लाभार्थी से संपार्श्विक शुल्क लेने की अनुमति नहीं देती है।\n एमएसडीई ने नवंबर 2015 की अधिसूचना के माध्यम से कौशल विकास के लिए क्रेडिट गारंटी फंड (सी. जी. एफ. एस. एस. डी.) को 15 जुलाई 2015 को या उसके बाद स्वीकृत सभी कौशल ऋणों के लिए लागू किया, जिसे राष्ट्रीय क्रेडिट गारंटी ट्रस्ट कंपनी (एन. सी. जी. टी. सी.) द्वारा प्रशासित किया जाएगा।\n बैंक चूककर्ताओं के खिलाफ ऋण गारंटी के लिए एन. सी. जी. टी. सी. को आवेदन कर सकते हैं और एन. सी. जी. टी. सी. यह गारंटी नाममात्र शुल्क पर प्रदान करेगा जो बकाया राशि के 0.5 प्रतिशत से अधिक नहीं होगा। गारंटी कवर बकाया ऋण राशि (ब्याज सहित, यदि कोई हो) के अधिकतम 75 प्रतिशत के लिए होगा।\n इंडियन बैंक एसोसिएशन (आई. बी. ए.) द्वारा 21 बैंकों के संबंध में प्रदान की गई जानकारी के अनुसार, वर्ष 2018-19 (सितंबर 2018 तक) के दौरान कुल 1 करोड़ रुपये का कौशल ऋण वितरित किया गया था।"
+    },
+    "ministry": "Ministry Of Skill Development And Entrepreneurship",
+    "categories": [
+      "finance",
+      "education",
+      "labour"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 150000,
+    "benefitType": "loan",
+    "documents": [
+      {
+        "en": "Documents required– including, but not limited to proof of identity, proof of address, proof of income (of self or guardian, if available)",
+        "hi": "आवश्यक दस्तावेज-पहचान का प्रमाण, पते का प्रमाण, आय का प्रमाण (स्वयं या अभिभावक का, यदि उपलब्ध हो) सहित, लेकिन इन्हीं तक सीमित नहीं हैं"
+      }
+    ],
+    "applyUrl": "https://msde.gov.in/en/schemes-initiatives/Other-Schemes-and-Initiatives/Skill-Loan-Scheme ",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2015-07-15",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Skill Development",
+      "Student",
+      "Industrial Training Institutes (ITIs)",
+      "Polytechnics"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "The Skill Loan Scheme was launched in July 2015 to provide institutional credit to individuals for skill development courses aligned to National Occupations Standards and Qualification Packs and leading to a certificate/diploma/degree by training institutes as per National Skill Qualification Framework (NSQF).\n\n This scheme is applicable to all member banks of the Indian Banks’ Association (IBA) and any other banks and financial institutions as may be advised by the RBI. The scheme provides broad guidelines to the banks for operationalizing the skilling loan scheme.\n\n Salient features of the guidelines to banks for operationalizing the scheme: Eligibility –Any individual who has secured admission in a course run by Industrial Training Institutes (ITIs), Polytechnics or in a school recognized by Central or State education Boards or in a college affiliated to a recognized university, training partners affiliated to National Skill Development Corporation (NSDC) / Sector Skill Councils, State Skill Mission, State Skill Corporation\n Courses – Aligned to NSQF\n Quantum of Finance – Rs 5000-1,50,000\n Duration of Course – No minimum duration\n Rate of Interest – Base rate (MCLR) + an add on typically up to 1.5%\n Moratorium – Duration of the course\n Repayment Period – Between 3 to 7 years basis the amount of loan\n Loans upto ₹ 50,000 - Upto 3 years\n Loans between ₹ 50,000 to ₹ 1 lakh - Upto 5 years\n Loans above ₹ 1 lakh - Upto 7 years\n Coverage – Course Fees (directly to the training institute) along with expenses towards completion of the course (assessment, examination, study material, etc.)\n The scheme does not allow for a collateral to be charged from the beneficiary.\n MSDE, through a November 2015 notification, brought into force the Credit Guarantee Fund for Skill Development (CGFSSD) for all skill loans sanctioned on or after 15 July 2015, to be administered by the National Credit Guarantee Trust Company (NCGTC).\n Banks can apply to the NCGTC for credit guarantee against defaults and NCGTC will provide this guarantee at nominal fee which shall not exceed 0.5% of the amount outstanding. The guarantee cover will be for a maximum of 75% of the outstanding loan amount (including interest, if any).\n As per the information provided by Indian Bank’s Association (IBA) in respect of 21 Banks, a total skill loan of Rs 29.06 crore was disbursed during the year 2018-19 (as on September 2018).",
+      "detailsHi": "कौशल ऋण योजना जुलाई 2015 में राष्ट्रीय व्यवसाय मानकों और योग्यता पैक से जुड़े कौशल विकास पाठ्यक्रमों के लिए व्यक्तियों को संस्थागत ऋण प्रदान करने के लिए शुरू की गई थी और राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण संस्थानों द्वारा प्रमाण पत्र/डिप्लोमा/डिग्री प्रदान की गई थी।\n\n यह योजना भारतीय बैंक संघ (आई. बी. ए.) के सभी सदस्य बैंकों और किसी भी अन्य बैंक और वित्तीय संस्थानों पर लागू होती है जैसा कि आर. बी. आई. द्वारा सलाह दी जा सकती है। यह योजना कौशल ऋण योजना के संचालन के लिए बैंकों को व्यापक दिशा-निर्देश प्रदान करती है।\n\n योजना के संचालन के लिए बैंकों को दिए गए दिशा-निर्देशों की मुख्य विशेषताएंः योग्यता-कोई भी व्यक्ति जिसने औद्योगिक प्रशिक्षण संस्थानों (आई. टी. आई.), पॉलिटेक्निक या केंद्रीय या राज्य शिक्षा बोर्डों द्वारा मान्यता प्राप्त स्कूल या किसी मान्यता प्राप्त विश्वविद्यालय से संबद्ध कॉलेज में प्रवेश प्राप्त किया हो, राष्ट्रीय कौशल विकास निगम (एन. एस. डी. सी.)/क्षेत्र कौशल परिषदों, राज्य कौशल मिशन, राज्य कौशल निगम से संबद्ध प्रशिक्षण भागीदार\n पाठ्यक्रम-एन. एस. क्यू. एफ. के अनुरूप\n वित्त की मात्रा-रुपये 5000-1,50,000\n पाठ्यक्रम की अवधि-कोई न्यूनतम अवधि नहीं\n ब्याज की दर-आधार दर (एम. सी. एल. आर.) + आम तौर पर डेढ़ प्रतिशत तक\n अधिस्थगन-पाठ्यक्रम की अवधि\n पुनर्भुगतान अवधि-ऋण की राशि के आधार पर 3 से 7 वर्षों के बीच\n ₹50,000 तक का ऋण-3 साल तक\n ₹50,000 से ₹1 लाख के बीच ऋण-5 साल तक\n ₹1 लाख से अधिक का ऋण-7 साल तक\n कवरेज-पाठ्यक्रम पूरा करने के खर्च (मूल्यांकन, परीक्षा, अध्ययन सामग्री, आदि) के साथ पाठ्यक्रम शुल्क (सीधे प्रशिक्षण संस्थान को)\n यह योजना लाभार्थी से संपार्श्विक शुल्क लेने की अनुमति नहीं देती है।\n एमएसडीई ने नवंबर 2015 की अधिसूचना के माध्यम से कौशल विकास के लिए क्रेडिट गारंटी फंड (सी. जी. एफ. एस. एस. डी.) को 15 जुलाई 2015 को या उसके बाद स्वीकृत सभी कौशल ऋणों के लिए लागू किया, जिसे राष्ट्रीय क्रेडिट गारंटी ट्रस्ट कंपनी (एन. सी. जी. टी. सी.) द्वारा प्रशासित किया जाएगा।\n बैंक चूककर्ताओं के खिलाफ ऋण गारंटी के लिए एन. सी. जी. टी. सी. को आवेदन कर सकते हैं और एन. सी. जी. टी. सी. यह गारंटी नाममात्र शुल्क पर प्रदान करेगा जो बकाया राशि के 0.5 प्रतिशत से अधिक नहीं होगा। गारंटी कवर बकाया ऋण राशि (ब्याज सहित, यदि कोई हो) के अधिकतम 75 प्रतिशत के लिए होगा।\n इंडियन बैंक एसोसिएशन (आई. बी. ए.) द्वारा 21 बैंकों के संबंध में प्रदान की गई जानकारी के अनुसार, वर्ष 2018-19 (सितंबर 2018 तक) के दौरान कुल 1 करोड़ रुपये का कौशल ऋण वितरित किया गया था।",
+      "benefits": "Courses Aligned to NSQF\n\n Quantum of Finance Rs 5000-1,50,000\n\n Duration of Course No minimum duration\n\n Rate of Interest Base rate (MCLR) + an add on typically up to 1.5%\n\n Moratorium Duration of the course\n\n Repayment Period Between 3 to 7 years basis the amount of loan\n\n Loan Loans upto ₹ 50,000 - Upto 3 years\n Loans between ₹ 50,000 to ₹ 1 lakh - Upto 5 years\n Loans above ₹ 1 lakh - Upto 7 years\n\n Coverage Course Fees (directly to the training institute) along with expenses towards completion of the course (assessment, examination, study material, etc.)\n The scheme does not allow for a collateral to be charged from the beneficiary.\n\n MSDE, through a November 2015 notification, brought into force the Credit Guarantee Fund for Skill Development (CGFSSD) for all skill loans sanctioned on or after 15 July 2015, to be administered by the National Credit Guarantee Trust Company (NCGTC).\n\n Banks can apply to the NCGTC for credit guarantee against defaults and NCGTC will provide this guarantee at nominal fee which shall not exceed 0.5% of the amount outstanding. The guarantee cover will be for a maximum of 75% of the outstanding loan amount (including interest, if any).",
+      "benefitsHi": "पाठ्यक्रम एनएसक्यूएफ से संरेखित\n\n वित्त की मात्रा रुपये 5000-1,50,000\n\n पाठ्यक्रम की अवधि कोई न्यूनतम अवधि नहीं\n\n ब्याज की दर आधार दर (एम. सी. एल. आर.) + आम तौर पर 1.5% तक का जोड़\n\n मोहलत पाठ्यक्रम की अवधि\n\n चुकौती की अवधि 3 से 7 साल के बीच ऋण की राशि\n\n ऋण ₹50,000 तक का ऋण-3 साल तक\n ₹50,000 से ₹1 लाख के बीच ऋण-5 साल तक\n ₹1 लाख से अधिक का ऋण-7 साल तक\n\n कवरेज पाठ्यक्रम पूरा करने के खर्च (मूल्यांकन, परीक्षा, अध्ययन सामग्री, आदि) के साथ पाठ्यक्रम शुल्क (सीधे प्रशिक्षण संस्थान को)\n यह योजना लाभार्थी से संपार्श्विक शुल्क लेने की अनुमति नहीं देती है।\n\n एमएसडीई ने नवंबर 2015 की अधिसूचना के माध्यम से कौशल विकास के लिए क्रेडिट गारंटी फंड (सी. जी. एफ. एस. एस. डी.) को 15 जुलाई 2015 को या उसके बाद स्वीकृत सभी कौशल ऋणों के लिए लागू किया, जिसे राष्ट्रीय क्रेडिट गारंटी ट्रस्ट कंपनी (एन. सी. जी. टी. सी.) द्वारा प्रशासित किया जाएगा।\n\n बैंक चूककर्ताओं के खिलाफ ऋण गारंटी के लिए एन. सी. जी. टी. सी. को आवेदन कर सकते हैं और एन. सी. जी. टी. सी. यह गारंटी नाममात्र शुल्क पर प्रदान करेगा जो बकाया राशि के 0.5 प्रतिशत से अधिक नहीं होगा। गारंटी कवर बकाया ऋण राशि (ब्याज सहित, यदि कोई हो) के अधिकतम 75 प्रतिशत के लिए होगा।",
+      "eligibility": "",
+      "eligibilityHi": "A student who has secured admission in a course run by Industrial Training Institutes (ITIs), Polytechnics or in a school recognized by Central or State education Boards or in a college affiliated to a recognized university, training partners affiliated to National Skill Development Corporation (NSDC) / Sector Skill Councils, State Skill Mission, State Skill Corporation",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "What is the maximum loan one can avail in the scheme?\nStudent satisfying the eligibility can avail the loan amount upto Rs. 1,50,000 .\n\n\nWhat is MCLR under rate of interest?\nMarginal Cost of Lending Rate (MCLR) is the minimum lending rate below which a bank is not permitted to lend.It varies from bank to bank.\n\n\n\nWhat is moratorium period?\nA moratorium period refers to a particular period of a loan tenure during which the borrower does not have repay anything. It can be described as a waiting period before the borrower will have to start paying the equated monthly installments (EMIs) for his or her loan.\n\n\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Scheme Guidelines",
+        "url": "https://msde.gov.in/en/schemes-initiatives/Other-Schemes-and-Initiatives/Skill-Loan-Scheme "
+      }
+    ]
+  },
+  {
     "schemeId": "MYSCHEME_NOS_SWD",
     "name": {
       "en": "National Overseas Scholarship For Students With Disabilities",
@@ -224,6 +377,572 @@
       {
         "title": "Scheme Guidelines",
         "url": "https://ksb.gov.in/medical-treatment-of-esm.htm "
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_WOS_C",
+    "name": {
+      "en": "Women Scientist Scheme-C",
+      "hi": "महिला वैज्ञानिक योजना-सी"
+    },
+    "description": {
+      "en": "A scheme by MoST for female candidates with a break in their career interested in addressing societal challenges through viable S&T interventions. 1-year training is provided in Intellectual Property Rights (IPRs), patent search, know-how, drafting, filing, trademarks, trade secrets, and copyright, in association with various Knowledge Partners (i.e. Law firms, Knowledge Processing Organizations (KPOs), Companies, Government agencies, and so on). The scheme is being implemented by the Patent Facilitating Centre of Technology Information Forecasting & Assessment Council (TIFAC). Minimum essential qualifications are Master of Science; Bachelors in Engineering/Technology or equivalent. Proficiency in handling computerized databases, collection, collation, analysis, and report preparation is desirable.",
+      "hi": "व्यवहार्य एस एंड टी हस्तक्षेपों के माध्यम से सामाजिक चुनौतियों का समाधान करने में रुचि रखने वाली महिला उम्मीदवारों के लिए एम. ओ. एस. टी. द्वारा एक योजना। विभिन्न ज्ञान भागीदारों (यानी विधि फर्म, ज्ञान प्रसंस्करण संगठन (के. पी. ओ.), कंपनियों, सरकारी एजेंसियों आदि) के सहयोग से बौद्धिक संपदा अधिकार (आई. पी. आर.), पेटेंट खोज, जानकारी, प्रारूपण, फाइलिंग, ट्रेडमार्क, व्यापार रहस्य और कॉपीराइट में एक साल का प्रशिक्षण प्रदान किया जाता है। इस योजना को पेटेंट सुविधा केंद्र प्रौद्योगिकी सूचना पूर्वानुमान और मूल्यांकन परिषद (टीआईएफएसी) द्वारा लागू किया जा रहा है। न्यूनतम आवश्यक योग्यता मास्टर ऑफ साइंस है। इंजीनियरिंग/प्रौद्योगिकी या समकक्ष में स्नातक। कम्प्यूटरीकृत डेटाबेस, संग्रह, मिलान, विश्लेषण और रिपोर्ट तैयार करने में प्रवीणता वांछनीय है।"
+    },
+    "ministry": "Ministry Of Science And Technology",
+    "categories": [
+      "women",
+      "labour",
+      "skill_and_employment"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 35000,
+    "benefitType": "service",
+    "documents": [
+      {
+        "en": "Photo",
+        "hi": "फोटो"
+      },
+      {
+        "en": "Sign",
+        "hi": "हस्ताक्षर करें"
+      },
+      {
+        "en": "Proof of Date of Birth (Secondary School Leaving Certificate)",
+        "hi": "जन्म तिथि का प्रमाण (माध्यमिक विद्यालय छोड़ने का प्रमाण पत्र)"
+      },
+      {
+        "en": "Papers Published",
+        "hi": "प्रकाशित किए गए लेख"
+      },
+      {
+        "en": "Details of papers published/accepted and Patents granted/applied, if any.",
+        "hi": "प्रकाशित/स्वीकृत पत्रों और दिए गए/आवेदन किए गए पेटेंट, यदि कोई हो, का विवरण।"
+      },
+      {
+        "en": "Details of any scholarships received from time to time.",
+        "hi": "समय-समय पर प्राप्त किसी भी छात्रवृत्ति का विवरण।"
+      },
+      {
+        "en": "Details of period of employment/unemployment.",
+        "hi": "रोजगार/बेरोजगारी की अवधि का विवरण।"
+      },
+      {
+        "en": "Source - http://115.112.95.114/wosc/online/instructions.jsp",
+        "hi": "स्रोत - http://115.112.95.114/wosc/online/instructions.jsp"
+      }
+    ],
+    "applyUrl": "https://dst.gov.in/scientific-programmes/scientific-engineering-research/women-scientists-programs",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2002-01-01",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Women",
+      "Scientist",
+      "Science",
+      "Technology",
+      "Post-graduation",
+      "Skill"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scheme by MoST for female candidates with a break in their career interested in addressing societal challenges through viable S&T interventions. 1-year training is provided in Intellectual Property Rights (IPRs), patent search, know-how, drafting, filing, trademarks, trade secrets, and copyright, in association with various Knowledge Partners (i.e. Law firms, Knowledge Processing Organizations (KPOs), Companies, Government agencies, and so on). The scheme is being implemented by the Patent Facilitating Centre of Technology Information Forecasting & Assessment Council (TIFAC). Minimum essential qualifications are Master of Science; Bachelors in Engineering/Technology or equivalent. Proficiency in handling computerized databases, collection, collation, analysis, and report preparation is desirable.",
+      "detailsHi": "व्यवहार्य एस एंड टी हस्तक्षेपों के माध्यम से सामाजिक चुनौतियों का समाधान करने में रुचि रखने वाली महिला उम्मीदवारों के लिए एम. ओ. एस. टी. द्वारा एक योजना। विभिन्न ज्ञान भागीदारों (यानी विधि फर्म, ज्ञान प्रसंस्करण संगठन (के. पी. ओ.), कंपनियों, सरकारी एजेंसियों आदि) के सहयोग से बौद्धिक संपदा अधिकार (आई. पी. आर.), पेटेंट खोज, जानकारी, प्रारूपण, फाइलिंग, ट्रेडमार्क, व्यापार रहस्य और कॉपीराइट में एक साल का प्रशिक्षण प्रदान किया जाता है। इस योजना को पेटेंट सुविधा केंद्र प्रौद्योगिकी सूचना पूर्वानुमान और मूल्यांकन परिषद (टीआईएफएसी) द्वारा लागू किया जा रहा है। न्यूनतम आवश्यक योग्यता मास्टर ऑफ साइंस है। इंजीनियरिंग/प्रौद्योगिकी या समकक्ष में स्नातक। कम्प्यूटरीकृत डेटाबेस, संग्रह, मिलान, विश्लेषण और रिपोर्ट तैयार करने में प्रवीणता वांछनीय है।",
+      "benefits": "₹ 35,000/- per month for Ph.D. in Basic or Applied Sciences/MD or equivalent degree.\n ₹ 30,000/- per month for M.Phil / M.Tech / M.Pharm / M.VSc or equivalent degree.\n ₹ 25,000/- per month for M.Sc in Basic or Applied Sciences / MBBS / B.Tech or equivalent degree.",
+      "benefitsHi": "बेसिक या एप्लाइड साइंसेज/एम. डी. या समकक्ष डिग्री में पी. एच. डी. के लिए ₹35,000/- प्रति माह।\n एम. फिल/एम. टेक/एम. फार्म/एम. वी. एस. सी या समकक्ष डिग्री के लिए 30,000/- प्रति माह।\n बेसिक या एप्लाइड साइंसेज/एमबीबीएस/बी. टेक या समकक्ष डिग्री में एम. एससी के लिए 25,000/- प्रति माह।",
+      "eligibility": "",
+      "eligibilityHi": "The applicant must be a female.\n The applicant must have a break in her career.\n The age of the applicant must be between 27 and 45 years.\n Minimum Educational Qualification must be either Master of Science or Bachelors in Engineering / Technology or equivalent.",
+      "exclusions": "Women in permanent position are not eligible to apply.",
+      "applicationProcess": "",
+      "faqs": "How many slots are there in this scheme?\nAs of 2020-21, there are 120 slots in WOS-C scheme.\n\n\nIs there a subject wise distribution of seats?\nYes, the (tentative) subject-wise Number of Seats is provided:\nChemistry & Chemical Sciences - 20\nDrugs, Food & Pharma - 14\nLife Sciences & Biotechnology - 15\nMechanical, Production, Industrial Engineering, Civil Engg, Structural Engg, Construction Engg, Transportation Engg, Materials Science Engg. - 10\nElectrical, Electronics & Communication, Instrumentation & Biomedical Engineering - 28\nComputers & Information & Communication Technology - 18\nOther Areas (Only Science Related Subjects) - 15\n\n\nWhat would be the mode of payment of the scholarship?\nThe payment of the scholarship will be through DBT.\n\n\nI have been residing in India since childhood but I do not hold a citizenship of India. Will it affect my application?\nYou need to be an Indian citizen in order to apply for this scheme.\n\n\nI Am 24 Years In Age. Can I Apply For The Scheme?\nWomen scientists, less than 27 years of age are not eligible.\n\n\nI Have Undergone Partial Training In 2016 Batch But I Need To Apply Again. Can I Do So?\nThose who have already undergone training (partially or fully) in any of the earlier batches or those who are undergoing training in the ongoing batch are not eligible to apply.\n\n\nIs there a minimum qualification in order to be eligible for this scheme?\nYes, the minimum essential qualification for applying to WOS-C is: Master of Science; Bachelors in Engineering / Technology or equivalent.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Guidelines",
+        "url": "https://dst.gov.in/scientific-programmes/scientific-engineering-research/women-scientists-programs"
+      },
+      {
+        "title": "Documents Required",
+        "url": "http://115.112.95.114/wosc/online/instructions.jsp"
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_SUI",
+    "name": {
+      "en": "Stand-Up India",
+      "hi": "स्टैंड-अप इंडिया"
+    },
+    "description": {
+      "en": "A scheme by Ministry of Finance for financing SC/ST and/or Women Entrepreneurs by facilitating bank loans for setting up a greenfield project enterprise in manufacturing, services, trading sector and activities allied to agriculture. The objective of this scheme is to facilitate bank loans between Rs. 10 lakh and Rs. 1 Crore to at least one Scheduled Caste (SC) or Scheduled Tribe (ST) borrower and at least one woman borrower per bank branch for setting up a greenfield enterprise. In case of non-individual enterprises, at least 51% of the shareholding and controlling stake should be held by either an SC/ST or Woman entrepreneur.",
+      "hi": "विनिर्माण, सेवा, व्यापार क्षेत्र और कृषि से संबंधित गतिविधियों में ग्रीनफील्ड परियोजना उद्यम स्थापित करने के लिए बैंक ऋण की सुविधा प्रदान करके अनुसूचित जाति/अनुसूचित जनजाति और/या महिला उद्यमियों के वित्तपोषण के लिए वित्त मंत्रालय की एक योजना। इस योजना का उद्देश्य रुपये के बीच बैंक ऋण की सुविधा प्रदान करना है। 10 लाख और रु. ग्रीनफील्ड उद्यम स्थापित करने के लिए कम से कम एक अनुसूचित जाति (एससी) या अनुसूचित जनजाति (एसटी) उधारकर्ता और प्रति बैंक शाखा में कम से कम एक महिला उधारकर्ता को 1 करोड़ रुपये। गैर-व्यक्तिगत उद्यमों के मामले में, कम से कम 51 प्रतिशत हिस्सेदारी और नियंत्रण हिस्सेदारी अनुसूचित जाति/अनुसूचित जनजाति या महिला उद्यमी के पास होनी चाहिए।"
+    },
+    "ministry": "Ministry Of Finance",
+    "categories": [
+      "finance",
+      "skill_and_employment"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 10000000,
+    "benefitType": "loan",
+    "documents": [
+      {
+        "en": "Proof of Identity: Voter’s ID Card / Passport / Driving License / PAN Card / Signature identification from present bankers of proprietor, partner of director ( if a company)",
+        "hi": "पहचान का प्रमाणः मालिक के वर्तमान बैंकरों, निदेशक के भागीदार (यदि कोई कंपनी है) से मतदाता पहचान पत्र/पासपोर्ट/ड्राइविंग लाइसेंस/पैन कार्ड/हस्ताक्षर पहचान पत्र"
+      },
+      {
+        "en": "Proof of Residence: Recent telephone bills, electricity bill, property tax receipt /Passport / voter’s ID Card of Proprietor, partner of Director (if a company)",
+        "hi": "निवास का प्रमाणः हाल के टेलीफोन बिल, बिजली का बिल, संपत्ति कर रसीद/पासपोर्ट/मालिक का मतदाता पहचान पत्र, निदेशक का भागीदार (यदि कोई कंपनी है)"
+      },
+      {
+        "en": "Proof of Business Address",
+        "hi": "व्यावसायिक पते का प्रमाण"
+      },
+      {
+        "en": "Proof that the applicant is not a defaulter in any Bank / Financial Institution",
+        "hi": "सबूत कि आवेदक किसी भी बैंक/वित्तीय संस्थान में चूककर्ता नहीं है"
+      },
+      {
+        "en": "Memorandum and articles of association of the Company / Partnership Deed of partners etc.",
+        "hi": "कंपनी का ज्ञापन और संगठन के लेख/भागीदारों का साझेदारी विलेख आदि।"
+      },
+      {
+        "en": "Assets and liabilities statement of promoters and guarantors along with latest income tax returns.",
+        "hi": "नवीनतम आयकर विवरण के साथ प्रवर्तकों और गारंटरों की परिसंपत्तियों और देनदारियों का विवरण।"
+      },
+      {
+        "en": "Rent Agreement (if business premises on rent) and clearance from pollution control board if applicable.",
+        "hi": "किराया समझौता (यदि व्यावसायिक परिसर किराए पर है) और यदि लागू हो तो प्रदूषण नियंत्रण बोर्ड से मंजूरी।"
+      },
+      {
+        "en": "SSI / MSME registration (if applicable)",
+        "hi": "एस. एस. आई./एम. एस. एम. ई. पंजीकरण (यदि लागू हो)"
+      },
+      {
+        "en": "Projected balance sheets for the next two years in case of working capital limits and for the period of the loan in case of term loan.",
+        "hi": "कार्यशील पूंजी सीमा के मामले में अगले दो वर्षों के लिए और सावधि ऋण के मामले में ऋण की अवधि के लिए अनुमानित तुलनपत्र।"
+      },
+      {
+        "en": "Photocopies of lease deeds/ title deeds of all the properties being offered as primary and collateral securities.",
+        "hi": "प्राथमिक और संपार्श्विक प्रतिभूतियों के रूप में पेश की जाने वाली सभी संपत्तियों के पट्टा विलेखों/स्वामित्व विलेखों की फोटोकॉपी।"
+      },
+      {
+        "en": "Documents to establish whether the applicant belongs to SC/ST Category, wherever applicable.",
+        "hi": "यह स्थापित करने के लिए दस्तावेज कि क्या आवेदक एससी/एसटी श्रेणी से संबंधित है, जहां भी लागू हो।"
+      },
+      {
+        "en": "Certificate of incorporation from ROC to establish whether majority stake holding in the company is in the hands of a person who belongs to SC/ST/Woman category.",
+        "hi": "आर. ओ. सी. से निगमन का प्रमाण पत्र यह स्थापित करने के लिए कि क्या कंपनी में अधिकांश हिस्सेदारी एससी/एसटी/महिला श्रेणी से संबंधित व्यक्ति के हाथों में है।"
+      },
+      {
+        "en": "For cases with exposure above ₹ 25 Lakhs:",
+        "hi": "25 लाख रुपये से अधिक के जोखिम वाले मामलों के लिएः"
+      },
+      {
+        "en": "Profile of the unit (includes names of promoters, other directors in the company, the activity being undertaken addresses of all offices and plants, shareholding pattern etc.",
+        "hi": "इकाई की रूपरेखा (जिसमें प्रवर्तकों के नाम, कंपनी के अन्य निदेशक, सभी कार्यालयों और संयंत्रों के पते, शेयरधारिता पैटर्न आदि शामिल हैं।"
+      },
+      {
+        "en": "Last three years balance sheets of the Associate / Group Companies (if any).",
+        "hi": "सहयोगी/समूह कंपनियों की पिछले तीन वर्षों की बैलेंस शीट (यदि कोई हो)।"
+      },
+      {
+        "en": "Project report (for the proposed project if term funding is required) containing details of the machinery to be acquired, from whom to be acquired, price, names of suppliers, financial details like capacity of machines, capacity of utilization assumed, production, sales, projected profit and loss and balance sheets for the tenor of the loan, the details of labour, staff to be hired, basis of assumption of such financial details etc.",
+        "hi": "परियोजना रिपोर्ट (प्रस्तावित परियोजना के लिए यदि सावधि वित्त पोषण की आवश्यकता है) जिसमें अधिग्रहित की जाने वाली मशीनरी, किससे अधिग्रहित की जानी है, कीमत, आपूर्तिकर्ताओं के नाम, वित्तीय विवरण जैसे मशीनों की क्षमता, उपयोग की क्षमता, उत्पादन, बिक्री, अनुमानित लाभ और हानि और ऋण की अवधि के लिए बैलेंस शीट, श्रम, काम पर रखे जाने वाले कर्मचारियों का विवरण, ऐसे वित्तीय विवरणों की धारणा का आधार आदि शामिल है।"
+      },
+      {
+        "en": "Manufacturing process if applicable, major profile of executives in the company, any tie-ups, details about raw material used and their suppliers, details about the buyers, details about major-competitors and the company’s strength and weaknesses as compared to their competitors etc.",
+        "hi": "यदि लागू हो तो विनिर्माण प्रक्रिया, कंपनी में अधिकारियों की प्रमुख प्रोफ़ाइल, कोई भी गठजोड़, उपयोग किए गए कच्चे और उनके आपूर्तिकर्ताओं के बारे में विवरण, खरीदारों के बारे में विवरण, प्रमुख-प्रतियोगियों के बारे में विवरण और उनके प्रतिस्पर्धियों की तुलना में कंपनी की ताकत और कमजोरियों आदि।"
+      }
+    ],
+    "applyUrl": "https://www.udyami.org.in/storage/schemes/file/t4CQkv4D2TsdhI3MK8KqFSnYPw6RTBBsmh7p449D.pdf",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2016-04-05",
+      "closes": "2025-03-31",
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Loan",
+      "Entrepreneur",
+      "Finance",
+      "Business"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scheme by Ministry of Finance for financing SC/ST and/or Women Entrepreneurs by facilitating bank loans for setting up a greenfield project enterprise in manufacturing, services, trading sector and activities allied to agriculture. The objective of this scheme is to facilitate bank loans between Rs. 10 lakh and Rs. 1 Crore to at least one Scheduled Caste (SC) or Scheduled Tribe (ST) borrower and at least one woman borrower per bank branch for setting up a greenfield enterprise. In case of non-individual enterprises, at least 51% of the shareholding and controlling stake should be held by either an SC/ST or Woman entrepreneur.",
+      "detailsHi": "विनिर्माण, सेवा, व्यापार क्षेत्र और कृषि से संबंधित गतिविधियों में ग्रीनफील्ड परियोजना उद्यम स्थापित करने के लिए बैंक ऋण की सुविधा प्रदान करके अनुसूचित जाति/अनुसूचित जनजाति और/या महिला उद्यमियों के वित्तपोषण के लिए वित्त मंत्रालय की एक योजना। इस योजना का उद्देश्य रुपये के बीच बैंक ऋण की सुविधा प्रदान करना है। 10 लाख और रु. ग्रीनफील्ड उद्यम स्थापित करने के लिए कम से कम एक अनुसूचित जाति (एससी) या अनुसूचित जनजाति (एसटी) उधारकर्ता और प्रति बैंक शाखा में कम से कम एक महिला उधारकर्ता को 1 करोड़ रुपये। गैर-व्यक्तिगत उद्यमों के मामले में, कम से कम 51 प्रतिशत हिस्सेदारी और नियंत्रण हिस्सेदारी अनुसूचित जाति/अनुसूचित जनजाति या महिला उद्यमी के पास होनी चाहिए।",
+      "benefits": "Facilitation of composite loan (inclusive of term loan and working capital) between ₹10 Lakhs and ₹100 Lakhs. Rupay debit card to be issued for convenience of the borrower.\n The web portal by SIDBI provides hand-holding support through a network of agencies engaged in training, skill development, mentoring, project report preparation, application filling, work shed / utility support services, subsidy schemes etc.",
+      "benefitsHi": "10 लाख रुपये से 100 लाख रुपये के बीच समग्र ऋण (सावधि ऋण और कार्यशील पूंजी सहित) की सुविधा। उधारकर्ता की सुविधा के लिए रुपे डेबिट कार्ड जारी किया जाएगा।\n सिडबी का वेब पोर्टल प्रशिक्षण, कौशल विकास, मार्गदर्शन, परियोजना रिपोर्ट तैयार करने, आवेदन भरने, वर्क शेड/उपयोगिता सहायता सेवाओं, सब्सिडी योजनाओं आदि में लगी एजेंसियों के नेटवर्क के माध्यम से सहायता प्रदान करता है।",
+      "eligibility": "",
+      "eligibilityHi": "Finance is provided for Greenfield Enterprises.\n If the applicant is a male, he must be from SC / ST category.\n The age of the applicant must be at least 18 years.\n The applicant must not be in default to any bank/financial institution.",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "What is the nature and size of the loan under the Stand-Up India Scheme?\n Composite loan (inclusive of term loan and working capital) between 10 lakh and up to 100 lakh representing up to 85% of the project cost would be eligible.\n\n\nHow much will be the interest rate for the loan?\nThe rate of interest would be lowest applicable rate of the bank for that category (rating category) not to exceed (base rate (MCLR) + 3%+ tenor premium).\n\n\nBy when am I expected to repay the loan?\nThe loan is repayable in 7 years with a maximum moratorium period of 18 months.\n\n\nWho are the eligible lending institutions for extending loans under the Scheme?\nAll branches of Scheduled Commercial Banks located across the country.\n\n\nWhat is Hand-holding Support?\nAny new entrepreneur requires guidance in his endeavor to set up his or her business enterprise starting from training to filling up loan applications as per bank requirements. \n\n\nHow do I get hand-holding support?\n You may navigate through the portal or seek assistance from the nearest branch of a Scheduled Commercial Bank  to help you identify the nature of hand-holding support required. \n\n\nWhat are the activities for which Stand-Up India loan is provided ?\nStand-Up India loan may be provided to entrepreneurs for engaging in manufacturing, trading, services sectors including activities allied to agriculture.  \n\n\nWhat are the activities allied to agriculture ?\nUnder the Stand Up India loan, activities allied to agriculture include pisciculture, beekeeping, poultry, livestock, rearing, grading, sorting, aggregation  agro-industries,  dairy, fishery, agri-clinic and agri-business centres, food and agro processing etc. \n\n\n\nWhat is the purpose of the loan under “Stand-Up India” Scheme?\nThe scheme is for setting up a new enterprise in manufacturing, trading,  services sector or activities allied to agriculture   by SC/ST and Women entrepreneur.\n\n\n\n What is the Difference between Stand-Up India Scheme and Start Up India Scheme?\nStand-Up India Scheme is intended to support SC/ST and Women entrepreneurs to set up green field projects through bank branches in India while Start Up India Scheme aims to boost innovative and technology led enterprises for new/existing enterprises.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Guidelines",
+        "url": "https://www.udyami.org.in/storage/schemes/file/t4CQkv4D2TsdhI3MK8KqFSnYPw6RTBBsmh7p449D.pdf"
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_PMSBY",
+    "name": {
+      "en": "Pradhan Mantri Suraksha Bima Yojana",
+      "hi": "प्रधानमंत्री सुरक्षा बीमा योजना"
+    },
+    "description": {
+      "en": "An Accident Insurance Scheme offering accidental death and disability cover for death or disability on account of an accident.\n Premium:\n Rs.20/- per annum per member. The premium will be deducted from the account holder’s bank / Post office account through ‘auto debit’ facility on or before 1st June of each annual coverage period under the scheme.\n Coverage Duration:\n Coverage under PMJJBY is valid for one year from 1st June to 31st May on payment of annual premium.\n Accident cover assurance termination:\n The accident cover of the member shall terminate / be restricted accordingly on any of the following events:\n •\tOn attaining age 70 years (age nearer birth day).\n •\tClosure of account with the Bank or insufficiency of balance to keep the insurance in force.\n In case a member is covered under PMSBY through more than one account and premium is received by insurance company inadvertently, insurance cover will be restricted to Rs. 2 lakh.",
+      "hi": "एक दुर्घटना बीमा योजना जो दुर्घटना के कारण मृत्यु या अक्षमता के लिए आकस्मिक मृत्यु और अक्षमता कवर प्रदान करती है।\n प्रीमियमः\n प्रति सदस्य 20/- रुपये प्रति वर्ष। योजना के तहत प्रत्येक वार्षिक कवरेज अवधि के 1 जून को या उससे पहले 'ऑटो डेबिट' सुविधा के माध्यम से खाताधारक के बैंक/डाकघर खाते से प्रीमियम काटा जाएगा।\n कवरेज की अवधिः\n पीएमजेजेबीवाई के तहत कवरेज वार्षिक प्रीमियम के भुगतान पर 1 जून से 31 मई तक एक वर्ष के लिए वैध है।\n दुर्घटना बीमा आश्वासन समाप्तिः\n सदस्य का दुर्घटना कवर निम्नलिखित घटनाओं में से किसी पर भी उसी के अनुसार समाप्त/प्रतिबंधित किया जाएगाः\n 70 वर्ष की आयु प्राप्त करने पर (आयु जन्म दिवस के करीब)।\n बीमा को लागू रखने के लिए बैंक में खाते को बंद करना या शेष राशि की कमी।\n यदि कोई सदस्य एक से अधिक खातों के माध्यम से पीएमएसबीवाई के तहत कवर किया जाता है और बीमा कंपनी द्वारा अनजाने में प्रीमियम प्राप्त किया जाता है, तो बीमा कवर रुपये तक सीमित होगा। 2 लाख।"
+    },
+    "ministry": "Ministry Of Finance",
+    "categories": [
+      "finance"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 200000,
+    "benefitType": "cash_transfer",
+    "documents": [],
+    "applyUrl": "https://jansuraksha.gov.in/Files/PMSBY/English/Rules.pdf ",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2015-05-09",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Bank Account Holders",
+      "Insurance",
+      "Accident Insurance",
+      "Death Insurance"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "An Accident Insurance Scheme offering accidental death and disability cover for death or disability on account of an accident.\n Premium:\n Rs.20/- per annum per member. The premium will be deducted from the account holder’s bank / Post office account through ‘auto debit’ facility on or before 1st June of each annual coverage period under the scheme.\n Coverage Duration:\n Coverage under PMJJBY is valid for one year from 1st June to 31st May on payment of annual premium.\n Accident cover assurance termination:\n The accident cover of the member shall terminate / be restricted accordingly on any of the following events:\n •\tOn attaining age 70 years (age nearer birth day).\n •\tClosure of account with the Bank or insufficiency of balance to keep the insurance in force.\n In case a member is covered under PMSBY through more than one account and premium is received by insurance company inadvertently, insurance cover will be restricted to Rs. 2 lakh.",
+      "detailsHi": "एक दुर्घटना बीमा योजना जो दुर्घटना के कारण मृत्यु या अक्षमता के लिए आकस्मिक मृत्यु और अक्षमता कवर प्रदान करती है।\n प्रीमियमः\n प्रति सदस्य 20/- रुपये प्रति वर्ष। योजना के तहत प्रत्येक वार्षिक कवरेज अवधि के 1 जून को या उससे पहले 'ऑटो डेबिट' सुविधा के माध्यम से खाताधारक के बैंक/डाकघर खाते से प्रीमियम काटा जाएगा।\n कवरेज की अवधिः\n पीएमजेजेबीवाई के तहत कवरेज वार्षिक प्रीमियम के भुगतान पर 1 जून से 31 मई तक एक वर्ष के लिए वैध है।\n दुर्घटना बीमा आश्वासन समाप्तिः\n सदस्य का दुर्घटना कवर निम्नलिखित घटनाओं में से किसी पर भी उसी के अनुसार समाप्त/प्रतिबंधित किया जाएगाः\n 70 वर्ष की आयु प्राप्त करने पर (आयु जन्म दिवस के करीब)।\n बीमा को लागू रखने के लिए बैंक में खाते को बंद करना या शेष राशि की कमी।\n यदि कोई सदस्य एक से अधिक खातों के माध्यम से पीएमएसबीवाई के तहत कवर किया जाता है और बीमा कंपनी द्वारा अनजाने में प्रीमियम प्राप्त किया जाता है, तो बीमा कवर रुपये तक सीमित होगा। 2 लाख।",
+      "benefits": "On Death- the Nominee shall get Rs. 2 Lakhs.\n Total and irrecoverable loss of both eyes or loss of use of both hands or feet or loss of sight of one eye and loss of use of hand or foot- Subscriber shall get Rs. 2 Lakhs.\n Total and irrecoverable loss of sight of one eye or loss of use of one hand or foot –subscriber shall get Rs. 1 Lakh.",
+      "benefitsHi": "मृत्यु पर-नामांकित व्यक्ति को रु। 2 लाख।\n दोनों आँखों की कुल और अपरिवर्तनीय हानि या दोनों हाथों या पैरों के उपयोग की हानि या एक आँख की दृष्टि की हानि और हाथ या पैर के उपयोग की हानि-अभिदाता को रु। 2 लाख।\n एक आँख की दृष्टि की कुल और अपरिवर्तनीय हानि या एक हाथ या पैर के उपयोग की हानि-अभिदाता को रु। 1 लाख।",
+      "eligibility": "",
+      "eligibilityHi": "Individual bank account holders of participating banks aged between 18 years (completed) and 70 years (age nearer birthday) who give their consent to join / enable auto-debit, will be enrolled into the scheme.",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "Is There Any Provision For Reimbursement of Hospitalization expenses following accident Resulting In Death Or Disablement? \nNo. \n\n\n\nWho Can Claim Insurance Benefit In Case Of Death Of The Bank Account Holder Who Gave The Enrolment Form? \nIn case of death of the Account holder who enrolled in the scheme, claim can be filed by the nominee/appointee as per the enrolment form or by the legal heir/s in case there is no nomination made by the subscriber bank account holder. \n\n\n\n\nWhat Is The Mode Of Payment Of The Claim Amount? \nDisability Claim will be credited in the bank account of the insured bank account holder. Death claims will be remitted to the bank account of the nominee / legal heir(s).\n\n\n\nWill The Family Get Insurance Benefit If The Account Holder Commits Suicide? \nNo. \n\n\n\nIs It Necessary To Report Accidents To Police And Obtain FIR For Claiming Benefits Under The Policy?\nIn case of incidents like Road, Rail and similar vehicular accidents, drowning, death involving any crime etc., the accident should be reported to police. In case of incidents like snake bite, fall from tree etc., the cause should be supported by immediate hospital record.\n\n\n\nIf The Insured Is Missing And Death Is Not Confirmed, Will The Legal Heirs Get Benefit Of Insurance?\nPMSBY covers deaths confirmed by documentary evidence to have been caused by accident.\n\n\n\n\nWhat Benefit Will Be Payable if A Person Suffers Partial Disability Without Irrecoverable Loss Of Sight Of One Eye Or Loss Of Use Of One Hand Or Foot?\nNo benefit will be payable.\n\n\nCan An Account Holder Get Claim From More Than One Bank Where He Has Enrolled And Premium Has Been Debited?\nNo. The insured/ Nominee shall be eligible for one claim only. \n\n\n\nCan A Individual Join PMSBY From Multiple Bank Accounts?\n No. In case of multiple bank accounts held by an individual in one or different banks, the person would be eligible to join the scheme through one bank/post office account only.\n\n\nWhat Is The Minimum And Maximum Age Limit For Entry Into This Scheme? \nIndividuals aged between 18 years (completed) and 70 years (age nearer birthday) are eligible for this scheme.\n\n\n\nHow Will The Premium Be Paid?\nThe premium will be deducted from the account holder's bank / Post office account through 'auto debit' as per the consent given on enrolment.\n\n\nCan Eligible Individuals Who Fail To Join The Scheme In The Initial Year Join In Subsequent Years? \nYes, on payment of premium through auto-debit. New eligible entrants in future years can also join accordingly.\n\n\nCan Individuals Who Leave The Scheme Rejoin?\nIndividuals who exit the scheme at any point may re-join the scheme in future years by paying the annual premium, subject to conditions that may be laid down.\n\n\n\n\nWill This Cover Be In Addition To Cover Under Any Other Insurance Scheme The Subscriber May Be Covered Under?  \nYes. \n\n\n\nDoes The PMSBY Cover Death / Disability Resulting From Natural Calamities Such As Earthquake, Flood And Other Convulsions Of Nature? What about coverage of suicide / murder?\n Natural calamities being in the nature of accidents, any death / disability (as defined under PMSBY) resulting from such natural calamities is also covered under PMSBY. While death due to suicide is not covered, that from murder is covered\n\n\n\nCan All Holders Of A Joint Bank Account Join The Scheme Through The Said Account? \nIn case of a joint account, all holders of the said account can join the scheme provided they satisfy its eligibility criteria and pay the premium at the rate of Rs.20 per person, per annum through auto-debit.\n\n\nWhich Bank Accounts Are Eligible For Subscribing To PMSBY? \nAll bank/post office account holders other than institutional account holders are eligible for subscribing to PMSBY scheme.\n\n\n\n\nAre NRIs Eligible For Coverage Under PMSBY?\n Any NRI having an eligible bank account with a bank branch located in India is eligible for purchase of PMSBY cover through this account subject to fulfilment of the terms and conditions relating to the scheme. However, in cases of a claim , the claim benefit will be paid to the beneficiary/ nominee only in Indian currency.\n\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Scheme Guidelines",
+        "url": "https://jansuraksha.gov.in/Files/PMSBY/English/Rules.pdf "
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_SFAVA",
+    "name": {
+      "en": "Scheme For Financial Assistance For Veteran Artists",
+      "hi": "वयोवृद्ध कलाकारों के लिए वित्तीय सहायता योजना"
+    },
+    "description": {
+      "en": "The “Scheme for Financial Assistance for Veteran Artists”, earlier known as “Scheme for Pension and Medical Aid to Artists” was launched by the Ministry of Culture. The Scheme is meant for improving the financial and socio-economic status of the old artists and scholars who have contributed significantly in their specialized fields of arts, letters, etc. in their active age or are still contributing in the field of arts, letters, etc. but due to old age, they have to lead a miserable life or are in penury condition.\n Under the scheme, financial assistance from the Government may be given in the form of a monthly allowance. Such allowance given to the artists recommended under the center-state Quota will be shared by the Centre and State Government/UT Administration concerned.\n The following two types of cases/requests will be covered under the Scheme:\n Existing beneficiaries getting monthly artistes pension under the 1961 Scheme of ‘Financial Assistance to Persons Distinguished in Letters, Arts and such other walks of life who may be in indigent circumstances’ as amended from time to time; and\n Fresh cases of artists, writers, etc. who are eligible for a grant/monthly financial assistance under the extant guidelines of the Scheme.\n Administration of the Scheme:\n The Scheme will be implemented by the Ministry with the support of all Zonal Cultural Centres and SCZCC, Nagpur will be the main coordinator. The Ministry reserves the right to modify the provisions of the Scheme at any time. In order to implement the Scheme in a better perspective, the Scheme Guidelines will be circulated widely through State Governments/UT Administrations along with sharing the data of beneficiaries of the Central Government with them.",
+      "hi": "\"वयोवृद्ध कलाकारों के लिए वित्तीय सहायता योजना\", जिसे पहले \"कलाकारों को पेंशन और चिकित्सा सहायता योजना\" के रूप में जाना जाता था, संस्कृति मंत्रालय द्वारा शुरू की गई थी। यह योजना उन पुराने कलाकारों और विद्वानों की वित्तीय और सामाजिक-आर्थिक स्थिति में सुधार के लिए है जिन्होंने अपनी सक्रिय उम्र में कला, पत्र आदि के अपने विशेष क्षेत्रों में महत्वपूर्ण योगदान दिया है या अभी भी कला, पत्र आदि के क्षेत्र में योगदान दे रहे हैं, लेकिन वृद्धावस्था के कारण, उन्हें दयनीय जीवन जीना पड़ता है या गरीबी की स्थिति में हैं।\n इस योजना के तहत सरकार से वित्तीय सहायता मासिक भत्ते के रूप में दी जा सकती है। केंद्र-राज्य कोटे के तहत अनुशंसित कलाकारों को दिए जाने वाले इस तरह के भत्ते को केंद्र और राज्य सरकार/केंद्र शासित प्रदेश प्रशासन द्वारा साझा किया जाएगा।\n निम्नलिखित दो प्रकार के मामलों/अनुरोधों को इस योजना के तहत शामिल किया जाएगाः\n समय-समय पर संशोधित 'साहित्य, कला और जीवन के ऐसे अन्य क्षेत्रों में विशिष्ट व्यक्तियों को वित्तीय सहायता जो गरीब परिस्थितियों में हो सकते हैं' की 1961 की योजना के तहत मासिक कलाकार पेंशन प्राप्त करने वाले मौजूदा लाभार्थी; और\n कलाकारों, लेखकों आदि के नए मामले जो योजना के मौजूदा दिशानिर्देशों के तहत अनुदान/मासिक वित्तीय सहायता के लिए पात्र हैं।\n योजना का प्रशासनः\n इस योजना को मंत्रालय द्वारा सभी क्षेत्रीय सांस्कृतिक केंद्रों के सहयोग से लागू किया जाएगा और एससीजेडसीसी, नागपुर मुख्य समन्वयक होगा। मंत्रालय के पास किसी भी समय योजना के प्रावधानों को संशोधित करने का अधिकार सुरक्षित है। योजना को बेहतर परिप्रेक्ष्य में लागू करने के लिए, योजना दिशानिर्देशों को केंद्र सरकार के लाभार्थियों के आंकड़ों को साझा करने के साथ-साथ राज्य सरकारों/केंद्र शासित प्रदेशों के प्रशासनों के माध्यम से व्यापक रूप से प्रसारित किया जाएगा।"
+    },
+    "ministry": "Ministry Of Culture",
+    "categories": [
+      "senior",
+      "skill_and_employment"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 6000,
+    "benefitType": "cash_transfer",
+    "documents": [
+      {
+        "en": "A recent (not older than six months) clear & colored passport-size photograph of the applicant to be affixed on the specified place in the application form;",
+        "hi": "आवेदक की हाल ही में (छह महीने से पुरानी नहीं) स्पष्ट और रंगीन पासपोर्ट आकार की तस्वीर आवेदन पत्र में निर्दिष्ट स्थान पर चिपकाई जानी चाहिए"
+      },
+      {
+        "en": "Self-attested copy of any one document from the following listed documents for address proof:- Aadhaar Card issued by Unique Identification Authority of India(UIDAI); Elector’s photo identity card; Passport; Driving License; Electricity Bill; Landline telephone or broadband connection bill; Water Bill; Consumer gas connection card or book or piped gas bill; Bank account statement, Domicile certificate issued by the Government; Passport of the spouse; Post office passbook having an address of the applicant; Property registration document",
+        "hi": "पते के प्रमाण के लिए निम्नलिखित सूचीबद्ध दस्तावेजों में से किसी भी एक दस्तावेज की स्व-सत्यापित प्रतिः-भारतीय विशिष्ट पहचान प्राधिकरण (यू. आई. डी. ए. आई.) द्वारा जारी आधार कार्ड; मतदाता का फोटो पहचान पत्र; पासपोर्ट; ड्राइविंग लाइसेंस; बिजली बिल; लैंडलाइन टेलीफोन या ब्रॉडबैंड कनेक्शन बिल; पानी का बिल; उपभोक्ता गैस कनेक्शन कार्ड या किताब या पाइप्ड गैस बिल; बैंक खाता विवरण, सरकार द्वारा जारी अधिवास प्रमाण पत्र; जीवनसाथी का पासपोर्ट; आवेदक का पता वाली डाकघर पासबुक; संपत्ति पंजीकरण दस्तावेज"
+      },
+      {
+        "en": "Self-attested copy of any one document from the following listed documents for proof of Date of Birth:- Aadhaar Card issued by UIDAI; PAN Card, Elector’s photo identity card; Passport; Driving License; Birth Certificate issued by the Municipal Authority or any office authorized to issue Birth and Death Certificate by the Registrar of Birth and Deaths; Marriage certificate issued by Registrar of Marriages; Matriculation/10th class certificate or mark sheet of recognized Board; Domicile certificate issued by the Government.",
+        "hi": "जन्म तिथि के प्रमाण के लिए निम्नलिखित सूचीबद्ध दस्तावेजों से किसी भी एक दस्तावेज की स्व-सत्यापित प्रतिः-यू. आई. डी. ए. आई. द्वारा जारी आधार कार्ड; पैन कार्ड, मतदाता का फोटो पहचान पत्र; पासपोर्ट; ड्राइविंग लाइसेंस; नगर प्राधिकरण या जन्म और मृत्यु पंजीयक द्वारा जन्म और मृत्यु प्रमाण पत्र जारी करने के लिए अधिकृत किसी भी कार्यालय द्वारा जारी जन्म प्रमाण पत्र; विवाह पंजीयक द्वारा जारी विवाह प्रमाण पत्र; मैट्रिक/10वीं कक्षा का प्रमाण पत्र या मान्यता प्राप्त बोर्ड की मार्कशीट; सरकार द्वारा जारी अधिवास प्रमाण पत्र।"
+      },
+      {
+        "en": "Self-attested copy of Aadhaar Card issued by UIDAI.",
+        "hi": "यू. आई. डी. ए. आई. द्वारा जारी आधार कार्ड की स्व-सत्यापित प्रति।"
+      },
+      {
+        "en": "Original copy of Income Certificate in the prescribed format [Annexure-II(A)] issued by the Competent Authority of the State/UTs concerned.",
+        "hi": "संबंधित राज्य/केंद्र शासित प्रदेशों के सक्षम प्राधिकारी द्वारा जारी किए गए निर्धारित प्रारूप (अनुलग्नक-II (ए)) में आय प्रमाण पत्र की मूल प्रति।"
+      },
+      {
+        "en": "Copies of relevant documents which support the applicant’s contributions made in the field of Art, Culture, etc., or awards, recognition, or distinction received by the applicant from Central/State Government/Union Territory or any prominent Literary or Arts Society.",
+        "hi": "प्रासंगिक दस्तावेजों की प्रतियां जो कला, संस्कृति आदि के क्षेत्र में आवेदक के योगदान का समर्थन करती हैं, या केंद्र/राज्य सरकार/केंद्र शासित प्रदेश या किसी प्रमुख साहित्यिक या कला समाज से आवेदक द्वारा प्राप्त पुरस्कार, मान्यता या विशिष्टता।"
+      },
+      {
+        "en": "Duly filled-in and signed prescribed Bank Authorization letter (Annexure-IV) which is verified & signed by the Manager of the concerned Bank (in original).",
+        "hi": "विधिवत भरा हुआ और हस्ताक्षरित निर्धारित बैंक प्राधिकरण पत्र (अनुलग्नक-IV) जो संबंधित बैंक के प्रबंधक (मूल में) द्वारा सत्यापित और हस्ताक्षरित है।"
+      },
+      {
+        "en": "Recommendation letter obtained from the Culture Department of the concerned Stated Government/UT Administrations in the prescribed format [Part-II of the Application Form (Appendix)].",
+        "hi": "संबंधित राज्य सरकार/केंद्र शासित प्रदेश प्रशासन के संस्कृति विभाग से निर्धारित प्रारूप में प्राप्त अनुशंसा पत्र [आवेदन पत्र (परिशिष्ट) का भाग-2]।"
+      },
+      {
+        "en": "In case of pension to the spouse in case of death of beneficiary:",
+        "hi": "लाभार्थी की मृत्यु के मामले में पति या पत्नी को पेंशन के मामले मेंः"
+      },
+      {
+        "en": "Copy of death certificate of the late beneficiary in original or self-attested;",
+        "hi": "दिवंगत लाभार्थी के मृत्यु प्रमाण पत्र की मूल या स्व-सत्यापित प्रति;"
+      },
+      {
+        "en": "Documentary proof to support that the late beneficiary was getting artistes pension;",
+        "hi": "इस बात का समर्थन करने के लिए दस्तावेजी प्रमाण कि दिवंगत लाभार्थी को कलाकार पेंशन मिल रही थी;"
+      },
+      {
+        "en": "Legal heir certificate in the prescribed proforma issued by the Competent Authority and an affidavit from SDM or 1st Class Magistrate in proforma;",
+        "hi": "सक्षम प्राधिकारी द्वारा जारी निर्धारित प्रोफार्मा में कानूनी उत्तराधिकारी प्रमाण पत्र और प्रोफार्मा में एस. डी. एम. या प्रथम श्रेणी मजिस्ट्रेट से एक शपथ पत्र;"
+      },
+      {
+        "en": "Self-attested copy of the Digital Life Certificate (DLC) of the spouse processed through Jeevan Pramaan Portal https://jeevanpramaan.gov.in",
+        "hi": "जीवन प्रमाण पोर्टल https://jeevanpramaan.gov.in के माध्यम से संसाधित जीवनसाथी के डिजिटल जीवन प्रमाणपत्र (डीएलसी) की स्व-सत्यापित प्रति"
+      },
+      {
+        "en": "Self-attested copy of the latest Income Certificate of the spouse in the prescribed format [Annexure-II(A)] issued by the concerned Competent Authority of the States/UTs[Annexure-II(B)];",
+        "hi": "राज्यों/केंद्र शासित प्रदेशों के संबंधित सक्षम प्राधिकरण [अनुलग्नक-II (बी)] द्वारा जारी किए गए निर्धारित प्रारूप [अनुलग्नक-II (ए)] में जीवनसाथी के नवीनतम आय प्रमाण पत्र की स्व-सत्यापित प्रति;"
+      },
+      {
+        "en": "Self-attested copy of Aadhaar Card of spouse issued by UIDAI;",
+        "hi": "यू. आई. डी. ए. आई. द्वारा जारी जीवनसाथी के आधार कार्ड की स्व-सत्यापित प्रति;"
+      },
+      {
+        "en": "Self-attested copy of any document in support of address proof of the spouse.",
+        "hi": "जीवनसाथी के पते के प्रमाण के समर्थन में किसी भी दस्तावेज़ की स्व-सत्यापित प्रति।"
+      },
+      {
+        "en": "An undertaking that he/she is not getting financial assistance under other Schemes of the Ministry of Culture or other Ministry/Department of Central Government for the same purpose.",
+        "hi": "एक वचन पत्र कि उसे उसी उद्देश्य के लिए संस्कृति मंत्रालय या केंद्र सरकार के अन्य मंत्रालय/विभाग की अन्य योजनाओं के तहत वित्तीय सहायता नहीं मिल रही है।"
+      },
+      {
+        "en": "Bank Authorization Letter in the prescribed format (Annexure-IV)",
+        "hi": "निर्धारित प्रारूप में बैंक प्राधिकरण पत्र (अनुलग्नक-4)"
+      }
+    ],
+    "applyUrl": "https://indiaculture.gov.in/scheme-financial-assistance-veteran-artists",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": null,
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Artists",
+      "Pension",
+      "Veteran",
+      "Culture",
+      "Senior Citizen",
+      "Financial Assistance"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "The “Scheme for Financial Assistance for Veteran Artists”, earlier known as “Scheme for Pension and Medical Aid to Artists” was launched by the Ministry of Culture. The Scheme is meant for improving the financial and socio-economic status of the old artists and scholars who have contributed significantly in their specialized fields of arts, letters, etc. in their active age or are still contributing in the field of arts, letters, etc. but due to old age, they have to lead a miserable life or are in penury condition.\n Under the scheme, financial assistance from the Government may be given in the form of a monthly allowance. Such allowance given to the artists recommended under the center-state Quota will be shared by the Centre and State Government/UT Administration concerned.\n The following two types of cases/requests will be covered under the Scheme:\n Existing beneficiaries getting monthly artistes pension under the 1961 Scheme of ‘Financial Assistance to Persons Distinguished in Letters, Arts and such other walks of life who may be in indigent circumstances’ as amended from time to time; and\n Fresh cases of artists, writers, etc. who are eligible for a grant/monthly financial assistance under the extant guidelines of the Scheme.\n Administration of the Scheme:\n The Scheme will be implemented by the Ministry with the support of all Zonal Cultural Centres and SCZCC, Nagpur will be the main coordinator. The Ministry reserves the right to modify the provisions of the Scheme at any time. In order to implement the Scheme in a better perspective, the Scheme Guidelines will be circulated widely through State Governments/UT Administrations along with sharing the data of beneficiaries of the Central Government with them.",
+      "detailsHi": "\"वयोवृद्ध कलाकारों के लिए वित्तीय सहायता योजना\", जिसे पहले \"कलाकारों को पेंशन और चिकित्सा सहायता योजना\" के रूप में जाना जाता था, संस्कृति मंत्रालय द्वारा शुरू की गई थी। यह योजना उन पुराने कलाकारों और विद्वानों की वित्तीय और सामाजिक-आर्थिक स्थिति में सुधार के लिए है जिन्होंने अपनी सक्रिय उम्र में कला, पत्र आदि के अपने विशेष क्षेत्रों में महत्वपूर्ण योगदान दिया है या अभी भी कला, पत्र आदि के क्षेत्र में योगदान दे रहे हैं, लेकिन वृद्धावस्था के कारण, उन्हें दयनीय जीवन जीना पड़ता है या गरीबी की स्थिति में हैं।\n इस योजना के तहत सरकार से वित्तीय सहायता मासिक भत्ते के रूप में दी जा सकती है। केंद्र-राज्य कोटे के तहत अनुशंसित कलाकारों को दिए जाने वाले इस तरह के भत्ते को केंद्र और राज्य सरकार/केंद्र शासित प्रदेश प्रशासन द्वारा साझा किया जाएगा।\n निम्नलिखित दो प्रकार के मामलों/अनुरोधों को इस योजना के तहत शामिल किया जाएगाः\n समय-समय पर संशोधित 'साहित्य, कला और जीवन के ऐसे अन्य क्षेत्रों में विशिष्ट व्यक्तियों को वित्तीय सहायता जो गरीब परिस्थितियों में हो सकते हैं' की 1961 की योजना के तहत मासिक कलाकार पेंशन प्राप्त करने वाले मौजूदा लाभार्थी; और\n कलाकारों, लेखकों आदि के नए मामले जो योजना के मौजूदा दिशानिर्देशों के तहत अनुदान/मासिक वित्तीय सहायता के लिए पात्र हैं।\n योजना का प्रशासनः\n इस योजना को मंत्रालय द्वारा सभी क्षेत्रीय सांस्कृतिक केंद्रों के सहयोग से लागू किया जाएगा और एससीजेडसीसी, नागपुर मुख्य समन्वयक होगा। मंत्रालय के पास किसी भी समय योजना के प्रावधानों को संशोधित करने का अधिकार सुरक्षित है। योजना को बेहतर परिप्रेक्ष्य में लागू करने के लिए, योजना दिशानिर्देशों को केंद्र सरकार के लाभार्थियों के आंकड़ों को साझा करने के साथ-साथ राज्य सरकारों/केंद्र शासित प्रदेशों के प्रशासनों के माध्यम से व्यापक रूप से प्रसारित किया जाएगा।",
+      "benefits": "Under the scheme, a total allowance of ₹6000/- per month will be given to an eligible beneficiary.\n In case of the death of a beneficiary getting an artist pension, the financial assistance may be transferred, at the discretion of the Central Government, in the name of the spouse of the beneficiary till life.\n Note 01: The monthly allowance contributed by the State Government/UT Administration concerned shall be at least ₹500/- per month per beneficiary.\n Note 02: The monthly allowance contributed by the Central Government shall not exceed ₹5500/- per month per beneficiary.\n Note 03: Out of ₹6000/-, the monthly contribution of allowance of the Central Government will be less than the extent of the monthly contribution of allowance being provided to the applicant by the State Government/UT Administration.\n Note 04: If State Government is already providing ₹1000/- per month pension to an artiste recommended to get financial assistance from the Central Government under this Scheme, in that case, the contribution of the Central Government would be only ₹5000/- per month.\n Note 05: In respect of State Govt./UT Administration where there is no provision for an Artist's Pension, ₹6000/- per month will be paid as an Artist Pension by the Central Government.\n Note 06: In case of the death of a beneficiary, a request application should be received in the Ministry of Culture from the spouse along with the relevant documents within the period of one year from the date of death of the beneficiary artist. After the period of one year, the claim for the transfer of pension in the name of the spouse will stand forfeited and no request in this regard shall be entertained.",
+      "benefitsHi": "इस योजना के तहत, एक योग्य लाभार्थी को प्रति माह 6000 रुपये का कुल भत्ता दिया जाएगा।\n कलाकार पेंशन प्राप्त करने वाले लाभार्थी की मृत्यु के मामले में, वित्तीय सहायता केंद्र सरकार के विवेक पर, आजीवन लाभार्थी के जीवनसाथी के नाम पर हस्तांतरित की जा सकती है।\n नोट 1: संबंधित राज्य सरकार/केंद्र शासित प्रदेश प्रशासन द्वारा दिया जाने वाला मासिक भत्ता प्रति लाभार्थी कम से कम ₹500/- प्रति माह होगा।\n नोट 02: केंद्र सरकार द्वारा दिया जाने वाला मासिक भत्ता प्रति लाभार्थी ₹5500/- प्रति माह से अधिक नहीं होगा।\n नोट 03: केंद्र सरकार के भत्ते का मासिक योगदान राज्य सरकार/केंद्र शासित प्रदेश प्रशासन द्वारा आवेदक को प्रदान किए जा रहे भत्ते के मासिक योगदान की सीमा से कम होगा।\n नोट 04: यदि राज्य सरकार पहले से ही इस योजना के तहत केंद्र सरकार से वित्तीय सहायता प्राप्त करने के लिए अनुशंसित कलाकार को 1000 रुपये प्रति माह पेंशन प्रदान कर रही है, तो उस स्थिति में केंद्र सरकार का योगदान केवल 5000 रुपये प्रति माह होगा।\n नोट 05: राज्य सरकार/केंद्र शासित प्रदेश प्रशासन के संबंध में जहां कलाकार पेंशन का कोई प्रावधान नहीं है, केंद्र सरकार द्वारा कलाकार पेंशन के रूप में प्रति माह 6000 रुपये का भुगतान किया जाएगा।\n नोट 06: किसी लाभार्थी की मृत्यु के मामले में, लाभार्थी कलाकार की मृत्यु की तारीख से एक वर्ष की अवधि के भीतर संबंधित दस्तावेजों के साथ पति या पत्नी से संस्कृति मंत्रालय में एक अनुरोध आवेदन प्राप्त किया जाना चाहिए। एक वर्ष की अवधि के बाद, जीवनसाथी के नाम पर पेंशन के हस्तांतरण का दावा जब्त हो जाएगा और इस संबंध में किसी भी अनुरोध पर विचार नहीं किया जाएगा।",
+      "eligibility": "",
+      "eligibilityHi": "To be eligible for assistance under the Scheme, a person's contribution to art and letters, etc. must be of significance.\n Traditional scholars who have made significant contributions in their fields would also be eligible notwithstanding the absence of any published works.\n The personal income of the applicant (including the income of the spouse) must not exceed ₹4,000/- per month or an annual income of ₹48,000/-. [This excludes artiste pension assistance amount already getting by a beneficiary from the Government (i.e. concerned State Govt./UT Administration and/or Ministry of Culture)]\n The applicant should not be less than 60 (sixty) years of age (This does not apply in the case of a spouse).\n The applicant artiste is getting a pension of at least ₹500/- per month from the concerned State Government/UT Administration or is recommended by the Zonal Cultural Centres, Ministry of Culture, for the artists of their Members State where State Pension is not there.\n The applicant artists should not be getting financial assistance under other Schemes of the Ministry viz. Repertory Grant etc.",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "What is the “Scheme for Financial Assistance for Veteran Artists”?\nThe Scheme is meant for improving the financial and socio-economic status of the old artists and scholars who have contributed significantly in their specialized fields of arts, letters, etc. in their active age or are still contributing in the field of arts, letters, etc. but due to old age, they have to lead a miserable life or are in penury condition.\n\n\nIs it a Centrally Sponsored Scheme?\nYes, it is a Centrally Sponsored Scheme.\n\n\nWhich ministry has launched this scheme?\nMinistry of Culture, Government of India\n\n\nWho is eligible to get the benefits under the scheme?\nA person or traditional scholars who have made significant contributions in the field of arts, letters, etc. are eligible to apply under the scheme.\n\n\nWhat is the income criterion to apply under the scheme?\nThe personal income of the applicant (including the income of the spouse) must not exceed [?]48,000/- per annum.\n\n\nWill the artist's pension assistance be included in his/her annual income? \nNo, artist's pension assistance will be excluded which is getting from the Government.\n\n\nWhat should be the age criterion to apply under the scheme?\nThe applicant should not be less than 60 (sixty) years of age (This does not apply in the case of a spouse). \n\n\nWill an applicant be eligible to apply if he/she is getting financial assistance under other Schemes of the Ministry?\nNo, the applicant artist should not be getting financial assistance under other Schemes of the Ministry viz. Repertory Grant etc.\n\n\nWhat is the benefit of the scheme?\nUnder the scheme, a total allowance of [?]6000/- per month will be given to an eligible beneficiary.\n\n\nWho will get the pension in case of the death of a beneficiary?\nIn case of the death of a beneficiary getting an artist pension, the financial assistance may be transferred, at the discretion of the Central Government, in the name of the spouse of the beneficiary till life.\n\n\nHow much minimum monthly allowance will be contributed by the State Government/UT Administration concerned?\nThe monthly allowance contributed by the State Government/UT Administration concerned shall be at least [?]500/- per month per beneficiary. In respect of State Govt./UT Administration where there is no provision for an Artist's Pension, [?]6000/- per month will be paid as an Artist Pension by the Central Government.\n\n\nHow can I apply under the scheme?\nThe application may be made online by using the Registration/login Page of \"Culture Scheme Monitoring System (CSMS)\" on the website of the Ministry of Culture under the heading of \"MOC Schemes Application\".\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Official Website",
+        "url": "https://indiaculture.gov.in/scheme-financial-assistance-veteran-artists"
+      },
+      {
+        "title": "Notice",
+        "url": "https://indiaculture.gov.in/sites/default/files/Schemes/NOTICE-inviting_requisite_document_from_the_beneficiary_for_release_of_their_financial_assistance_under_the_scheme_11_07_2023.pdf"
+      },
+      {
+        "title": "Application Form",
+        "url": "https://indiaculture.gov.in/sites/default/files/Schemes/Application_for_Scheme_for_Financial_Assistance_for_Veteran_Artists_09112022.pdf"
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_PMKVY_STT",
+    "name": {
+      "en": "Pradhan Mantri Kaushal Vikas Yojana - Short Term Training",
+      "hi": "प्रधानमंत्री कौशल विकास योजना-अल्पकालिक प्रशिक्षण"
+    },
+    "description": {
+      "en": "STT component imparted at PMKVY Training Centres (TC) is expected to benefit candidates of Indian nationality who are either school/college dropouts or unemployed. Apart from providing training according to the National Skills Qualification Framework (NSQF), TCs also impart training in soft skills, entrepreneurship, financial and digital literacy. Upon successful completion of assessment, candidates are provided placement assistance by training providers.\n\n The Short-Term Training (STT) shall be implemented under both Central and State component of the scheme. STT shall have provision for both fresh skilling for trainees who are first time learners and reskilling for the trainees/existing workforce who have already undergone formal/informal skilling and need additional skill sets\n\n Apart from providing training according to the National Skills Qualification Framework (NSQF), additional training shall also be imparted in English, Employability & Entrepreneurship (EEE) modules. Process shall be initiated for imparting add-on Bridge courses and language courses for making schemes compatible to international standards and requirements. This will enhance the potential for international employment of the Indian youth\n\n Duration of the training shall vary as per job role\n\n The scheme shall promote fee-based courses in higher level skills and courses that are NSQF level 5 and above. Review of the courses under PMKVY 3.0 shall be carried out for introducing fees in popular courses with higher industry demand and above average wages. However, PMKVY 3.0 would continue to support weaker and marginalized sections of the society",
+      "hi": "पी. एम. के. वी. वाई. प्रशिक्षण केंद्रों (टी. सी.) में प्रदान किए जाने वाले एस. टी. टी. घटक से भारतीय राष्ट्रीयता के उन उम्मीदवारों को लाभ होने की उम्मीद है जो या तो स्कूल/कॉलेज छोड़ने वाले हैं या बेरोजगार हैं। राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण प्रदान करने के अलावा, टी. सी. सॉफ्ट स्किल्स, उद्यमिता, वित्तीय और डिजिटल साक्षरता में भी प्रशिक्षण प्रदान करते हैं। मूल्यांकन के सफल समापन पर, उम्मीदवारों को प्रशिक्षण प्रदाताओं द्वारा नियुक्ति सहायता प्रदान की जाती है।\n\n अल्पकालिक प्रशिक्षण (एस. टी. टी.) को योजना के केंद्रीय और राज्य दोनों घटकों के तहत लागू किया जाएगा। एस. टी. टी. में पहली बार सीखने वाले प्रशिक्षुओं के लिए नए कौशल और उन प्रशिक्षुओं/मौजूदा कार्यबल के लिए नए कौशल दोनों का प्रावधान होगा जो पहले ही औपचारिक/अनौपचारिक कौशल से गुजर चुके हैं और जिन्हें अतिरिक्त कौशल सेट की आवश्यकता है\n\n राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण प्रदान करने के अलावा, अंग्रेजी, रोजगार और उद्यमिता (ई. ई. ई.) मॉड्यूल में भी अतिरिक्त प्रशिक्षण दिया जाएगा। योजनाओं को अंतर्राष्ट्रीय मानकों और आवश्यकताओं के अनुकूल बनाने के लिए एड-ऑन ब्रिज पाठ्यक्रम और भाषा पाठ्यक्रम प्रदान करने की प्रक्रिया शुरू की जाएगी। इससे भारतीय युवाओं में अंतर्राष्ट्रीय रोजगार की संभावना बढ़ेगी\n\n प्रशिक्षण की अवधि नौकरी की भूमिका के अनुसार भिन्न होगी\n\n यह योजना उच्च स्तर के कौशल और एन. एस. क्यू. एफ. स्तर 5 और उससे ऊपर के पाठ्यक्रमों में शुल्क आधारित पाठ्यक्रमों को बढ़ावा देगी। उच्च उद्योग मांग और औसत मजदूरी से अधिक वाले लोकप्रिय पाठ्यक्रमों में शुल्क शुरू करने के लिए पी. एम. के. वी. वाई. 3 के तहत पाठ्यक्रमों की समीक्षा की जाएगी। हालांकि, पी. एम. के. वी. वाई. 3 समाज के कमजोर और हाशिए पर पड़े वर्गों का समर्थन करना जारी रखेगा"
+    },
+    "ministry": "Ministry Of Skill Development And Entrepreneurship",
+    "categories": [
+      "labour",
+      "skill_and_employment"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 70,
+    "benefitType": "insurance",
+    "documents": [
+      {
+        "en": "As required for the job role.",
+        "hi": "जैसा नौकरी की भूमिका के लिए आवश्यक है।"
+      }
+    ],
+    "applyUrl": "https://www.pmkvyofficial.org/photos/shares/guidlines/PMKY-Guideline_report_(08-01-2021)V3.pdf ",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2015-07-15",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Placement",
+      "Counselling",
+      "Training",
+      "Dropout",
+      "Unemployed",
+      "Skill",
+      "Vikas",
+      "Kaushal"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "STT component imparted at PMKVY Training Centres (TC) is expected to benefit candidates of Indian nationality who are either school/college dropouts or unemployed. Apart from providing training according to the National Skills Qualification Framework (NSQF), TCs also impart training in soft skills, entrepreneurship, financial and digital literacy. Upon successful completion of assessment, candidates are provided placement assistance by training providers.\n\n The Short-Term Training (STT) shall be implemented under both Central and State component of the scheme. STT shall have provision for both fresh skilling for trainees who are first time learners and reskilling for the trainees/existing workforce who have already undergone formal/informal skilling and need additional skill sets\n\n Apart from providing training according to the National Skills Qualification Framework (NSQF), additional training shall also be imparted in English, Employability & Entrepreneurship (EEE) modules. Process shall be initiated for imparting add-on Bridge courses and language courses for making schemes compatible to international standards and requirements. This will enhance the potential for international employment of the Indian youth\n\n Duration of the training shall vary as per job role\n\n The scheme shall promote fee-based courses in higher level skills and courses that are NSQF level 5 and above. Review of the courses under PMKVY 3.0 shall be carried out for introducing fees in popular courses with higher industry demand and above average wages. However, PMKVY 3.0 would continue to support weaker and marginalized sections of the society",
+      "detailsHi": "पी. एम. के. वी. वाई. प्रशिक्षण केंद्रों (टी. सी.) में प्रदान किए जाने वाले एस. टी. टी. घटक से भारतीय राष्ट्रीयता के उन उम्मीदवारों को लाभ होने की उम्मीद है जो या तो स्कूल/कॉलेज छोड़ने वाले हैं या बेरोजगार हैं। राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण प्रदान करने के अलावा, टी. सी. सॉफ्ट स्किल्स, उद्यमिता, वित्तीय और डिजिटल साक्षरता में भी प्रशिक्षण प्रदान करते हैं। मूल्यांकन के सफल समापन पर, उम्मीदवारों को प्रशिक्षण प्रदाताओं द्वारा नियुक्ति सहायता प्रदान की जाती है।\n\n अल्पकालिक प्रशिक्षण (एस. टी. टी.) को योजना के केंद्रीय और राज्य दोनों घटकों के तहत लागू किया जाएगा। एस. टी. टी. में पहली बार सीखने वाले प्रशिक्षुओं के लिए नए कौशल और उन प्रशिक्षुओं/मौजूदा कार्यबल के लिए नए कौशल दोनों का प्रावधान होगा जो पहले ही औपचारिक/अनौपचारिक कौशल से गुजर चुके हैं और जिन्हें अतिरिक्त कौशल सेट की आवश्यकता है\n\n राष्ट्रीय कौशल योग्यता ढांचे (एन. एस. क्यू. एफ.) के अनुसार प्रशिक्षण प्रदान करने के अलावा, अंग्रेजी, रोजगार और उद्यमिता (ई. ई. ई.) मॉड्यूल में भी अतिरिक्त प्रशिक्षण दिया जाएगा। योजनाओं को अंतर्राष्ट्रीय मानकों और आवश्यकताओं के अनुकूल बनाने के लिए एड-ऑन ब्रिज पाठ्यक्रम और भाषा पाठ्यक्रम प्रदान करने की प्रक्रिया शुरू की जाएगी। इससे भारतीय युवाओं में अंतर्राष्ट्रीय रोजगार की संभावना बढ़ेगी\n\n प्रशिक्षण की अवधि नौकरी की भूमिका के अनुसार भिन्न होगी\n\n यह योजना उच्च स्तर के कौशल और एन. एस. क्यू. एफ. स्तर 5 और उससे ऊपर के पाठ्यक्रमों में शुल्क आधारित पाठ्यक्रमों को बढ़ावा देगी। उच्च उद्योग मांग और औसत मजदूरी से अधिक वाले लोकप्रिय पाठ्यक्रमों में शुल्क शुरू करने के लिए पी. एम. के. वी. वाई. 3 के तहत पाठ्यक्रमों की समीक्षा की जाएगी। हालांकि, पी. एम. के. वी. वाई. 3 समाज के कमजोर और हाशिए पर पड़े वर्गों का समर्थन करना जारी रखेगा",
+      "benefits": "Counselling:\n Online Information / Counselling Platform\n Through Counselling Helpline\n Through District-level skill information centre\n Training:\n Digital Content\n Training in Soft Skills, Entrepreneurship, Financial and Digital Literacy\n Additional Support\n Accidental Insurance\n One-time incentive to all certified candidates\n Boarding and lodging cost support\n Conveyance cost\n Post Placement Stipend\n Additional support to PwD candidates\n Induction kit and participant handbook\n Yearly incentive to Training Provider\n One-time placement travel cost\n Career progression support\n Special Incentive for foreign placements\n Post Placement Tracking Allowance\n Placement\n Post Training Support\n The scheme will be compatible with the international standards by provisioning add-on bridge courses and language courses\n\n The scheme will be compatible with the international standards by provisioning add-on bridge courses and language courses.\n\n Note: It is mandatory for the candidates to have an Aadhaar ID during the enrolment process. It is also mandatory for the students to maintain 70% attendance to be eligible to appear in the assessments",
+      "benefitsHi": "परामर्शः\n ऑनलाइन सूचना/परामर्श मंच\n परामर्श हेल्प लाइन के माध्यम से\n जिला स्तरीय कौशल सूचना केंद्र के माध्यम से\n प्रशिक्षणः\n डिजिटल सामग्री\n सॉफ्ट स्किल्स, उद्यमिता, वित्तीय और डिजिटल साक्षरता में प्रशिक्षण\n अतिरिक्त सहायता\n आकस्मिक बीमा\n सभी प्रमाणित उम्मीदवारों को एक बार का प्रोत्साहन\n ठहरने और रहने की लागत सहायता\n परिवहन लागत\n पोस्ट प्लेसमेंट वजीफा\n पीडब्ल्यूडी उम्मीदवारों को अतिरिक्त सहायता\n इंडक्शन किट और प्रतिभागी पुस्तिका\n प्रशिक्षण प्रदाता को वार्षिक प्रोत्साहन\n एक बार प्लेसमेंट यात्रा लागत\n कैरियर प्रगति समर्थन\n विदेशी नियोजन के लिए विशेष प्रोत्साहन\n पोस्ट प्लेसमेंट ट्रैकिंग भत्ता\n प्लेसमेंट\n प्रशिक्षण के बाद सहायता\n यह योजना अतिरिक्त सेतु पाठ्यक्रमों और भाषा पाठ्यक्रमों का प्रावधान करके अंतर्राष्ट्रीय मानकों के अनुरूप होगी\n\n यह योजना अतिरिक्त सेतु पाठ्यक्रमों और भाषा पाठ्यक्रमों का प्रावधान करके अंतर्राष्ट्रीय मानकों के अनुरूप होगी।\n\n ध्यान देंः नामांकन प्रक्रिया के दौरान उम्मीदवारों के लिए आधार आईडी होना अनिवार्य है। मूल्यांकन में उपस्थित होने के लिए छात्रों के लिए 70 प्रतिशत उपस्थिति बनाए रखना भी अनिवार्य है",
+      "eligibility": "",
+      "eligibilityHi": "This scheme is applicable to any candidate of Indian nationality who:\n\n Is aged between 15-45 years\n Possesses an Aadhaar card and an Aadhaar linked bank account\n Fulfils other criteria for the respective job role as defined by the awarding body",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "What will be the coverage of Accidental Insurance?\nEvery certified candidate will be provided with three-year accidental insurance (Kaushal Bima) of Rs. 2 lakhs.\n\n\nWhat are the job roles for which training are offered?\nThere are 332 job roles from various sector under which training is offered for this scheme.https://www.pmkvyofficial.org/jobrole \n\n\nHow can a training provider participate in short term training (central component) in PMKVY 3.0?\nThe target allocation under centrally sponsored centrally managed (CSCM) component of short-term training (STT) PMKVY 3.0 will be done in two phases:\n\nIn phase 1, all the PMKKs across the country will be allocated targets under PMKVY 3.0.\nIn phase 2, the left-over targets will be allocated to eligible training centres through Request For Proposal (RFP).\nAs on date, the phase 1 target allocations to all the PMKKs have been concluded for STT CSCM PMKVY 3.0. Please check the Notices section of the PMKVY website regularly for updates on RFP for PMKVY 3.0 STT CSCM.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Scheme Guidelines",
+        "url": "https://www.pmkvyofficial.org/photos/shares/guidlines/PMKY-Guideline_report_(08-01-2021)V3.pdf "
+      }
+    ]
+  },
+  {
+    "schemeId": "MYSCHEME_RMEWF_VOCATIONAL_TRAINING",
+    "name": {
+      "en": "RMEWF-Financial Assistance For Vocational Training Of Widows Of Ex-Servicemen",
+      "hi": "आर. एम. ई. डब्ल्यू. एफ.-पूर्व सैनिकों की विधवाओं के व्यावसायिक प्रशिक्षण के लिए वित्तीय सहायता"
+    },
+    "description": {
+      "en": "A scheme to provide financial assistance to a widow od Ex-Servicemen to settle in life through vocational training.\n\n Depending on their educational level and aptitude, they may opt to undergo the requisite vocational training. Such a course may be pursued at any recognized vocational training institution run by Rajya Sainik Board/Zonal Sainik Board, state like ITI or private training institutions of repute like NIIT etc.",
+      "hi": "पूर्व सैनिकों की विधवा को व्यावसायिक प्रशिक्षण के माध्यम से जीवन में बसने के लिए वित्तीय सहायता प्रदान करने की योजना।\n\n अपने शैक्षिक स्तर और योग्यता के आधार पर, वे आवश्यक व्यावसायिक प्रशिक्षण से गुजरने का विकल्प चुन सकते हैं। इस तरह के पाठ्यक्रम को राज्य सैनिक बोर्ड/क्षेत्रीय सैनिक बोर्ड, राज्य जैसे आई. टी. आई. या एन. आई. आई. टी. आदि जैसे प्रतिष्ठित निजी प्रशिक्षण संस्थानों द्वारा संचालित किसी भी मान्यता प्राप्त व्यावसायिक प्रशिक्षण संस्थान में चलाया जा सकता है।"
+    },
+    "ministry": "Ministry Of Defence",
+    "categories": [
+      "women",
+      "education"
+    ],
+    "state": "central",
+    "eligibility": {},
+    "benefitAmount": 20000,
+    "benefitType": "cash_transfer",
+    "documents": [
+      {
+        "en": "Copies of following documents duly attested by ZSWO must accompany the application:-",
+        "hi": "जेड. एस. डब्ल्यू. ओ. द्वारा विधिवत सत्यापित निम्नलिखित दस्तावेजों की प्रतियां आवेदन के साथ होनी चाहिएः -"
+      },
+      {
+        "en": "Complete Service Discharge Certificate/Book.",
+        "hi": "सेवा निर्वहन प्रमाणपत्र/पुस्तक को पूरा करें।"
+      },
+      {
+        "en": "Copy of Widow I-Card.",
+        "hi": "विधवा आई-कार्ड की प्रति।"
+      },
+      {
+        "en": "Certificate from institute after completion of training.",
+        "hi": "प्रशिक्षण पूरा होने के बाद संस्थान से प्रमाण पत्र।"
+      },
+      {
+        "en": "Certificate from ZSWO that widow after vocational training is gainfully employed.",
+        "hi": "जेड. एस. डब्ल्यू. ओ. से प्रमाण पत्र कि व्यावसायिक प्रशिक्षण के बाद विधवा को लाभकारी रूप से नियोजित किया जाता है।"
+      },
+      {
+        "en": "Details of Bank A/c No (in PNB/SBI only) and IFS Code.",
+        "hi": "बैंक ए/सी संख्या (केवल पी. एन. बी./एस. बी. आई. में) और आई. एफ. एस. कोड का विवरण।"
+      }
+    ],
+    "applyUrl": "https://ksb.gov.in/vocational-training-of-widows-of-esm.htm",
+    "applyMode": "online",
+    "officeAddress": null,
+    "deadline": {
+      "opens": "2007-01-01",
+      "closes": null,
+      "recurring": false,
+      "recurringMonth": null,
+      "recurringDay": null
+    },
+    "tags": [
+      "Widows Of Ex-Servicemen",
+      "Vocational Training",
+      "Grant"
+    ],
+    "active": true,
+    "verified": true,
+    "source": "myscheme",
+    "rawSections": {
+      "details": "A scheme to provide financial assistance to a widow od Ex-Servicemen to settle in life through vocational training.\n\n Depending on their educational level and aptitude, they may opt to undergo the requisite vocational training. Such a course may be pursued at any recognized vocational training institution run by Rajya Sainik Board/Zonal Sainik Board, state like ITI or private training institutions of repute like NIIT etc.",
+      "detailsHi": "पूर्व सैनिकों की विधवा को व्यावसायिक प्रशिक्षण के माध्यम से जीवन में बसने के लिए वित्तीय सहायता प्रदान करने की योजना।\n\n अपने शैक्षिक स्तर और योग्यता के आधार पर, वे आवश्यक व्यावसायिक प्रशिक्षण से गुजरने का विकल्प चुन सकते हैं। इस तरह के पाठ्यक्रम को राज्य सैनिक बोर्ड/क्षेत्रीय सैनिक बोर्ड, राज्य जैसे आई. टी. आई. या एन. आई. आई. टी. आदि जैसे प्रतिष्ठित निजी प्रशिक्षण संस्थानों द्वारा संचालित किसी भी मान्यता प्राप्त व्यावसायिक प्रशिक्षण संस्थान में चलाया जा सकता है।",
+      "benefits": "A financial assistance of Rs.20,000/- (max- one time aid ) is provided to widows of Ex-Servicemen on successful completion of said vocational training.",
+      "benefitsHi": "उक्त व्यावसायिक प्रशिक्षण के सफलतापूर्वक पूरा होने पर पूर्व सैनिकों की विधवाओं को 20,000/- रुपये (अधिकतम एक बार की सहायता) की वित्तीय सहायता प्रदान की जाती है।",
+      "eligibility": "",
+      "eligibilityHi": "The following criteria must be fulfilled:-\n\n Applicant must be widow of an ESM of rank up to Havildar/equiv.\n Should have successfully completed said training.\n Should be recommended by respective Zila Sainik Board (ZSB).",
+      "exclusions": "",
+      "applicationProcess": "",
+      "faqs": "Can I Apply For Multiple Vocational Courses?\nThis is a one time benefit and for only one vocational course.\n\n\n\nCan I Apply While Pursuing Vocational Training?\nNo. Widow can apply only when she has successfully completed her vocational training.\n\n\n\n\n\nCan I Give Bank Details Of Any Bank?\nNo. Account Details Of Only State Bank Of India (SBI) Or Punjab National Bank (PNB) Is Valid For Application.\n\n\nWill Old Cases Of Financial Assistance Be Considered For This Scheme?\nOld Cases Will Not Be Entertained.\n"
+    },
+    "rawReferences": [
+      {
+        "title": "Scheme Guidelines",
+        "url": "https://ksb.gov.in/vocational-training-of-widows-of-esm.htm"
       }
     ]
   }

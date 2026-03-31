@@ -10,6 +10,7 @@ const MYSCHEME_BASE_URL = "https://www.myscheme.gov.in";
 const SEARCH_URL = `${MYSCHEME_BASE_URL}/search`;
 const SEARCH_API_FRAGMENT = "/search/v6/schemes?";
 const DETAIL_API_BASE = "https://api.myscheme.gov.in/schemes/v6/public/schemes";
+const SEARCH_API_BASE = "https://api.myscheme.gov.in/search/v6/schemes";
 
 function wait(ms) {
   return new Promise((resolve) => {
@@ -31,7 +32,7 @@ function readExistingScrape() {
   return Array.isArray(parsed) ? parsed : [];
 }
 
-function fetchJson(url, headers) {
+function fetchJson(url, headers, attempt = 1) {
   return new Promise((resolve, reject) => {
     https.get(url, { headers }, (response) => {
       let data = "";
@@ -45,7 +46,22 @@ function fetchJson(url, headers) {
           return;
         }
 
-        resolve(JSON.parse(data));
+        try {
+          resolve(JSON.parse(data));
+        } catch (error) {
+          if (attempt < 3) {
+            setTimeout(() => {
+              fetchJson(url, headers, attempt + 1).then(resolve).catch(reject);
+            }, 1000 * attempt);
+            return;
+          }
+
+          reject(
+            new Error(
+              `Invalid JSON received for ${url}: ${data.slice(0, 200)}`
+            )
+          );
+        }
       });
     }).on("error", reject);
   });
@@ -120,8 +136,9 @@ function mapCategories(categoryLabels = [], tags = []) {
     { category: "education", keywords: ["education", "learning", "student", "scholarship"] },
     { category: "disability", keywords: ["disability", "disabled", "divyang"] },
     { category: "senior", keywords: ["senior", "pension", "elderly"] },
-    { category: "artisan", keywords: ["artisan", "culture", "craft"] },
-    { category: "labour", keywords: ["employment", "worker", "skill", "labour"] },
+    { category: "skill_and_employment", keywords: ["artisan", "culture", "craft"] },
+    { category: "labour", keywords: ["employment", "worker", "labour"] },
+    { category: "skill_and_employment", keywords: ["skill", "entrepreneur", "startup"] },
   ];
 
   const mapped = keywordMap
@@ -240,9 +257,9 @@ async function scrapeListingPages(options = {}) {
 
   return withBrowser(async (browser) => {
     const page = await browser.newPage();
+    let apiKey = null;
     const seenItems = new Map();
     let totalAvailable = null;
-    let apiKey = null;
 
     page.on("request", (request) => {
       if (request.method() === "GET" && request.url().includes(SEARCH_API_FRAGMENT)) {
@@ -282,14 +299,18 @@ async function scrapeListingPages(options = {}) {
       }
     });
 
-    await page.goto(SEARCH_URL, { waitUntil: "networkidle2", timeout: 120000 });
-    await wait(4000);
+    await page.goto(SEARCH_URL, { waitUntil: "domcontentloaded", timeout: 180000 });
+    await wait(5000);
+
+    if (!apiKey) {
+      throw new Error("Unable to discover myScheme API key from the live search page");
+    }
 
     let idleRounds = 0;
     let previousCount = 0;
     const targetTotal = maxSchemes ?? Number.POSITIVE_INFINITY;
 
-    while ((seenItems.size < targetTotal) && idleRounds < 5) {
+    while (seenItems.size < targetTotal && idleRounds < 5) {
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await wait(2500);
 
@@ -471,14 +492,43 @@ async function scrapeMyScheme(options = {}) {
   }
 
   const schemes = [];
-  for (const entry of listing.items) {
-    const scheme = await scrapeSchemeDetail(entry, { apiKey: listing.apiKey });
-    schemes.push(scheme);
+  const failures = [];
+
+  for (let index = 0; index < listing.items.length; index += 1) {
+    const entry = listing.items[index];
+
+    try {
+      const scheme = await scrapeSchemeDetail(entry, { apiKey: listing.apiKey });
+      schemes.push(scheme);
+    } catch (error) {
+      failures.push({
+        slug: entry.slug,
+        error: error.message,
+      });
+      console.warn(`[myscheme] Failed to scrape ${entry.slug}: ${error.message}`);
+    }
+
+    if (persistOutput && schemes.length && schemes.length % 25 === 0) {
+      fs.mkdirSync(path.dirname(SCRAPER_OUTPUT_PATH), { recursive: true });
+      fs.writeFileSync(SCRAPER_OUTPUT_PATH, JSON.stringify(schemes, null, 2));
+    }
+
+    if ((index + 1) % 25 === 0) {
+      console.log(
+        `[myscheme] Progress: ${index + 1}/${listing.items.length} processed, ${schemes.length} saved, ${failures.length} failed`
+      );
+    }
+
+    await wait(150);
   }
 
   if (persistOutput && schemes.length) {
     fs.mkdirSync(path.dirname(SCRAPER_OUTPUT_PATH), { recursive: true });
     fs.writeFileSync(SCRAPER_OUTPUT_PATH, JSON.stringify(schemes, null, 2));
+  }
+
+  if (failures.length) {
+    console.warn(`[myscheme] Completed with ${failures.length} failed schemes`);
   }
 
   return schemes;

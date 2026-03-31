@@ -1,8 +1,8 @@
 import SchemeCard from "./SchemeCard";
 
-export default function RecentMatches({ schemes, isLoading, error, openCard, onToggle }) {
+export default function RecentMatches({ schemes, isLoading, error }) {
   return (
-    <section className="home-section">
+    <section className="home-section home-section--matches">
       <div className="section-heading">
         <h2 className="type-h2">Recent matches</h2>
         <p className="type-caption">Live scheme cards fetched from the backend.</p>
@@ -14,7 +14,7 @@ export default function RecentMatches({ schemes, isLoading, error, openCard, onT
 
       {error ? <p className="type-caption">Could not load schemes: {error.message}</p> : null}
 
-      {!isLoading && !error ? (
+      {!isLoading && !error && schemes.length > 0 ? (
         <div className="recent-matches">
           {schemes.map((scheme, index) => (
             <SchemeCard
@@ -23,15 +23,29 @@ export default function RecentMatches({ schemes, isLoading, error, openCard, onT
               schemeNameHi={scheme.schemeNameHi}
               benefitAmount={scheme.benefitAmount}
               category={scheme.category}
+              state={scheme.state}
               ministry={scheme.ministry}
               matchStatus={scheme.matchStatus}
               description={scheme.description}
               descriptionHi={scheme.descriptionHi}
               staggerIndex={index}
-              isOpen={openCard === scheme.id}
-              onToggle={() => onToggle((current) => (current === scheme.id ? "" : scheme.id))}
+              schemeId={scheme.id}
             />
           ))}
+        </div>
+      ) : null}
+
+      {!isLoading && !error && schemes.length === 0 ? (
+        <div className="empty-state">
+          <p className="type-h3">Live matches will appear here</p>
+          <p className="type-body-en">
+            The backend connection is working, but there are no featured scheme cards ready to show
+            yet.
+          </p>
+          <p className="type-caption">
+            Refresh after seeding more schemes or switch to a saved profile to see personalized
+            results.
+          </p>
         </div>
       ) : null}
     </section>

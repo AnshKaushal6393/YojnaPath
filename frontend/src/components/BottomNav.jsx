@@ -1,21 +1,23 @@
+import { NavLink } from "react-router-dom";
+
 const ITEMS = [
-  { key: "home", label: "Home" },
-  { key: "saved", label: "Saved" },
-  { key: "docs", label: "Docs" },
-  { key: "profile", label: "Profile" },
+  { key: "home", label: "Home", to: "/" },
+  { key: "saved", label: "Saved", to: "/saved" },
+  { key: "docs", label: "Docs", to: "/docs" },
+  { key: "profile", label: "Profile", to: "/profile" },
 ];
 
 export default function BottomNav({ active = "home" }) {
   return (
     <nav className="bottom-nav" aria-label="Primary navigation">
       {ITEMS.map((item) => (
-        <button
+        <NavLink
           key={item.key}
-          type="button"
+          to={item.to}
           className={`bottom-nav__item tap-target ${active === item.key ? "bottom-nav__item--active" : ""}`}
         >
           <span className="type-label">{item.label}</span>
-        </button>
+        </NavLink>
       ))}
     </nav>
   );
