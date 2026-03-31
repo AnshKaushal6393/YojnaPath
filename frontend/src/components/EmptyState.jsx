@@ -1,21 +1,27 @@
-export default function EmptyState({ suggestions }) {
+export default function EmptyState({ title, description, suggestions }) {
   return (
     <section className="empty-state status-border-near-miss">
       <p className="type-h3 hi" lang="hi">
-        कोई योजना नहीं मिली — अपनी जानकारी बदलें
+        {title}
       </p>
-      <p className="type-body-en">
-        Try adjusting the profile fields below to unlock likely matches.
-      </p>
+      <p className="type-body-en">{description}</p>
       <div className="empty-state__tips">
-        {suggestions.map((suggestion) => (
-          <div key={suggestion.title} className="empty-state__tip state-warning">
-            <p className="type-label hi" lang="hi">
-              {suggestion.title}
-            </p>
-            <p className="type-caption">{suggestion.detail}</p>
-          </div>
-        ))}
+        {suggestions.map((suggestion) => {
+          const titleText = typeof suggestion === "string" ? suggestion : suggestion.title;
+          const detailText =
+            typeof suggestion === "string"
+              ? "Update this part of your profile to unlock more likely matches."
+              : suggestion.detail;
+
+          return (
+            <div key={titleText} className="empty-state__tip state-warning">
+              <p className="type-label hi" lang="hi">
+                {titleText}
+              </p>
+              <p className="type-caption">{detailText}</p>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

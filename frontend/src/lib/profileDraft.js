@@ -25,6 +25,14 @@ export function saveProfileDraft(value) {
   window.localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(value));
 }
 
+export function clearProfileDraft() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(PROFILE_DRAFT_KEY);
+}
+
 export function hasProfileDraft() {
   return Boolean(getProfileDraft());
 }

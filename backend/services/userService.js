@@ -2,8 +2,28 @@ require("../config/env");
 
 const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 
+let userColumnsInitializationPromise;
+
+async function ensureUserColumns() {
+  if (!userColumnsInitializationPromise) {
+    userColumnsInitializationPromise = (async () => {
+      await ensureDatabaseSchema();
+      const pool = getPool();
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)`);
+      await pool.query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_completed_at TIMESTAMP`
+      );
+    })().catch((error) => {
+      userColumnsInitializationPromise = null;
+      throw error;
+    });
+  }
+
+  return userColumnsInitializationPromise;
+}
+
 async function findOrCreateUserByPhone(phone, lang = "hi") {
-  await ensureDatabaseSchema();
+  await ensureUserColumns();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -12,7 +32,7 @@ async function findOrCreateUserByPhone(phone, lang = "hi") {
       ON CONFLICT (phone) DO UPDATE SET
         lang = COALESCE(EXCLUDED.lang, users.lang),
         last_login = NOW()
-      RETURNING id, phone, lang
+      RETURNING id, phone, name, lang, registration_completed_at
     `,
     [phone, lang]
   );
@@ -20,6 +40,47 @@ async function findOrCreateUserByPhone(phone, lang = "hi") {
   return result.rows[0];
 }
 
+async function getUserById(userId) {
+  await ensureUserColumns();
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT id, phone, name, lang, registration_completed_at
+      FROM users
+      WHERE id = $1
+      LIMIT 1
+    `,
+    [userId]
+  );
+
+  return result.rows[0] || null;
+}
+
+async function completeUserRegistration(userId, { name, lang }) {
+  await ensureUserColumns();
+  const pool = getPool();
+  const normalizedName = String(name || "").trim().replace(/\s+/g, " ");
+  const normalizedLang = lang === "en" ? "en" : "hi";
+
+  const result = await pool.query(
+    `
+      UPDATE users
+      SET
+        name = $2,
+        lang = $3,
+        registration_completed_at = COALESCE(registration_completed_at, NOW()),
+        last_login = NOW()
+      WHERE id = $1
+      RETURNING id, phone, name, lang, registration_completed_at
+    `,
+    [userId, normalizedName, normalizedLang]
+  );
+
+  return result.rows[0] || null;
+}
+
 module.exports = {
+  completeUserRegistration,
   findOrCreateUserByPhone,
+  getUserById,
 };

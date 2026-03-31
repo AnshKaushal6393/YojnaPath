@@ -67,6 +67,13 @@ export const GENDER_OPTIONS = [
   { value: "other", labelEn: "Other", labelHi: "\u0905\u0928\u094d\u092f" },
 ];
 
+export const CASTE_OPTIONS = [
+  { value: "sc", labelEn: "SC", labelHi: "\u0905\u0928\u0941\u0938\u0942\u091a\u093f\u0924 \u091c\u093e\u0924\u093f" },
+  { value: "st", labelEn: "ST", labelHi: "\u0905\u0928\u0941\u0938\u0942\u091a\u093f\u0924 \u091c\u0928\u091c\u093e\u0924\u093f" },
+  { value: "obc", labelEn: "OBC", labelHi: "\u0905\u0928\u094d\u092f \u092a\u093f\u091b\u0921\u093c\u093e \u0935\u0930\u094d\u0917" },
+  { value: "general", labelEn: "General", labelHi: "\u0938\u093e\u092e\u093e\u0928\u094d\u092f" },
+];
+
 export const USER_TYPE_OPTIONS = [
   {
     key: "farmer",

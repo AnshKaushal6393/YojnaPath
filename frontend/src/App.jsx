@@ -2,6 +2,8 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import OnboardPage from "./pages/OnboardPage";
+import Register from "./pages/Register";
+import ResultsPage from "./pages/ResultsPage";
 import SchemeDetailPage from "./pages/SchemeDetailPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import { isAuthenticated } from "./utils/auth";
@@ -24,8 +26,10 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/onboard" element={<OnboardPage />} />
         <Route path="/profile" element={<OnboardPage />} />
+        <Route path="/results" element={<ResultsPage />} />
         <Route path="/schemes/:schemeId" element={<SchemeDetailPage />} />
       </Route>
 

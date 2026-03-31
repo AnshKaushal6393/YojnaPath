@@ -24,7 +24,20 @@ export default function SchemeCard({
   }
 
   function isMeaningful(value) {
-    return Boolean(String(value ?? "").trim());
+    const text = String(value ?? "").trim();
+    if (!text) {
+      return false;
+    }
+
+    if (
+      /[{}[\]]/.test(text) ||
+      /\bvalue\b/i.test(text) ||
+      /\blabel\b/i.test(text)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   const statusClassMap = {

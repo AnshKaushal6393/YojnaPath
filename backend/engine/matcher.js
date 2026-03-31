@@ -412,6 +412,23 @@ function sortByRelevance(a, b) {
   return (b.benefitAmount ?? 0) - (a.benefitAmount ?? 0);
 }
 
+function isStateRelevant(profile, scheme) {
+  const schemeState = String(scheme?.state || "").trim();
+  const profileState = String(profile?.state || "").trim();
+
+  if (!schemeState || schemeState.toLowerCase() === "central") {
+    return true;
+  }
+
+  return Boolean(profileState) && schemeState === profileState;
+}
+
+function hasBlockingNearMissFailure(fails) {
+  return fails.some((fail) =>
+    ["state", "occupation", "beneficiaryType", "gender", "caste"].includes(fail?.type)
+  );
+}
+
 async function getMatchingSchemes(profile, options = {}) {
   const {
     schemeModel = Scheme,
@@ -420,7 +437,16 @@ async function getMatchingSchemes(profile, options = {}) {
     limitNearMisses = 10,
   } = options;
 
-  const allSchemes = await schemeModel.find({ active: true }).lean();
+  const now = new Date();
+  const allSchemes = await schemeModel
+    .find({
+      active: true,
+      $or: [
+        { "deadline.closes": null },
+        { "deadline.closes": { $gte: now } },
+      ],
+    })
+    .lean();
   const matched = [];
   const nearMisses = [];
 
@@ -434,8 +460,16 @@ async function getMatchingSchemes(profile, options = {}) {
       continue;
     }
 
+    if (!isStateRelevant(profile, scheme)) {
+      continue;
+    }
+
     const fails = getFailedCriteria(profile, scheme);
-    if (fails.length > 0 && fails.length <= nearMissGap) {
+    if (
+      fails.length > 0 &&
+      fails.length <= nearMissGap &&
+      !hasBlockingNearMissFailure(fails)
+    ) {
       nearMisses.push({
         ...scheme,
         failedCriteria: fails,

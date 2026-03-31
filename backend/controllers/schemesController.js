@@ -31,6 +31,15 @@ function normalizeNumber(value, fallback = null) {
   return Number.isFinite(normalized) ? normalized : Number.NaN;
 }
 
+function normalizePositiveInteger(value, fallback) {
+  if (value == null || value === "") {
+    return fallback;
+  }
+
+  const normalized = Number(value);
+  return Number.isInteger(normalized) && normalized > 0 ? normalized : fallback;
+}
+
 function normalizeBoolean(value, fallback = false) {
   if (typeof value === "boolean") {
     return value;
@@ -113,6 +122,16 @@ function addDays(date, days) {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
 }
 
+function buildVisibleSchemeQuery(now = new Date()) {
+  return {
+    active: true,
+    $or: [
+      { "deadline.closes": null },
+      { "deadline.closes": { $gte: now } },
+    ],
+  };
+}
+
 function getDaysRemaining(closesAt, now = new Date()) {
   const diff = closesAt.getTime() - now.getTime();
   return Math.ceil(diff / (24 * 60 * 60 * 1000));
@@ -140,13 +159,29 @@ async function matchSchemes(req, res) {
 
   const startedAt = Date.now();
   const profile = getRequestProfile(req);
+  const limitMatches = normalizePositiveInteger(
+    req.body?.limitMatches ?? req.query?.limitMatches,
+    50
+  );
+  const limitNearMisses = normalizePositiveInteger(
+    req.body?.limitNearMisses ?? req.query?.limitNearMisses,
+    10
+  );
+  const nearMissGap = normalizePositiveInteger(
+    req.body?.nearMissGap ?? req.query?.nearMissGap,
+    1
+  );
   const validationError = validateMatchProfile(profile);
 
   if (validationError) {
     return res.status(400).json({ message: validationError });
   }
 
-  const result = await getMatchingSchemes(profile);
+  const result = await getMatchingSchemes(profile, {
+    limitMatches,
+    limitNearMisses,
+    nearMissGap,
+  });
   await recordMatchAnalytics();
 
   return res.json({
@@ -161,7 +196,10 @@ async function getSchemeById(req, res) {
   }
 
   const schemeId = String(req.params.id || "").trim().toUpperCase();
-  const scheme = await Scheme.findOne({ schemeId }).lean();
+  const scheme = await Scheme.findOne({
+    ...buildVisibleSchemeQuery(),
+    schemeId,
+  }).lean();
 
   if (!scheme) {
     return res.status(404).json({ message: "Scheme not found" });
@@ -257,7 +295,7 @@ async function getAllSchemesLightweight(req, res) {
   }
 
   const schemes = await Scheme.find(
-    { active: true },
+    buildVisibleSchemeQuery(),
     {
       schemeId: 1,
       name: 1,

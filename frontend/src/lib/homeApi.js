@@ -1,95 +1,21 @@
 import { apiGet } from "./api";
-
-const HTML_ENTITY_MAP = {
-  "&quot;": '"',
-  "&#39;": "'",
-  "&amp;": "&",
-  "&lt;": "<",
-  "&gt;": ">",
-  "&nbsp;": " ",
-  "â‚¹": "₹",
-  "â€™": "'",
-  "â€“": "–",
-  "â€œ": '"',
-  "â€": '"',
-};
-
-function decodeUtf8Mojibake(value) {
-  try {
-    const bytes = Uint8Array.from(
-      [...String(value)].map((char) => char.charCodeAt(0))
-    );
-    return new TextDecoder("utf-8").decode(bytes);
-  } catch {
-    return String(value);
-  }
-}
-
-function decodeHtmlEntities(value) {
-  return Object.entries(HTML_ENTITY_MAP).reduce(
-    (text, [entity, replacement]) => text.split(entity).join(replacement),
-    String(value)
-  );
-}
-
-function normalizeWhitespace(value) {
-  return String(value).replace(/\s+/g, " ").trim();
-}
-
-function normalizeText(value, fallback = "") {
-  const raw = String(value ?? fallback).trim();
-
-  if (!raw) {
-    return fallback;
-  }
-
-  let text = raw;
-
-  if (
-    /[Ãàâ][\u0080-\u00ff]?/.test(text) ||
-    text.includes("â‚") ||
-    text.includes("à¤") ||
-    text.includes("Ãƒ")
-  ) {
-    text = decodeUtf8Mojibake(text).trim() || text;
-  }
-
-  text = decodeHtmlEntities(text).replace(/�/g, "");
-  return normalizeWhitespace(text) || fallback;
-}
-
-function hasDevanagariText(value) {
-  return /[\u0900-\u097f]/.test(String(value ?? ""));
-}
-
-function isMeaningfullyDifferent(primary, secondary) {
-  const a = normalizeWhitespace(primary).toLowerCase();
-  const b = normalizeWhitespace(secondary).toLowerCase();
-
-  if (!a || !b) {
-    return false;
-  }
-
-  return a !== b;
-}
-
-function formatBenefitAmount(value) {
-  if (value == null || Number.isNaN(Number(value))) {
-    return "Benefit available";
-  }
-
-  const formatted = new Intl.NumberFormat("en-IN", {
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-
-  return `₹${formatted}`;
-}
+import { fetchSavedProfile } from "./onboardApi";
+import { fetchResultsData } from "./resultsApi";
+import {
+  formatBenefitAmount,
+  hasDevanagariText,
+  isSchemeVisibleNow,
+  isMeaningfullyDifferent,
+  normalizeMinistry,
+  normalizeText,
+} from "./schemeText";
 
 function pickFeaturedSchemeIds(schemes, limit = 6) {
+  const visibleSchemes = schemes.filter((scheme) => isSchemeVisibleNow(scheme));
   const selected = [];
   const seenCategories = new Set();
 
-  for (const scheme of schemes) {
+  for (const scheme of visibleSchemes) {
     const primaryCategory = scheme.categories?.[0];
 
     if (!primaryCategory || seenCategories.has(primaryCategory)) {
@@ -104,7 +30,7 @@ function pickFeaturedSchemeIds(schemes, limit = 6) {
     }
   }
 
-  for (const scheme of schemes) {
+  for (const scheme of visibleSchemes) {
     if (!selected.includes(scheme.schemeId)) {
       selected.push(scheme.schemeId);
     }
@@ -117,30 +43,10 @@ function pickFeaturedSchemeIds(schemes, limit = 6) {
   return selected;
 }
 
-function normalizeMinistry(value, categoryLabel, schemeName) {
-  const ministry = normalizeText(value, "");
-
-  if (!ministry || ministry.toLowerCase() === "unknown") {
-    return "";
-  }
-
-  if (
-    ministry.toLowerCase() === String(categoryLabel ?? "").toLowerCase() ||
-    ministry.toLowerCase() === String(schemeName ?? "").toLowerCase()
-  ) {
-    return "";
-  }
-
-  return ministry;
-}
-
 function mapSchemeDetailToCard(scheme) {
   const category = scheme.categories?.[0] || "agriculture";
   const schemeName = normalizeText(scheme.name?.en, "Scheme");
-  const schemeNameHi = normalizeText(
-    scheme.name?.hi,
-    normalizeText(scheme.name?.en, "योजना")
-  );
+  const schemeNameHi = normalizeText(scheme.name?.hi, normalizeText(scheme.name?.en, "योजना"));
   const description = normalizeText(
     scheme.description?.en,
     "Scheme details are available from the live backend service."
@@ -171,11 +77,22 @@ function mapSchemeDetailToCard(scheme) {
 }
 
 export async function fetchHomeData() {
-  const [health, impact, schemes] = await Promise.all([
+  const [health, impact, savedProfile, schemes] = await Promise.all([
     apiGet("/api/health"),
     apiGet("/api/impact"),
+    fetchSavedProfile(),
     apiGet("/api/schemes/all"),
   ]);
+
+  if (savedProfile) {
+    const personalizedResults = await fetchResultsData();
+
+    return {
+      health,
+      impact,
+      recentMatches: (personalizedResults.schemes || []).slice(0, 6),
+    };
+  }
 
   const recentIds = pickFeaturedSchemeIds(schemes, 6);
   const recentSchemeDetails = await Promise.all(
@@ -185,6 +102,8 @@ export async function fetchHomeData() {
   return {
     health,
     impact,
-    recentMatches: recentSchemeDetails.map(mapSchemeDetailToCard),
+    recentMatches: recentSchemeDetails
+      .filter((scheme) => isSchemeVisibleNow(scheme))
+      .map(mapSchemeDetailToCard),
   };
 }

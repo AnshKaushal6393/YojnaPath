@@ -6,7 +6,11 @@ const jwt = require("jsonwebtoken");
 const { JWT_EXPIRES_IN } = require("../config/constants");
 const { getRequiredEnv } = require("../config/env");
 const { getOtpStore } = require("../services/otpStore");
-const { findOrCreateUserByPhone } = require("../services/userService");
+const {
+  completeUserRegistration,
+  findOrCreateUserByPhone,
+  getUserById,
+} = require("../services/userService");
 
 function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
@@ -18,6 +22,24 @@ function normalizePhone(phone) {
 
 function validatePhone(phone) {
   return /^\d{10}$/.test(phone);
+}
+
+function validateName(name) {
+  return String(name ?? "").trim().replace(/\s+/g, " ").length >= 2;
+}
+
+function serializeUser(user) {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    phone: user.phone,
+    name: user.name || null,
+    lang: user.lang,
+    needsRegistration: !user.name,
+  };
 }
 
 function parseDemoPhones() {
@@ -91,11 +113,8 @@ async function verify(req, res) {
 
     return res.json({
       token,
-      user: {
-        id: user.id,
-        phone: user.phone,
-        lang: user.lang,
-      },
+      user: serializeUser(user),
+      needsRegistration: !user.name,
     });
   }
 
@@ -120,15 +139,45 @@ async function verify(req, res) {
 
   return res.json({
     token,
-    user: {
-      id: user.id,
-      phone: user.phone,
-      lang: user.lang,
-    },
+    user: serializeUser(user),
+    needsRegistration: !user.name,
+  });
+}
+
+async function me(req, res) {
+  const user = await getUserById(req.user.id);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.json({
+    user: serializeUser(user),
+  });
+}
+
+async function register(req, res) {
+  const name = String(req.body?.name ?? "").trim().replace(/\s+/g, " ");
+  const lang = req.body?.lang === "en" ? "en" : "hi";
+
+  if (!validateName(name)) {
+    return res.status(400).json({ message: "Name must be at least 2 characters long" });
+  }
+
+  const user = await completeUserRegistration(req.user.id, { name, lang });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  return res.json({
+    user: serializeUser(user),
   });
 }
 
 module.exports = {
   login,
+  me,
+  register,
   verify,
 };

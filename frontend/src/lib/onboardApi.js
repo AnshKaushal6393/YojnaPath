@@ -61,6 +61,7 @@ function mapProfileToFormState(profile) {
   return {
     state: unmapState(profile?.state || ""),
     gender: profile?.gender || "",
+    caste: profile?.caste || "",
     ageBand: profile?.age != null ? pickClosestBand(profile.age, AGE_MAP) : "",
     incomeBand: pickClosestBand(profile?.annualIncome ?? 0, INCOME_MAP),
     landBand: pickClosestBand(profile?.landAcres ?? 0, LAND_MAP),
@@ -82,6 +83,7 @@ export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
     state: mapState(formState.state),
     occupation: selectedUserType,
     annualIncome: INCOME_MAP[formState.incomeBand] ?? 0,
+    caste: formState.caste || null,
     gender: formState.gender || null,
     age: AGE_MAP[formState.ageBand] ?? null,
     landAcres: LAND_MAP[formState.landBand] ?? 0,
@@ -89,7 +91,6 @@ export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
     isStudent: selectedUserType === "student",
     isMigrant: selectedUserType === "worker",
     district: null,
-    caste: null,
     lang,
   };
 }

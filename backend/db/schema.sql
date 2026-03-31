@@ -3,8 +3,10 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone VARCHAR(10) UNIQUE NOT NULL,
+  name VARCHAR(120),
   lang VARCHAR(2) NOT NULL DEFAULT 'hi'
     CHECK (lang IN ('hi', 'en')),
+  registration_completed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   last_login TIMESTAMP NOT NULL DEFAULT NOW()
 );

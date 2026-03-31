@@ -1,4 +1,5 @@
 import {
+  CASTE_OPTIONS,
   GENDER_OPTIONS,
   INCOME_BANDS,
   LAND_BANDS,
@@ -7,14 +8,14 @@ import {
 import VoiceInputButton from "./VoiceInputButton";
 
 const USER_TYPE_CONFIG = {
-  farmer: ["state", "gender", "age", "incomeBand", "landBand", "notes"],
-  women: ["state", "age", "incomeBand", "notes"],
-  student: ["state", "gender", "age", "incomeBand", "notes"],
-  worker: ["state", "gender", "age", "incomeBand", "notes"],
-  health: ["state", "gender", "age", "incomeBand", "notes"],
-  housing: ["state", "incomeBand", "notes"],
-  senior: ["state", "gender", "age", "incomeBand", "notes"],
-  disability: ["state", "gender", "age", "incomeBand", "notes"],
+  farmer: ["state", "gender", "caste", "age", "incomeBand", "landBand", "notes"],
+  women: ["state", "caste", "age", "incomeBand", "notes"],
+  student: ["state", "gender", "caste", "age", "incomeBand", "notes"],
+  worker: ["state", "gender", "caste", "age", "incomeBand", "notes"],
+  health: ["state", "gender", "caste", "age", "incomeBand", "notes"],
+  housing: ["state", "caste", "incomeBand", "notes"],
+  senior: ["state", "gender", "caste", "age", "incomeBand", "notes"],
+  disability: ["state", "gender", "caste", "age", "incomeBand", "notes"],
 };
 
 const AGE_BANDS = [
@@ -36,7 +37,13 @@ function getIncomeLabel(selectedUserType) {
   return "Annual income / वार्षिक आय";
 }
 
-export default function AdaptiveForm({ selectedUserType, formState, onChange, isSubmitting }) {
+export default function AdaptiveForm({
+  selectedUserType,
+  formState,
+  onChange,
+  isSubmitting,
+  submitLabel = "Continue to matching",
+}) {
   const activeFields = USER_TYPE_CONFIG[selectedUserType] || [];
 
   function updateField(field, value) {
@@ -51,9 +58,7 @@ export default function AdaptiveForm({ selectedUserType, formState, onChange, is
       <div className="section-heading">
         <h2 className="type-h2">Adaptive profile form</h2>
         <p className="type-caption hi" lang="hi">
-          {
-            "\u0915\u0947\u0935\u0932 \u0909\u0928\u094d\u0939\u0940\u0902 \u092a\u094d\u0930\u0936\u094d\u0928 \u0926\u093f\u0916\u0947\u0902\u0917\u0947 \u091c\u094b \u0906\u092a\u0915\u0947 \u0932\u093f\u090f \u091c\u0930\u0942\u0930\u0940 \u0939\u0948\u0902\u0964"
-          }
+          केवल उन्हीं प्रश्न दिखेंगे जो आपके लिए जरूरी हैं।
         </p>
       </div>
 
@@ -86,6 +91,24 @@ export default function AdaptiveForm({ selectedUserType, formState, onChange, is
             >
               <option value="">Select gender</option>
               {GENDER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.labelEn} / {option.labelHi}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+
+        {activeFields.includes("caste") ? (
+          <div className="demo-field">
+            <FieldLabel>Category / श्रेणी</FieldLabel>
+            <select
+              className="demo-select"
+              value={formState.caste}
+              onChange={(event) => updateField("caste", event.target.value)}
+            >
+              <option value="">Select category</option>
+              {CASTE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.labelEn} / {option.labelHi}
                 </option>
@@ -156,9 +179,7 @@ export default function AdaptiveForm({ selectedUserType, formState, onChange, is
             Optional. Add any special detail only if it will help us find better schemes.
           </p>
           <p className="type-caption hi" lang="hi">
-            {
-              "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0939\u0948\u0964 \u0938\u093f\u0930\u094d\u092b \u0935\u0939\u0940 \u0905\u0924\u093f\u0930\u093f\u0915\u094d\u0924 \u092c\u093e\u0924 \u0932\u093f\u0916\u0947\u0902 \u091c\u094b \u092c\u0947\u0939\u0924\u0930 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0922\u0942\u0902\u0922\u0928\u0947 \u092e\u0947\u0902 \u092e\u0926\u0926 \u0915\u0930\u0947\u0964"
-            }
+            वैकल्पिक है। सिर्फ वही अतिरिक्त बात लिखें जो बेहतर योजनाएं ढूंढने में मदद करे।
           </p>
           <textarea
             className="demo-select onboard-notes"
@@ -179,9 +200,7 @@ export default function AdaptiveForm({ selectedUserType, formState, onChange, is
 
       <div className="onboard-form-footer">
         <p className="type-caption hi" lang="hi">
-          {
-            "\u0906\u0917\u0947 \u0939\u092e \u0907\u0938\u0940 \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u0938\u0947 \u0906\u092a\u0915\u0947 \u0932\u093f\u090f \u0938\u0939\u0940 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0922\u0942\u0902\u0922\u0947\u0902\u0917\u0947\u0964"
-          }
+          आगे हम इसी जानकारी से आपके लिए सही योजनाएं ढूंढेंगे।
         </p>
         <button
           type="submit"
@@ -189,7 +208,7 @@ export default function AdaptiveForm({ selectedUserType, formState, onChange, is
           className={`demo-submit-button btn-primary onboard-submit ${isSubmitting ? "loading" : ""}`}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Saving profile..." : "Continue to matching"}
+          {isSubmitting ? "Saving profile..." : submitLabel}
         </button>
       </div>
     </section>

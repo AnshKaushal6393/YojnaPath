@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import OTPInput from "../components/OTPInput";
+import { fetchSavedProfile } from "../lib/onboardApi";
 import { apiPost } from "../utils/api";
 import { getStoredPhone, setStoredPhone, setToken } from "../utils/auth";
 
@@ -54,7 +55,14 @@ export default function VerifyOTP() {
       });
       setToken(payload.token);
       setStoredPhone(phone);
-      navigate("/onboard", { replace: true });
+
+      if (payload.needsRegistration) {
+        navigate("/register", { replace: true });
+        return;
+      }
+
+      const savedProfile = await fetchSavedProfile();
+      navigate(savedProfile ? "/results" : "/onboard", { replace: true });
     } catch (verifyError) {
       setError(verifyError.message || "Could not verify OTP.");
     } finally {

@@ -51,7 +51,7 @@ export default function Login() {
               Sign in with your phone
             </h1>
             <p className="text-sm leading-6 text-slate-500">
-              Enter your 10-digit number and we’ll send a one-time password.
+              Enter your 10-digit number and we'll send a one-time password.
             </p>
           </div>
 
