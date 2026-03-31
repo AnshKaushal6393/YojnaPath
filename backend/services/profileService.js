@@ -6,14 +6,68 @@ const ALLOWED_GENDERS = ["male", "female", "other"];
 const ALLOWED_CASTES = ["sc", "st", "obc", "general"];
 const ALLOWED_OCCUPATIONS = [
   "farmer",
+  "women",
+  "student",
+  "worker",
+  "health",
+  "housing",
+  "senior",
+  "disability",
   "shopkeeper",
   "artisan",
   "daily_wage",
-  "student",
   "retired",
   "disabled",
   "migrant_worker",
 ];
+
+let ensureProfilesConstraintPromise = null;
+
+async function ensureProfileOccupationConstraint() {
+  if (!ensureProfilesConstraintPromise) {
+    const pool = getPool();
+    ensureProfilesConstraintPromise = pool
+      .query(`
+        DO $$
+        BEGIN
+          IF EXISTS (
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name = 'profiles'
+          ) THEN
+            ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_occupation_check;
+            ALTER TABLE profiles
+              ADD CONSTRAINT profiles_occupation_check
+              CHECK (
+                occupation IN (
+                  'farmer',
+                  'women',
+                  'student',
+                  'worker',
+                  'health',
+                  'housing',
+                  'senior',
+                  'disability',
+                  'shopkeeper',
+                  'artisan',
+                  'daily_wage',
+                  'retired',
+                  'disabled',
+                  'migrant_worker'
+                )
+              );
+          END IF;
+        END
+        $$;
+      `)
+      .catch((error) => {
+        ensureProfilesConstraintPromise = null;
+        throw error;
+      });
+  }
+
+  await ensureProfilesConstraintPromise;
+}
 
 function mapProfileRow(row) {
   if (!row) {
@@ -38,6 +92,7 @@ function mapProfileRow(row) {
 }
 
 async function getProfileByUserId(userId) {
+  await ensureProfileOccupationConstraint();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -67,6 +122,7 @@ async function getProfileByUserId(userId) {
 }
 
 async function upsertProfile(userId, profile) {
+  await ensureProfileOccupationConstraint();
   const pool = getPool();
   const client = await pool.connect();
 

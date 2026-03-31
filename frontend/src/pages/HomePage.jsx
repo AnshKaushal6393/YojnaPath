@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import BottomNav from "../components/BottomNav";
 import HomeHero from "../components/HomeHero";
@@ -6,7 +6,10 @@ import LastMatchSummary from "../components/LastMatchSummary";
 import RecentMatches from "../components/RecentMatches";
 import UrgencyBanner from "../components/UrgencyBanner";
 import UserTypeGrid from "../components/UserTypeGrid";
+import { getAuthToken } from "../lib/authStorage";
 import { fetchHomeData } from "../lib/homeApi";
+import { fetchSavedProfile } from "../lib/onboardApi";
+import { getProfileDraft, getProfileDraftStorageMode, hasProfileDraft } from "../lib/profileDraft";
 
 function formatCachedDate(date) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -16,15 +19,39 @@ function formatCachedDate(date) {
 }
 
 export default function HomePage() {
+  const authToken = getAuthToken();
+  const localDraft = getProfileDraft();
   const [language, setLanguage] = useState("en");
-  const [hasProfile, setHasProfile] = useState(false);
+  const [hasProfile, setHasProfile] = useState(() => hasProfileDraft());
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
+  const draftStorageMode = getProfileDraftStorageMode();
 
   const homeQuery = useQuery({
     queryKey: ["home-data"],
     queryFn: fetchHomeData,
   });
+
+  const savedProfileQuery = useQuery({
+    queryKey: ["home-saved-profile"],
+    queryFn: fetchSavedProfile,
+    enabled: Boolean(authToken),
+  });
+
+  const hasSyncedProfile = Boolean(savedProfileQuery.data);
+  const hasDeviceDraft = Boolean(localDraft);
+  const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
+  const savedProfileLabel = hasSyncedProfile
+    ? "Saved profile"
+    : draftStorageMode === "draft_only"
+      ? "Saved on device"
+      : "Saved profile";
+
+  useEffect(() => {
+    if (shouldShowSavedProfile) {
+      setHasProfile(true);
+    }
+  }, [shouldShowSavedProfile]);
 
   return (
     <main className="app-shell">
@@ -32,8 +59,9 @@ export default function HomePage() {
         <HomeHero
           language={language}
           onLanguageChange={setLanguage}
-          hasProfile={hasProfile}
+          hasProfile={hasProfile && shouldShowSavedProfile}
           onProfileModeChange={setHasProfile}
+          savedProfileLabel={savedProfileLabel}
         />
 
         {!offlineBannerDismissed && homeQuery.isError ? (

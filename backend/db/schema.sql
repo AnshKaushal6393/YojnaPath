@@ -20,6 +20,12 @@ CREATE TABLE IF NOT EXISTS profiles (
     CHECK (
       occupation IN (
         'farmer',
+        'women',
+        'worker',
+        'health',
+        'housing',
+        'senior',
+        'disability',
         'shopkeeper',
         'artisan',
         'daily_wage',

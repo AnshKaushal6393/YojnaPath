@@ -9,10 +9,14 @@ async function parseJson(response) {
   return response.json();
 }
 
-export async function apiGet(path) {
+async function apiRequest(path, options = {}) {
+  const { token, headers, ...restOptions } = options;
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions,
     headers: {
       Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
     },
   });
 
@@ -23,4 +27,20 @@ export async function apiGet(path) {
   }
 
   return payload;
+}
+
+export function apiGet(path, options) {
+  return apiRequest(path, options);
+}
+
+export function apiPost(path, body, options = {}) {
+  return apiRequest(path, {
+    ...options,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    body: JSON.stringify(body),
+  });
 }

@@ -3,6 +3,7 @@ export default function HomeHero({
   onLanguageChange,
   hasProfile,
   onProfileModeChange,
+  savedProfileLabel = "Saved profile",
 }) {
   return (
     <section className="home-hero">
@@ -55,7 +56,7 @@ export default function HomeHero({
           className={`home-mode-toggle__btn tap-target ${hasProfile ? "on" : ""}`}
           onClick={() => onProfileModeChange(true)}
         >
-          <span className="type-label">Saved profile</span>
+          <span className="type-label">{savedProfileLabel}</span>
         </button>
       </div>
     </section>
