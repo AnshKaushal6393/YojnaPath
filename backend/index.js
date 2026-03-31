@@ -2,6 +2,7 @@ require("./config/env");
 
 const express = require("express");
 const { connectMongo } = require("./config/mongo");
+const { ensureDatabaseSchema } = require("./config/postgres");
 
 const authRoutes = require("./routes/auth");
 const applicationsRoutes = require("./routes/applications");
@@ -37,9 +38,16 @@ if (require.main === module) {
     console.warn("[mongo] Backend will continue with limited functionality until MongoDB is available.");
   });
 
-  app.listen(port, () => {
-    console.log(`Backend listening on port ${port}`);
-  });
+  ensureDatabaseSchema()
+    .catch((error) => {
+      console.warn(`[postgres] ${error.message}`);
+      console.warn("[postgres] Backend will continue, but auth/profile features may fail until schema setup succeeds.");
+    })
+    .finally(() => {
+      app.listen(port, () => {
+        console.log(`Backend listening on port ${port}`);
+      });
+    });
 }
 
 module.exports = app;

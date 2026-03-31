@@ -74,14 +74,26 @@ export default function OnboardPage() {
     );
   }, [savedProfileQuery.data]);
 
+  useEffect(() => {
+    if (!submitMessage || submitError) {
+      return;
+    }
+
+    const redirectTimer = window.setTimeout(() => {
+      navigate("/");
+    }, 1200);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [navigate, submitError, submitMessage]);
+
   const saveProfileMutation = useMutation({
     mutationFn: () => saveProfileToBackend(selectedUserType, formState),
     onSuccess: (result) => {
       saveProfileDraft(buildOnboardDraft(selectedUserType, formState, result.mode));
       if (result.mode === "synced") {
-        setSubmitMessage("Profile synced successfully. You can now continue with your saved profile.");
+        setSubmitMessage("Details saved successfully.");
       } else {
-        setSubmitMessage("Profile saved on this device only. Sign in with your phone later to sync it.");
+        setSubmitMessage("Details saved on this device.");
       }
       setSubmitError("");
     },
@@ -155,17 +167,10 @@ export default function OnboardPage() {
             isSubmitting={saveProfileMutation.isPending || savedProfileQuery.isLoading}
           />
         </form>
-        {savedProfileQuery.data ? (
-          <div className="onboard-feedback state-info" role="status" aria-live="polite">
-            <span className="type-caption">
-              Existing saved profile loaded. You are editing your previously saved details.
-            </span>
-          </div>
-        ) : null}
         {hasUnsyncedDraft ? (
           <div className="onboard-feedback state-warning" role="status" aria-live="polite">
             <span className="type-caption">
-              This profile is currently saved only on this device. Phone login will sync it to the backend.
+              Your details are currently saved only on this device.
             </span>
           </div>
         ) : null}
@@ -177,17 +182,6 @@ export default function OnboardPage() {
         {submitError ? (
           <div className="onboard-feedback state-danger" role="alert">
             <span className="type-caption">{submitError}</span>
-          </div>
-        ) : null}
-        {submitMessage ? (
-          <div className="onboard-actions">
-            <button
-              type="button"
-              className="demo-submit-button btn-primary onboard-submit"
-              onClick={() => navigate("/")}
-            >
-              Go to home
-            </button>
           </div>
         ) : null}
       </div>

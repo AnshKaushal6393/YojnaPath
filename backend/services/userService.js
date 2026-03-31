@@ -1,8 +1,9 @@
 require("../config/env");
 
-const { getPool } = require("../config/postgres");
+const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 
 async function findOrCreateUserByPhone(phone, lang = "hi") {
+  await ensureDatabaseSchema();
   const pool = getPool();
   const result = await pool.query(
     `

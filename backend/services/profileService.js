@@ -21,12 +21,12 @@ const ALLOWED_OCCUPATIONS = [
   "migrant_worker",
 ];
 
-let ensureProfilesConstraintPromise = null;
+let ensureProfilesSchemaPromise = null;
 
-async function ensureProfileOccupationConstraint() {
-  if (!ensureProfilesConstraintPromise) {
+async function ensureProfilesSchema() {
+  if (!ensureProfilesSchemaPromise) {
     const pool = getPool();
-    ensureProfilesConstraintPromise = pool
+    ensureProfilesSchemaPromise = pool
       .query(`
         DO $$
         BEGIN
@@ -35,6 +35,8 @@ async function ensureProfileOccupationConstraint() {
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 'profiles'
           ) THEN
+            ALTER TABLE profiles
+              ALTER COLUMN state TYPE VARCHAR(50);
             ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_occupation_check;
             ALTER TABLE profiles
               ADD CONSTRAINT profiles_occupation_check
@@ -61,12 +63,12 @@ async function ensureProfileOccupationConstraint() {
         $$;
       `)
       .catch((error) => {
-        ensureProfilesConstraintPromise = null;
+        ensureProfilesSchemaPromise = null;
         throw error;
       });
   }
 
-  await ensureProfilesConstraintPromise;
+  await ensureProfilesSchemaPromise;
 }
 
 function mapProfileRow(row) {
@@ -92,7 +94,7 @@ function mapProfileRow(row) {
 }
 
 async function getProfileByUserId(userId) {
-  await ensureProfileOccupationConstraint();
+  await ensureProfilesSchema();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -122,7 +124,7 @@ async function getProfileByUserId(userId) {
 }
 
 async function upsertProfile(userId, profile) {
-  await ensureProfileOccupationConstraint();
+  await ensureProfilesSchema();
   const pool = getPool();
   const client = await pool.connect();
 
