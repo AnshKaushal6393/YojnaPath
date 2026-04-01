@@ -36,6 +36,18 @@ function normalizeDate(value) {
   return normalized;
 }
 
+function normalizeRemindAt(value) {
+  if (value === null) {
+    return null;
+  }
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return normalizeDate(value);
+}
+
 function computeRemindAt(appliedAt) {
   const base = new Date(appliedAt);
   base.setDate(base.getDate() + 30);
@@ -75,6 +87,7 @@ async function patchApplication(req, res) {
   const schemeId = normalizeSchemeId(req.params.schemeId);
   const status = req.body?.status === undefined ? undefined : normalizeStatus(req.body?.status);
   const notes = req.body?.notes === undefined ? undefined : normalizeOptionalString(req.body?.notes);
+  const remindAt = normalizeRemindAt(req.body?.remindAt ?? req.body?.remind_at);
 
   if (!schemeId) {
     return res.status(400).json({ message: "schemeId is required" });
@@ -84,13 +97,21 @@ async function patchApplication(req, res) {
     return res.status(400).json({ message: "status must be applied, pending, approved, or rejected" });
   }
 
-  if (status === undefined && notes === undefined) {
-    return res.status(400).json({ message: "At least one of status or notes is required" });
+  if (req.body?.remindAt !== undefined || req.body?.remind_at !== undefined) {
+    const rawRemindAt = req.body?.remindAt ?? req.body?.remind_at;
+    if (rawRemindAt !== null && remindAt === null) {
+      return res.status(400).json({ message: "remindAt must be a valid date or null" });
+    }
+  }
+
+  if (status === undefined && notes === undefined && remindAt === undefined) {
+    return res.status(400).json({ message: "At least one of status, notes, or remindAt is required" });
   }
 
   const updated = await updateApplicationForUser(req.user.id, schemeId, {
     status,
     notes,
+    remindAt,
   });
 
   if (!updated) {

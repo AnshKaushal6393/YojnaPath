@@ -119,7 +119,7 @@ export default function Register() {
               <legend className="text-sm font-medium text-slate-700">Preferred language</legend>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "hi", label: "हिंदी" },
+                  { value: "hi", label: "à¤¹à¤¿à¤‚à¤¦à¥€" },
                   { value: "en", label: "English" },
                 ].map((option) => {
                   const isSelected = lang === option.value;

@@ -14,7 +14,7 @@ function formatTimestamp(value) {
   }).format(date);
 }
 
-export default function LastMatchSummary({ impact, health, isLoading, error }) {
+export default function LastMatchSummary({ impact, health, isLoading, error, onExplore }) {
   const schemeCount = health?.schemeCount ?? impact?.schemesInDatabase ?? 0;
   const lastUpdated = impact?.lastUpdated || health?.timestamp;
 
@@ -60,7 +60,11 @@ export default function LastMatchSummary({ impact, health, isLoading, error }) {
         </p>
         <p className="type-caption">Updated on {formatTimestamp(lastUpdated)}</p>
 
-        <button type="button" className="summary-card__button btn-primary tap-target">
+        <button
+          type="button"
+          className="summary-card__button btn-primary tap-target"
+          onClick={onExplore}
+        >
           <span className="type-label">Explore live schemes</span>
         </button>
       </div>

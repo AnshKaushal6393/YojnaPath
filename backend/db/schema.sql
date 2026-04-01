@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 CREATE TABLE IF NOT EXISTS saved_schemes (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  scheme_id VARCHAR(50) NOT NULL,
+  scheme_id VARCHAR(180) NOT NULL,
   saved_at TIMESTAMP NOT NULL DEFAULT NOW(),
   notes TEXT,
   PRIMARY KEY (user_id, scheme_id)
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS saved_schemes (
 
 CREATE TABLE IF NOT EXISTS applications (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  scheme_id VARCHAR(50) NOT NULL,
+  scheme_id VARCHAR(180) NOT NULL,
   applied_at DATE NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'applied'
     CHECK (status IN ('applied', 'pending', 'approved', 'rejected')),

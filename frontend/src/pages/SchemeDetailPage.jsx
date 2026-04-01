@@ -1,25 +1,53 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
+import SchemeDetail from "../components/SchemeDetail";
 import { fetchSchemeDetail } from "../lib/schemeDetailApi";
-
-function toSentenceCase(value) {
-  return String(value ?? "")
-    .split(/[_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(" ");
-}
+import { fetchSavedSchemes, removeSavedScheme, saveScheme } from "../lib/savedApi";
+import { createTrackedApplication } from "../lib/trackerApi";
 
 export default function SchemeDetailPage() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { schemeId = "" } = useParams();
   const detailQuery = useQuery({
     queryKey: ["scheme-detail", schemeId],
     queryFn: () => fetchSchemeDetail(schemeId),
     enabled: Boolean(schemeId),
   });
+  const savedQuery = useQuery({
+    queryKey: ["saved-schemes"],
+    queryFn: fetchSavedSchemes,
+  });
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const savedSchemes = savedQuery.data || [];
+      const isSaved = savedSchemes.some((item) => item.id === schemeId);
+      if (isSaved) {
+        await removeSavedScheme(schemeId);
+      } else {
+        await saveScheme(schemeId);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["saved-schemes"] });
+    },
+  });
+  const trackMutation = useMutation({
+    mutationFn: () =>
+      createTrackedApplication({
+        schemeId,
+        appliedAt: new Date().toISOString().slice(0, 10),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tracked-applications"] });
+      navigate("/tracker");
+    },
+  });
 
   const scheme = detailQuery.data;
+  const schemeUrl = typeof window !== "undefined" ? window.location.href : "";
+  const isSaved = (savedQuery.data || []).some((item) => item.id === schemeId);
 
   return (
     <main className="app-shell">
@@ -45,82 +73,15 @@ export default function SchemeDetailPage() {
         ) : null}
 
         {scheme ? (
-          <section className="detail-card">
-            <div className="detail-card__top">
-              <div className="detail-card__chips">
-                <span className={`scheme-card__category-chip category-${scheme.category}`}>
-                  <span className="category-badge__text">{toSentenceCase(scheme.category)}</span>
-                </span>
-                <span className="scheme-card__scope-chip">
-                  <span className="type-micro">
-                    {scheme.state === "central" ? "Central" : scheme.state}
-                  </span>
-                </span>
-              </div>
-              <div className="scheme-card__benefit-chip">
-                <p className="type-benefit">{scheme.benefitAmount}</p>
-              </div>
-            </div>
-
-            {scheme.ministry ? <p className="type-caption">{scheme.ministry}</p> : null}
-            <h1 className="type-h1">{scheme.schemeName}</h1>
-            {scheme.schemeNameHi ? (
-              <p className="detail-card__title-hi hi" lang="hi">
-                {scheme.schemeNameHi}
-              </p>
-            ) : null}
-
-            {scheme.description ? <p className="type-body-en">{scheme.description}</p> : null}
-            {scheme.descriptionHi ? (
-              <p className="type-body-hi hi" lang="hi">
-                {scheme.descriptionHi}
-              </p>
-            ) : null}
-
-            <div className="detail-card__meta-grid">
-              {scheme.benefitType ? (
-                <div className="detail-card__meta-item">
-                  <p className="type-label">Benefit type</p>
-                  <p className="type-caption">{toSentenceCase(scheme.benefitType)}</p>
-                </div>
-              ) : null}
-              {scheme.applyMode ? (
-                <div className="detail-card__meta-item">
-                  <p className="type-label">Apply mode</p>
-                  <p className="type-caption">{toSentenceCase(scheme.applyMode)}</p>
-                </div>
-              ) : null}
-            </div>
-
-            {scheme.documents.length > 0 ? (
-              <div className="detail-card__section">
-                <h2 className="type-h2">Documents</h2>
-                <div className="detail-card__documents">
-                  {scheme.documents.map((document, index) => (
-                    <div key={`${document.en}-${index}`} className="detail-card__document">
-                      {document.en ? <p className="type-body-en">{document.en}</p> : null}
-                      {document.hi ? (
-                        <p className="type-caption hi" lang="hi">
-                          {document.hi}
-                        </p>
-                      ) : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            {scheme.applyUrl ? (
-              <a
-                href={scheme.applyUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="detail-card__apply btn-primary tap-target"
-              >
-                <span className="type-label">Open apply link</span>
-              </a>
-            ) : null}
-          </section>
+          <SchemeDetail
+            scheme={scheme}
+            schemeUrl={schemeUrl}
+            isSaved={isSaved}
+            isSavePending={saveMutation.isPending}
+            onToggleSave={() => saveMutation.mutate()}
+            onTrackApplication={() => trackMutation.mutate()}
+            isTrackPending={trackMutation.isPending}
+          />
         ) : null}
       </div>
 

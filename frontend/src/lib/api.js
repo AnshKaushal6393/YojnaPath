@@ -1,3 +1,5 @@
+import { getAuthToken } from "./authStorage";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 async function parseJson(response) {
@@ -11,11 +13,12 @@ async function parseJson(response) {
 
 async function apiRequest(path, options = {}) {
   const { token, headers, ...restOptions } = options;
+  const authToken = token || getAuthToken();
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...restOptions,
     headers: {
       Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...headers,
     },
   });
@@ -37,6 +40,25 @@ export function apiPost(path, body, options = {}) {
   return apiRequest(path, {
     ...options,
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+export function apiDelete(path, options = {}) {
+  return apiRequest(path, {
+    ...options,
+    method: "DELETE",
+  });
+}
+
+export function apiPatch(path, body, options = {}) {
+  return apiRequest(path, {
+    ...options,
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),

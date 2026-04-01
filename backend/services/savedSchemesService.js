@@ -1,9 +1,28 @@
 require("../config/env");
 
-const { getPool } = require("../config/postgres");
+const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
 
+let savedSchemaReadyPromise;
+
+async function ensureSavedSchemeSchema() {
+  if (!savedSchemaReadyPromise) {
+    savedSchemaReadyPromise = (async () => {
+      await ensureDatabaseSchema();
+      const pool = getPool();
+      await pool.query("ALTER TABLE saved_schemes ALTER COLUMN scheme_id TYPE VARCHAR(180)");
+      await pool.query("ALTER TABLE applications ALTER COLUMN scheme_id TYPE VARCHAR(180)");
+    })().catch((error) => {
+      savedSchemaReadyPromise = null;
+      throw error;
+    });
+  }
+
+  return savedSchemaReadyPromise;
+}
+
 async function listSavedSchemeRows(userId) {
+  await ensureSavedSchemeSchema();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -43,6 +62,7 @@ async function getSavedSchemesForUser(userId) {
 }
 
 async function saveSchemeForUser(userId, schemeId) {
+  await ensureSavedSchemeSchema();
   const pool = getPool();
   await pool.query(
     `
@@ -60,6 +80,7 @@ async function saveSchemeForUser(userId, schemeId) {
 }
 
 async function deleteSavedSchemeForUser(userId, schemeId) {
+  await ensureSavedSchemeSchema();
   const pool = getPool();
   const result = await pool.query(
     `

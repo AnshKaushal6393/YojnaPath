@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import HomeHero from "../components/HomeHero";
 import LastMatchSummary from "../components/LastMatchSummary";
@@ -19,6 +20,7 @@ function formatCachedDate(date) {
 }
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const authToken = getAuthToken();
   const localDraft = getProfileDraft();
   const [language, setLanguage] = useState("en");
@@ -87,6 +89,7 @@ export default function HomePage() {
             health={homeQuery.data?.health}
             isLoading={homeQuery.isLoading}
             error={homeQuery.error}
+            onExplore={() => navigate("/results")}
           />
         ) : (
           <UserTypeGrid />

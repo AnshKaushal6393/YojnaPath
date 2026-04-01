@@ -4,7 +4,9 @@ import Login from "./pages/Login";
 import OnboardPage from "./pages/OnboardPage";
 import Register from "./pages/Register";
 import ResultsPage from "./pages/ResultsPage";
+import SavedPage from "./pages/SavedPage";
 import SchemeDetailPage from "./pages/SchemeDetailPage";
+import TrackerPage from "./pages/TrackerPage";
 import VerifyOTP from "./pages/VerifyOTP";
 import { isAuthenticated } from "./utils/auth";
 
@@ -30,6 +32,8 @@ export default function App() {
         <Route path="/onboard" element={<OnboardPage />} />
         <Route path="/profile" element={<OnboardPage />} />
         <Route path="/results" element={<ResultsPage />} />
+        <Route path="/saved" element={<SavedPage />} />
+        <Route path="/tracker" element={<TrackerPage />} />
         <Route path="/schemes/:schemeId" element={<SchemeDetailPage />} />
       </Route>
 

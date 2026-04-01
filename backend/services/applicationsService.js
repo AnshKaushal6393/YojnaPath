@@ -1,9 +1,25 @@
 require("../config/env");
 
-const { getPool } = require("../config/postgres");
+const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
 
 const APPLICATION_STATUSES = ["applied", "pending", "approved", "rejected"];
+let applicationsSchemaReadyPromise;
+
+async function ensureApplicationsSchema() {
+  if (!applicationsSchemaReadyPromise) {
+    applicationsSchemaReadyPromise = (async () => {
+      await ensureDatabaseSchema();
+      const pool = getPool();
+      await pool.query("ALTER TABLE applications ALTER COLUMN scheme_id TYPE VARCHAR(180)");
+    })().catch((error) => {
+      applicationsSchemaReadyPromise = null;
+      throw error;
+    });
+  }
+
+  return applicationsSchemaReadyPromise;
+}
 
 function formatApplicationRow(row, scheme) {
   return {
@@ -25,6 +41,7 @@ function formatApplicationRow(row, scheme) {
 }
 
 async function getApplicationsForUser(userId) {
+  await ensureApplicationsSchema();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -50,6 +67,7 @@ async function getApplicationsForUser(userId) {
 }
 
 async function upsertApplicationForUser(userId, application) {
+  await ensureApplicationsSchema();
   const pool = getPool();
   const result = await pool.query(
     `
@@ -99,10 +117,16 @@ async function updateApplicationForUser(userId, schemeId, updates) {
     values.push(updates.notes);
   }
 
+  if (updates.remindAt !== undefined) {
+    fields.push(`remind_at = $${index++}`);
+    values.push(updates.remindAt);
+  }
+
   if (fields.length === 0) {
     return null;
   }
 
+  await ensureApplicationsSchema();
   values.push(userId, schemeId);
   const result = await pool.query(
     `
