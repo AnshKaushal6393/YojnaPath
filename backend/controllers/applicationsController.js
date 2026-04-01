@@ -48,6 +48,23 @@ function normalizeRemindAt(value) {
   return normalizeDate(value);
 }
 
+function isPastDate(value) {
+  if (!value) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  parsed.setHours(0, 0, 0, 0);
+  return parsed < today;
+}
+
 function computeRemindAt(appliedAt) {
   const base = new Date(appliedAt);
   base.setDate(base.getDate() + 30);
@@ -101,6 +118,9 @@ async function patchApplication(req, res) {
     const rawRemindAt = req.body?.remindAt ?? req.body?.remind_at;
     if (rawRemindAt !== null && remindAt === null) {
       return res.status(400).json({ message: "remindAt must be a valid date or null" });
+    }
+    if (remindAt && isPastDate(remindAt)) {
+      return res.status(400).json({ message: "remindAt cannot be in the past" });
     }
   }
 

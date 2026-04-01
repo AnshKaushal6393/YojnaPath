@@ -43,6 +43,9 @@ export default function AdaptiveForm({
   onChange,
   isSubmitting,
   submitLabel = "Continue to matching",
+  title = "Adaptive profile form",
+  subtitle = "केवल उन्हीं प्रश्न दिखेंगे जो आपके लिए जरूरी हैं।",
+  formId = "onboard-profile-form",
 }) {
   const activeFields = USER_TYPE_CONFIG[selectedUserType] || [];
 
@@ -56,9 +59,9 @@ export default function AdaptiveForm({
   return (
     <section className="onboard-card">
       <div className="section-heading">
-        <h2 className="type-h2">Adaptive profile form</h2>
+        <h2 className="type-h2">{title}</h2>
         <p className="type-caption hi" lang="hi">
-          केवल उन्हीं प्रश्न दिखेंगे जो आपके लिए जरूरी हैं।
+          {subtitle}
         </p>
       </div>
 
@@ -204,7 +207,7 @@ export default function AdaptiveForm({
         </p>
         <button
           type="submit"
-          form="onboard-profile-form"
+          form={formId}
           className={`demo-submit-button btn-primary onboard-submit ${isSubmitting ? "loading" : ""}`}
           disabled={isSubmitting}
         >

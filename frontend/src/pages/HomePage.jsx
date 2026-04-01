@@ -66,6 +66,23 @@ export default function HomePage() {
           savedProfileLabel={savedProfileLabel}
         />
 
+        <div className="home-public-links">
+          <button
+            type="button"
+            className="detail-card__secondary-button"
+            onClick={() => navigate("/impact")}
+          >
+            View public impact
+          </button>
+          <button
+            type="button"
+            className="detail-card__secondary-button"
+            onClick={() => navigate("/kiosk")}
+          >
+            Kiosk mode
+          </button>
+        </div>
+
         {!offlineBannerDismissed && homeQuery.isError ? (
           <div className="offline-banner state-info" role="status" aria-live="polite">
             <span className="type-caption">

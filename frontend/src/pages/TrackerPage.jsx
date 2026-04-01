@@ -1,7 +1,13 @@
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BottomNav from "../components/BottomNav";
 import ApplicationTimeline from "../components/ApplicationTimeline";
 import EmptyState from "../components/EmptyState";
+import {
+  getNotificationSupport,
+  notifyDueApplications,
+  requestNotificationPermission,
+} from "../lib/browserNotifications";
 import { fetchTrackedApplications, updateTrackedApplication } from "../lib/trackerApi";
 
 function addDays(value, days) {
@@ -12,6 +18,9 @@ function addDays(value, days) {
 
 export default function TrackerPage() {
   const queryClient = useQueryClient();
+  const [notificationPermission, setNotificationPermission] = useState(() =>
+    getNotificationSupport() ? Notification.permission : "unsupported"
+  );
   const trackerQuery = useQuery({
     queryKey: ["tracked-applications"],
     queryFn: fetchTrackedApplications,
@@ -26,6 +35,12 @@ export default function TrackerPage() {
 
   const applications = trackerQuery.data || [];
 
+  useEffect(() => {
+    if (applications.length) {
+      notifyDueApplications(applications);
+    }
+  }, [applications]);
+
   return (
     <main className="app-shell">
       <div className="tracker-page">
@@ -34,10 +49,25 @@ export default function TrackerPage() {
             <p className="eyebrow">Tracker</p>
             <h1 className="type-h1">Applied schemes timeline</h1>
             <p className="type-body-en">
-              Track application progress, update statuses, and keep WhatsApp reminders on for
-              schemes you do not want to miss.
+              Track application progress, update statuses, and keep free browser and calendar
+              reminders on for schemes you do not want to miss.
             </p>
           </div>
+          {getNotificationSupport() ? (
+            <button
+              type="button"
+              className="detail-card__secondary-button"
+              onClick={async () => {
+                const permission = await requestNotificationPermission();
+                setNotificationPermission(permission);
+              }}
+              disabled={notificationPermission === "granted"}
+            >
+              {notificationPermission === "granted"
+                ? "Browser notifications enabled"
+                : "Enable browser notifications"}
+            </button>
+          ) : null}
         </section>
 
         {trackerQuery.isLoading ? (
@@ -72,7 +102,7 @@ export default function TrackerPage() {
           <section className="tracker-panel">
             <ApplicationTimeline
               applications={applications}
-              updatingSchemeId={updateMutation.variables?.schemeId || ""}
+              updatingSchemeId={updateMutation.isPending ? updateMutation.variables?.schemeId || "" : ""}
               onStatusChange={(schemeId, status) => updateMutation.mutate({ schemeId, payload: { status } })}
               onToggleReminder={(application) =>
                 updateMutation.mutate({
@@ -84,12 +114,18 @@ export default function TrackerPage() {
                   },
                 })
               }
+              onSetReminderDate={(schemeId, remindAt) =>
+                updateMutation.mutate({
+                  schemeId,
+                  payload: { remindAt },
+                })
+              }
             />
           </section>
         ) : null}
       </div>
 
-      <BottomNav active="docs" />
+      <BottomNav active="calendar" />
     </main>
   );
 }

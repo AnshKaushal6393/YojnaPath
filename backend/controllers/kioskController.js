@@ -6,7 +6,7 @@ const { KIOSK_JWT_EXPIRES_IN } = require("../config/constants");
 const { getRequiredEnv } = require("../config/env");
 const { getMatchingSchemes } = require("../engine/matcher");
 const { recordKioskUsage, recordMatchAnalytics } = require("../services/analyticsService");
-const { resolveKioskId } = require("../services/kioskAuthService");
+const { resolveKiosk } = require("../services/kioskAuthService");
 const { buildMatchProfile, validateMatchProfile } = require("./schemesController");
 
 function buildPdfReadyData(kioskId, profile, result) {
@@ -39,15 +39,15 @@ async function kioskLogin(req, res) {
     return res.status(400).json({ message: "kioskCode must be an 8-character code" });
   }
 
-  const kioskId = resolveKioskId(kioskCode);
-  if (!kioskId) {
+  const kiosk = await resolveKiosk(kioskCode);
+  if (!kiosk) {
     return res.status(401).json({ message: "Invalid kiosk code" });
   }
 
   const jwtSecret = getRequiredEnv("JWT_SECRET");
   const token = jwt.sign(
     {
-      kioskId,
+      kioskId: kiosk.id,
       role: "kiosk",
     },
     jwtSecret,
@@ -56,7 +56,8 @@ async function kioskLogin(req, res) {
 
   return res.json({
     token,
-    kioskId,
+    kioskId: kiosk.id,
+    kioskName: kiosk.name,
     role: "kiosk",
   });
 }

@@ -11,7 +11,7 @@ export default function ReminderToggle({ enabled, onToggle, isPending }) {
         <span className="reminder-toggle__thumb" />
       </span>
       <span className="type-label">
-        {isPending ? "Updating..." : enabled ? "WhatsApp reminder on" : "WhatsApp reminder off"}
+        {isPending ? "Updating..." : enabled ? "Reminder on" : "Reminder off"}
       </span>
     </button>
   );

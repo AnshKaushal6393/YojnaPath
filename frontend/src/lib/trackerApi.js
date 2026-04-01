@@ -18,8 +18,37 @@ function formatDateLabel(value) {
   }).format(parsed);
 }
 
+function toDateInputValue(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) {
+    return String(value);
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  return parsed.toISOString().slice(0, 10);
+}
+
+function isPastDate(value) {
+  const normalized = toDateInputValue(value);
+  if (!normalized) {
+    return false;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  return normalized < today;
+}
+
 function normalizeApplication(item) {
   const scheme = item.scheme || {};
+  const hasPastReminder = isPastDate(item.remindAt);
+
   return {
     schemeId: item.schemeId,
     appliedAt: item.appliedAt,
@@ -27,9 +56,10 @@ function normalizeApplication(item) {
     status: item.status || "applied",
     statusLabel: toSentenceCase(item.status || "applied"),
     notes: normalizeText(item.notes, ""),
-    remindAt: item.remindAt,
-    remindAtLabel: formatDateLabel(item.remindAt),
-    reminderEnabled: Boolean(item.remindAt),
+    remindAt: hasPastReminder ? "" : toDateInputValue(item.remindAt),
+    remindAtLabel: hasPastReminder ? "" : formatDateLabel(item.remindAt),
+    reminderEnabled: Boolean(item.remindAt) && !hasPastReminder,
+    hasPastReminder,
     schemeName: normalizeText(scheme.name?.en, item.schemeId),
     schemeNameHi: normalizeText(scheme.name?.hi, ""),
     benefitAmount: formatBenefitAmount(scheme.benefitAmount),

@@ -4,9 +4,15 @@ export default function HomeHero({
   hasProfile,
   onProfileModeChange,
   savedProfileLabel = "Saved profile",
+  schemeCount = 0,
+  userTypeCount = 8,
 }) {
   return (
     <section className="home-hero">
+      <div className="home-hero__shape home-hero__shape--one" aria-hidden="true" />
+      <div className="home-hero__shape home-hero__shape--two" aria-hidden="true" />
+      <div className="home-hero__shape home-hero__shape--three" aria-hidden="true" />
+
       <div className="home-hero__topbar">
         <p className="type-display">YojnaPath</p>
         <div className="language-toggle" aria-label="Language toggle">
@@ -28,19 +34,29 @@ export default function HomeHero({
       </div>
 
       <div className="home-hero__body">
-        <p className="eyebrow">Schemes for you</p>
-        <h1 className="type-h1 hi" lang="hi">
-          {"\u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0916\u094b\u091c\u0947\u0902"}
+        <p className="eyebrow home-hero__eyebrow">Schemes for you</p>
+        <h1 className="type-h1 home-hero__title">Find your schemes</h1>
+        <p className="type-h2 hi home-hero__subtitle" lang="hi">
+          {"\u0905\u092a\u0928\u0940 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0916\u094b\u091c\u0947\u0902"}
         </h1>
-        <p className="type-body-en">
-          Fill your details once. Get every scheme you qualify for with documents and direct apply
-          links.
+        <p className="type-body-en home-hero__lead">
+          Your path to every government scheme you qualify for.
         </p>
-        <p className="type-body-hi hi" lang="hi">
-          {
-            "\u090f\u0915 \u092c\u093e\u0930 \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u092d\u0930\u0947\u0902\u0964 \u0938\u092d\u0940 \u092a\u093e\u0924\u094d\u0930 \u0938\u0930\u0915\u093e\u0930\u0940 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0926\u0947\u0916\u0947\u0902 - \u0926\u0938\u094d\u0924\u093e\u0935\u0947\u091c\u093c \u0914\u0930 \u0906\u0935\u0947\u0926\u0928 \u0932\u093f\u0902\u0915 \u0915\u0947 \u0938\u093e\u0925\u0964"
-          }
-        </p>
+      </div>
+
+      <div className="home-hero__stats" aria-label="Home hero highlights">
+        <div className="home-hero__stat">
+          <strong>{new Intl.NumberFormat("en-IN").format(Number(schemeCount || 0))}</strong>
+          <span className="type-caption">Schemes</span>
+        </div>
+        <div className="home-hero__stat">
+          <strong>{userTypeCount}</strong>
+          <span className="type-caption">User types</span>
+        </div>
+        <div className="home-hero__stat">
+          <strong>Hindi</strong>
+          <span className="type-caption">First</span>
+        </div>
       </div>
 
       <div className="home-mode-toggle" aria-label="Home screen mode">
