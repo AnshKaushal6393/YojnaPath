@@ -1,8 +1,18 @@
 export default function ResultsHeader({ count, nearMissCount = 0, isLoading }) {
+  const hasMatches = !isLoading && count > 0;
+
   return (
-    <section className="results-header">
+    <section className={`results-header ${hasMatches ? "results-header--success" : ""}`.trim()}>
+      <div className="matching-hero-shape matching-hero-shape--one" aria-hidden="true" />
+      <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
+
       <div className="section-heading">
         <p className="eyebrow">RESULTS</p>
+        {hasMatches ? (
+          <div className="results-header__celebration" aria-hidden="true">
+            {"\uD83C\uDF89"}
+          </div>
+        ) : null}
         <h1 className="type-h1">
           {isLoading ? "Finding schemes for you" : `${count} schemes matched`}
         </h1>

@@ -84,6 +84,14 @@ export const USER_TYPE_OPTIONS = [
     className: "category-agriculture",
   },
   {
+    key: "business",
+    label: "MSME",
+    labelHi: "\u0909\u0926\u094D\u092F\u092E",
+    iconLabel: "\u0909\u0926\u094D\u092F\u092E - MSME or business user type",
+    icon: "\uD83D\uDCBC",
+    className: "category-finance",
+  },
+  {
     key: "women",
     label: "Women",
     labelHi: "\u092e\u0939\u093f\u0932\u093e",

@@ -8,6 +8,7 @@ import {
   isMeaningfullyDifferent,
   normalizeMinistry,
   normalizeText,
+  toSentenceCase,
 } from "./schemeText";
 
 function pickFeaturedSchemeIds(schemes, limit = 6) {
@@ -76,6 +77,26 @@ function mapSchemeDetailToCard(scheme) {
   };
 }
 
+function buildCategoryHighlights(schemes, limit = 6) {
+  const counts = new Map();
+
+  schemes
+    .filter((scheme) => isSchemeVisibleNow(scheme))
+    .forEach((scheme) => {
+      const category = String(scheme.categories?.[0] || "agriculture").toLowerCase();
+      counts.set(category, (counts.get(category) || 0) + 1);
+    });
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([key, count]) => ({
+      key,
+      count,
+      label: toSentenceCase(key),
+    }));
+}
+
 export async function fetchHomeData() {
   const [health, impact, savedProfile, schemes] = await Promise.all([
     apiGet("/api/health"),
@@ -90,7 +111,9 @@ export async function fetchHomeData() {
     return {
       health,
       impact,
+      categoryHighlights: buildCategoryHighlights(schemes),
       recentMatches: (personalizedResults.schemes || []).slice(0, 6),
+      urgent: (personalizedResults.urgent || []).slice(0, 3),
     };
   }
 
@@ -102,6 +125,8 @@ export async function fetchHomeData() {
   return {
     health,
     impact,
+    categoryHighlights: buildCategoryHighlights(schemes),
+    urgent: [],
     recentMatches: recentSchemeDetails
       .filter((scheme) => isSchemeVisibleNow(scheme))
       .map(mapSchemeDetailToCard),

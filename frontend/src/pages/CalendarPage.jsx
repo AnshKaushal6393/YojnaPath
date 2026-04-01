@@ -47,6 +47,9 @@ export default function CalendarPage() {
     <main className="app-shell">
       <div className="calendar-page">
         <section className="calendar-header">
+          <div className="matching-hero-shape matching-hero-shape--one" aria-hidden="true" />
+          <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
+
           <div className="section-heading">
             <p className="eyebrow">Calendar</p>
             <h1 className="type-h1">Reminder calendar</h1>

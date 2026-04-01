@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { getCategoryMeta } from "../lib/categoryMeta";
 
 export default function SchemeCard({
   schemeId,
@@ -50,6 +51,7 @@ export default function SchemeCard({
   const statusClass = statusClassMap[matchStatus] || "";
   const categoryClass = `category-${category}`;
   const categoryLabel = toSentenceCase(category);
+  const categoryMeta = getCategoryMeta(category, categoryLabel);
   const scopeLabel = state === "central" ? "Central" : state;
   const showMinistry = isMeaningful(ministry);
   const showHindiName = isMeaningful(schemeNameHi);
@@ -92,8 +94,15 @@ export default function SchemeCard({
 
       <div className="scheme-card__content">
         {showMinistry ? <p className="type-caption">{ministry}</p> : null}
-        <h3 className="scheme-card__title-en">{schemeName}</h3>
-        {showHindiName ? <p className="scheme-card__title-hi hi">{schemeNameHi}</p> : null}
+        <div className="scheme-card__identity">
+          <div className={`scheme-card__icon-box ${categoryMeta.tone}`} aria-hidden="true">
+            {categoryMeta.icon}
+          </div>
+          <div className="scheme-card__title-block">
+            <h3 className="scheme-card__title-en">{schemeName}</h3>
+            {showHindiName ? <p className="scheme-card__title-hi hi">{schemeNameHi}</p> : null}
+          </div>
+        </div>
         <p className="scheme-description scheme-description--en">{description}</p>
         {showHindiDescription ? (
           <p className="scheme-description scheme-description--hi hi">{descriptionHi}</p>

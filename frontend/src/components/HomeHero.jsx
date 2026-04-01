@@ -38,7 +38,7 @@ export default function HomeHero({
         <h1 className="type-h1 home-hero__title">Find your schemes</h1>
         <p className="type-h2 hi home-hero__subtitle" lang="hi">
           {"\u0905\u092a\u0928\u0940 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0916\u094b\u091c\u0947\u0902"}
-        </h1>
+        </p>
         <p className="type-body-en home-hero__lead">
           Your path to every government scheme you qualify for.
         </p>
@@ -54,8 +54,8 @@ export default function HomeHero({
           <span className="type-caption">User types</span>
         </div>
         <div className="home-hero__stat">
-          <strong>Hindi</strong>
-          <span className="type-caption">First</span>
+          <strong>2G</strong>
+          <span className="type-caption">Ready</span>
         </div>
       </div>
 

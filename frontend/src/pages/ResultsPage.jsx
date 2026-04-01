@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import BottomNav from "../components/BottomNav";
 import EmptyState from "../components/EmptyState";
@@ -53,7 +53,9 @@ function buildFilterItems(activeFilter, schemes) {
 }
 
 export default function ResultsPage() {
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategoryFilter = searchParams.get("category") || "all";
+  const [activeFilter, setActiveFilter] = useState(initialCategoryFilter);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllNearMisses, setShowAllNearMisses] = useState(false);
 
@@ -98,9 +100,22 @@ export default function ResultsPage() {
     }
   }, [currentPage, totalPages]);
 
+  useEffect(() => {
+    const urlFilter = searchParams.get("category") || "all";
+    setActiveFilter(urlFilter);
+  }, [searchParams]);
+
   function handleFilterSelect(value) {
     setActiveFilter(value);
     setCurrentPage(1);
+
+    const nextParams = new URLSearchParams(searchParams);
+    if (value === "all") {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", value);
+    }
+    setSearchParams(nextParams, { replace: true });
   }
 
   if (resultsQuery.isSuccess && !resultsQuery.data?.profile) {

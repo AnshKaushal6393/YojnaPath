@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { getCategoryMeta } from "../lib/categoryMeta";
 
 export default function NearMissCard({
   schemeId,
@@ -12,6 +13,7 @@ export default function NearMissCard({
   gapLabelHi,
 }) {
   const navigate = useNavigate();
+  const categoryMeta = getCategoryMeta(categoryKey || "agriculture", category);
 
   function openDetail() {
     navigate(`/schemes/${schemeId}`);
@@ -51,8 +53,15 @@ export default function NearMissCard({
         <div className="scheme-card__status-badge status-border-near-miss">
           <span className="type-micro">Almost qualifies</span>
         </div>
-        <h3 className="scheme-card__title-en">{schemeName}</h3>
-        {schemeNameHi ? <p className="scheme-card__title-hi hi">{schemeNameHi}</p> : null}
+        <div className="scheme-card__identity">
+          <div className={`scheme-card__icon-box ${categoryMeta.tone}`} aria-hidden="true">
+            {categoryMeta.icon}
+          </div>
+          <div className="scheme-card__title-block">
+            <h3 className="scheme-card__title-en">{schemeName}</h3>
+            {schemeNameHi ? <p className="scheme-card__title-hi hi">{schemeNameHi}</p> : null}
+          </div>
+        </div>
         <p className="scheme-description scheme-description--en">{gapLabel}</p>
         {gapLabelHi ? <p className="scheme-description scheme-description--hi hi">{gapLabelHi}</p> : null}
         <span className="scheme-card__expand-row" aria-hidden="true">

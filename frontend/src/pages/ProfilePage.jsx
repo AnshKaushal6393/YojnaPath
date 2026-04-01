@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AccountSection from "../components/AccountSection";
 import BottomNav from "../components/BottomNav";
 import LanguageToggle from "../components/LanguageToggle";
+import ProfileIdentityCard from "../components/ProfileIdentityCard";
 import ProfileForm from "../components/ProfileForm";
 import { clearAuthToken } from "../lib/authStorage";
 import {
@@ -179,6 +180,9 @@ export default function ProfilePage() {
     <main className="app-shell">
       <div className="profile-page">
         <section className="profile-hero">
+          <div className="matching-hero-shape matching-hero-shape--one" aria-hidden="true" />
+          <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
+
           <div className="section-heading">
             <p className="eyebrow">PROFILE</p>
             <h1 className="type-h1">Manage your saved details</h1>
@@ -190,6 +194,13 @@ export default function ProfilePage() {
             </p>
           </div>
         </section>
+
+        <ProfileIdentityCard
+          name={name}
+          selectedUserType={selectedUserType}
+          state={formState.state}
+          caste={formState.caste}
+        />
 
         <LanguageToggle value={lang} onChange={setLang} disabled={isBusy} />
 

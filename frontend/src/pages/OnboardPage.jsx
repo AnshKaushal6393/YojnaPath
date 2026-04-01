@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import AdaptiveForm from "../components/AdaptiveForm";
+import OnboardingSteps from "../components/OnboardingSteps";
 import UserTypeSelector from "../components/UserTypeSelector";
 import { clearAuthToken, getAuthToken } from "../lib/authStorage";
 import {
@@ -157,6 +158,9 @@ export default function OnboardPage() {
     <main className="app-shell">
       <div className="onboard-page">
         <section className="onboard-hero">
+          <div className="matching-hero-shape matching-hero-shape--one" aria-hidden="true" />
+          <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
+
           <div className="section-heading">
             <p className="eyebrow">ONBOARDING</p>
             <h1 className="type-h1">
@@ -193,6 +197,7 @@ export default function OnboardPage() {
           ) : null}
         </section>
 
+        <OnboardingSteps />
         <UserTypeSelector selectedUserType={selectedUserType} onSelect={handleUserTypeChange} />
         <form id="onboard-profile-form" className="onboard-form-shell" onSubmit={handleSubmit}>
           <AdaptiveForm
