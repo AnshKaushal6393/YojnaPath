@@ -2,7 +2,9 @@ const {
   ALLOWED_CASTES,
   ALLOWED_GENDERS,
   ALLOWED_OCCUPATIONS,
+  deleteProfileByUserId,
   getProfileByUserId,
+  listProfilesByUserId,
   upsertProfile,
 } = require("../services/profileService");
 
@@ -61,6 +63,8 @@ function buildProfilePayload(body) {
   const isMigrantRaw = body?.isMigrant ?? body?.is_migrant;
 
   return {
+    profileName: normalizeOptionalString(body?.profileName ?? body?.profile_name),
+    relation: normalizeOptionalString(body?.relation),
     state: normalizeOptionalString(body?.state)?.toUpperCase() ?? null,
     occupation: normalizeOptionalString(body?.occupation),
     annualIncome: normalizeInteger(annualIncomeRaw, 0),
@@ -82,7 +86,7 @@ function validateProfilePayload(profile) {
   }
 
   if (!profile.occupation || !ALLOWED_OCCUPATIONS.includes(profile.occupation)) {
-    return "occupation must be one of the supported 8 user types";
+    return "occupation must be one of the supported user types";
   }
 
   if (Number.isNaN(profile.annualIncome) || profile.annualIncome < 0) {
@@ -129,12 +133,27 @@ function validateProfilePayload(profile) {
     return "lang must be hi or en";
   }
 
+  if (profile.profileName && profile.profileName.length > 120) {
+    return "profileName must be at most 120 characters";
+  }
+
+  if (profile.relation && profile.relation.length > 40) {
+    return "relation must be at most 40 characters";
+  }
+
   return null;
+}
+
+async function listProfiles(req, res) {
+  const userId = req.user.id;
+  const profiles = await listProfilesByUserId(userId);
+  return res.json({ profiles });
 }
 
 async function getProfile(req, res) {
   const userId = req.user.id;
-  const profile = await getProfileByUserId(userId);
+  const profileId = normalizeOptionalString(req.query?.profileId);
+  const profile = await getProfileByUserId(userId, profileId);
 
   if (!profile) {
     return res.json({ userId });
@@ -145,6 +164,7 @@ async function getProfile(req, res) {
 
 async function saveProfile(req, res) {
   const userId = req.user.id;
+  const profileId = normalizeOptionalString(req.body?.profileId ?? req.body?.profile_id);
   const profile = buildProfilePayload(req.body);
   const validationError = validateProfilePayload(profile);
 
@@ -152,13 +172,38 @@ async function saveProfile(req, res) {
     return res.status(400).json({ message: validationError });
   }
 
-  const savedProfile = await upsertProfile(userId, profile);
+  const savedProfile = await upsertProfile(userId, profileId, profile);
   return res.json(savedProfile);
+}
+
+async function deleteProfile(req, res) {
+  const userId = req.user.id;
+  const profileId = normalizeOptionalString(req.params?.profileId);
+
+  if (!profileId) {
+    return res.status(400).json({ message: "profileId is required" });
+  }
+
+  try {
+    const profiles = await deleteProfileByUserId(userId, profileId);
+    return res.json({ profiles });
+  } catch (error) {
+    if (
+      error.message === "Profile not found" ||
+      error.message === "You must keep at least one family profile."
+    ) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    throw error;
+  }
 }
 
 module.exports = {
   buildProfilePayload,
+  deleteProfile,
   getProfile,
+  listProfiles,
   saveProfile,
   validateProfilePayload,
 };

@@ -6,6 +6,7 @@ const ALLOWED_GENDERS = ["male", "female", "other"];
 const ALLOWED_CASTES = ["sc", "st", "obc", "general"];
 const ALLOWED_OCCUPATIONS = [
   "farmer",
+  "business",
   "women",
   "student",
   "worker",
@@ -35,14 +36,41 @@ async function ensureProfilesSchema() {
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 'profiles'
           ) THEN
+            ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_key;
             ALTER TABLE profiles
               ALTER COLUMN state TYPE VARCHAR(50);
+            ALTER TABLE profiles
+              ALTER COLUMN user_id DROP NOT NULL;
+            ALTER TABLE profiles
+              ALTER COLUMN user_id SET NOT NULL;
+            ALTER TABLE profiles
+              ADD COLUMN IF NOT EXISTS profile_name VARCHAR(120);
+            ALTER TABLE profiles
+              ADD COLUMN IF NOT EXISTS relation VARCHAR(40);
+            ALTER TABLE profiles
+              ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
+            UPDATE profiles p
+            SET
+              profile_name = COALESCE(NULLIF(u.name, ''), 'Family member'),
+              is_primary = COALESCE(p.is_primary, TRUE)
+            FROM users u
+            WHERE p.user_id = u.id
+              AND (p.profile_name IS NULL OR p.profile_name = '');
+            UPDATE profiles
+            SET profile_name = 'Family member'
+            WHERE profile_name IS NULL OR profile_name = '';
+            UPDATE profiles
+            SET is_primary = TRUE
+            WHERE is_primary IS NULL;
+            ALTER TABLE profiles
+              ALTER COLUMN profile_name SET NOT NULL;
             ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_occupation_check;
             ALTER TABLE profiles
               ADD CONSTRAINT profiles_occupation_check
               CHECK (
                 occupation IN (
                   'farmer',
+                  'business',
                   'women',
                   'student',
                   'worker',
@@ -77,7 +105,11 @@ function mapProfileRow(row) {
   }
 
   return {
+    id: row.id,
     userId: row.user_id,
+    profileName: row.profile_name,
+    relation: row.relation,
+    isPrimary: row.is_primary,
     state: row.state,
     occupation: row.occupation,
     annualIncome: row.annual_income,
@@ -93,13 +125,17 @@ function mapProfileRow(row) {
   };
 }
 
-async function getProfileByUserId(userId) {
+async function getProfileByUserId(userId, profileId = null) {
   await ensureProfilesSchema();
   const pool = getPool();
   const result = await pool.query(
     `
       SELECT
+        p.id,
         p.user_id,
+        p.profile_name,
+        p.relation,
+        p.is_primary,
         p.state,
         p.occupation,
         p.annual_income,
@@ -115,15 +151,51 @@ async function getProfileByUserId(userId) {
       FROM profiles p
       JOIN users u ON u.id = p.user_id
       WHERE p.user_id = $1
+        AND ($2::uuid IS NULL OR p.id = $2::uuid)
+      ORDER BY p.is_primary DESC, p.updated_at DESC
       LIMIT 1
     `,
-    [userId]
+    [userId, profileId]
   );
 
   return mapProfileRow(result.rows[0] ?? null);
 }
 
-async function upsertProfile(userId, profile) {
+async function listProfilesByUserId(userId) {
+  await ensureProfilesSchema();
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT
+        p.id,
+        p.user_id,
+        p.profile_name,
+        p.relation,
+        p.is_primary,
+        p.state,
+        p.occupation,
+        p.annual_income,
+        p.caste,
+        p.gender,
+        p.age,
+        p.land_acres,
+        p.disability_pct,
+        p.is_student,
+        p.is_migrant,
+        p.district,
+        u.lang
+      FROM profiles p
+      JOIN users u ON u.id = p.user_id
+      WHERE p.user_id = $1
+      ORDER BY p.is_primary DESC, p.updated_at DESC, p.id ASC
+    `,
+    [userId]
+  );
+
+  return result.rows.map(mapProfileRow);
+}
+
+async function upsertProfile(userId, profileId, profile) {
   await ensureProfilesSchema();
   const pool = getPool();
   const client = await pool.connect();
@@ -131,68 +203,150 @@ async function upsertProfile(userId, profile) {
   try {
     await client.query("BEGIN");
 
-    const result = await client.query(
+    const userInfoResult = await client.query(
       `
-        INSERT INTO profiles (
-          user_id,
-          state,
-          occupation,
-          annual_income,
-          caste,
-          gender,
-          age,
-          land_acres,
-          disability_pct,
-          is_student,
-          is_migrant,
-          district,
-          updated_at
-        )
-        VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW()
-        )
-        ON CONFLICT (user_id) DO UPDATE SET
-          state = EXCLUDED.state,
-          occupation = EXCLUDED.occupation,
-          annual_income = EXCLUDED.annual_income,
-          caste = EXCLUDED.caste,
-          gender = EXCLUDED.gender,
-          age = EXCLUDED.age,
-          land_acres = EXCLUDED.land_acres,
-          disability_pct = EXCLUDED.disability_pct,
-          is_student = EXCLUDED.is_student,
-          is_migrant = EXCLUDED.is_migrant,
-          district = EXCLUDED.district,
-          updated_at = NOW()
-        RETURNING
-          user_id,
-          state,
-          occupation,
-          annual_income,
-          caste,
-          gender,
-          age,
-          land_acres,
-          disability_pct,
-          is_student,
-          is_migrant,
-          district
+        SELECT name, lang
+        FROM users
+        WHERE id = $1
+        LIMIT 1
       `,
-      [
-        userId,
-        profile.state,
-        profile.occupation,
-        profile.annualIncome,
-        profile.caste,
-        profile.gender,
-        profile.age,
-        profile.landAcres,
-        profile.disabilityPct,
-        profile.isStudent,
-        profile.isMigrant,
-        profile.district,
-      ]
+      [userId]
     );
+    const userInfo = userInfoResult.rows[0] || {};
+    const resolvedProfileName = profile.profileName || userInfo.name || "Family member";
+
+    const existingCountResult = await client.query(
+      `
+        SELECT COUNT(*)::integer AS count
+        FROM profiles
+        WHERE user_id = $1
+      `,
+      [userId]
+    );
+    const existingCount = existingCountResult.rows[0]?.count ?? 0;
+
+    let result;
+    if (profileId) {
+      result = await client.query(
+        `
+          UPDATE profiles
+          SET
+            profile_name = $3,
+            relation = $4,
+            state = $5,
+            occupation = $6,
+            annual_income = $7,
+            caste = $8,
+            gender = $9,
+            age = $10,
+            land_acres = $11,
+            disability_pct = $12,
+            is_student = $13,
+            is_migrant = $14,
+            district = $15,
+            updated_at = NOW()
+          WHERE user_id = $1 AND id = $2
+          RETURNING
+            id,
+            user_id,
+            profile_name,
+            relation,
+            is_primary,
+            state,
+            occupation,
+            annual_income,
+            caste,
+            gender,
+            age,
+            land_acres,
+            disability_pct,
+            is_student,
+            is_migrant,
+            district
+        `,
+        [
+          userId,
+          profileId,
+          resolvedProfileName,
+          profile.relation,
+          profile.state,
+          profile.occupation,
+          profile.annualIncome,
+          profile.caste,
+          profile.gender,
+          profile.age,
+          profile.landAcres,
+          profile.disabilityPct,
+          profile.isStudent,
+          profile.isMigrant,
+          profile.district,
+        ]
+      );
+    } else {
+      result = await client.query(
+        `
+          INSERT INTO profiles (
+            user_id,
+            profile_name,
+            relation,
+            is_primary,
+            state,
+            occupation,
+            annual_income,
+            caste,
+            gender,
+            age,
+            land_acres,
+            disability_pct,
+            is_student,
+            is_migrant,
+            district,
+            updated_at
+          )
+          VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW()
+          )
+          RETURNING
+            id,
+            user_id,
+            profile_name,
+            relation,
+            is_primary,
+            state,
+            occupation,
+            annual_income,
+            caste,
+            gender,
+            age,
+            land_acres,
+            disability_pct,
+            is_student,
+            is_migrant,
+            district
+        `,
+        [
+          userId,
+          resolvedProfileName,
+          profile.relation,
+          existingCount === 0,
+          profile.state,
+          profile.occupation,
+          profile.annualIncome,
+          profile.caste,
+          profile.gender,
+          profile.age,
+          profile.landAcres,
+          profile.disabilityPct,
+          profile.isStudent,
+          profile.isMigrant,
+          profile.district,
+        ]
+      );
+    }
+
+    if (!result.rows.length) {
+      throw new Error("Profile not found");
+    }
 
     let lang = null;
     if (profile.lang) {
@@ -207,16 +361,7 @@ async function upsertProfile(userId, profile) {
       );
       lang = userResult.rows[0]?.lang ?? null;
     } else {
-      const userResult = await client.query(
-        `
-          SELECT lang
-          FROM users
-          WHERE id = $1
-          LIMIT 1
-        `,
-        [userId]
-      );
-      lang = userResult.rows[0]?.lang ?? null;
+      lang = userInfo.lang ?? null;
     }
 
     await client.query("COMMIT");
@@ -233,10 +378,105 @@ async function upsertProfile(userId, profile) {
   }
 }
 
+async function deleteProfileByUserId(userId, profileId) {
+  await ensureProfilesSchema();
+  const pool = getPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const existingProfilesResult = await client.query(
+      `
+        SELECT id, is_primary
+        FROM profiles
+        WHERE user_id = $1
+        ORDER BY is_primary DESC, updated_at DESC, id ASC
+      `,
+      [userId]
+    );
+
+    const existingProfiles = existingProfilesResult.rows;
+
+    if (existingProfiles.length <= 1) {
+      throw new Error("You must keep at least one family profile.");
+    }
+
+    const profileToDelete = existingProfiles.find((profile) => profile.id === profileId);
+
+    if (!profileToDelete) {
+      throw new Error("Profile not found");
+    }
+
+    await client.query(
+      `
+        DELETE FROM profiles
+        WHERE user_id = $1 AND id = $2
+      `,
+      [userId, profileId]
+    );
+
+    if (profileToDelete.is_primary) {
+      const nextPrimaryProfile = existingProfiles.find((profile) => profile.id !== profileId);
+
+      if (nextPrimaryProfile) {
+        await client.query(
+          `
+            UPDATE profiles
+            SET is_primary = CASE WHEN id = $2 THEN TRUE ELSE FALSE END,
+                updated_at = NOW()
+            WHERE user_id = $1
+          `,
+          [userId, nextPrimaryProfile.id]
+        );
+      }
+    }
+
+    const remainingProfiles = await client.query(
+      `
+        SELECT
+          p.id,
+          p.user_id,
+          p.profile_name,
+          p.relation,
+          p.is_primary,
+          p.state,
+          p.occupation,
+          p.annual_income,
+          p.caste,
+          p.gender,
+          p.age,
+          p.land_acres,
+          p.disability_pct,
+          p.is_student,
+          p.is_migrant,
+          p.district,
+          u.lang
+        FROM profiles p
+        JOIN users u ON u.id = p.user_id
+        WHERE p.user_id = $1
+        ORDER BY p.is_primary DESC, p.updated_at DESC, p.id ASC
+      `,
+      [userId]
+    );
+
+    await client.query("COMMIT");
+
+    return remainingProfiles.rows.map(mapProfileRow);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   ALLOWED_CASTES,
   ALLOWED_GENDERS,
   ALLOWED_OCCUPATIONS,
+  deleteProfileByUserId,
   getProfileByUserId,
+  listProfilesByUserId,
   upsertProfile,
 };

@@ -14,6 +14,11 @@ export const CATEGORY_META = {
     tone: "category-finance",
     label: "Finance",
   },
+  business: {
+    icon: "\uD83D\uDCBC",
+    tone: "category-finance",
+    label: "MSME",
+  },
   housing: {
     icon: "\uD83C\uDFE0",
     tone: "category-housing",

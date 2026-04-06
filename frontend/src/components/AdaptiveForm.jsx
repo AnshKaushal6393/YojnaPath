@@ -9,6 +9,7 @@ import VoiceInputButton from "./VoiceInputButton";
 
 const USER_TYPE_CONFIG = {
   farmer: ["state", "gender", "caste", "age", "incomeBand", "landBand", "notes"],
+  business: ["state", "gender", "caste", "age", "incomeBand", "notes"],
   women: ["state", "caste", "age", "incomeBand", "notes"],
   student: ["state", "gender", "caste", "age", "incomeBand", "notes"],
   worker: ["state", "gender", "caste", "age", "incomeBand", "notes"],
@@ -19,7 +20,7 @@ const USER_TYPE_CONFIG = {
 };
 
 const AGE_BANDS = [
-  { value: "under_18", labelEn: "Under 18", labelHi: "18 से कम" },
+  { value: "under_18", labelEn: "Under 18", labelHi: "18 \u0938\u0947 \u0915\u092e" },
   { value: "18_35", labelEn: "18 - 35", labelHi: "18 - 35" },
   { value: "36_59", labelEn: "36 - 59", labelHi: "36 - 59" },
   { value: "60_plus", labelEn: "60+", labelHi: "60+" },
@@ -31,10 +32,10 @@ function FieldLabel({ children }) {
 
 function getIncomeLabel(selectedUserType) {
   if (selectedUserType === "student") {
-    return "Family income / पारिवारिक आय";
+    return "Family income / \u092a\u093e\u0930\u093f\u0935\u093e\u0930\u093f\u0915 \u0906\u092f";
   }
 
-  return "Annual income / वार्षिक आय";
+  return "Annual income / \u0935\u093e\u0930\u094d\u0937\u093f\u0915 \u0906\u092f";
 }
 
 export default function AdaptiveForm({
@@ -44,8 +45,10 @@ export default function AdaptiveForm({
   isSubmitting,
   submitLabel = "Continue to matching",
   title = "Adaptive profile form",
-  subtitle = "केवल उन्हीं प्रश्न दिखेंगे जो आपके लिए जरूरी हैं।",
+  subtitle =
+    "\u0915\u0947\u0935\u0932 \u0909\u0928\u094d\u0939\u0940\u0902 \u092a\u094d\u0930\u0936\u094d\u0928 \u0926\u093f\u0916\u0947\u0902\u0917\u0947 \u091c\u094b \u0906\u092a\u0915\u0947 \u0932\u093f\u090f \u091c\u0930\u0942\u0930\u0940 \u0939\u0948\u0902\u0964",
   formId = "onboard-profile-form",
+  showNotes = true,
 }) {
   const activeFields = USER_TYPE_CONFIG[selectedUserType] || [];
 
@@ -68,7 +71,7 @@ export default function AdaptiveForm({
       <div className="onboard-form-grid">
         {activeFields.includes("state") ? (
           <div className="demo-field">
-            <FieldLabel>State / राज्य</FieldLabel>
+            <FieldLabel>{"State / \u0930\u093e\u091c\u094d\u092f"}</FieldLabel>
             <select
               className="demo-select"
               value={formState.state}
@@ -86,7 +89,7 @@ export default function AdaptiveForm({
 
         {activeFields.includes("gender") ? (
           <div className="demo-field">
-            <FieldLabel>Gender / लिंग</FieldLabel>
+            <FieldLabel>{"Gender / \u0932\u093f\u0902\u0917"}</FieldLabel>
             <select
               className="demo-select"
               value={formState.gender}
@@ -104,7 +107,7 @@ export default function AdaptiveForm({
 
         {activeFields.includes("caste") ? (
           <div className="demo-field">
-            <FieldLabel>Category / श्रेणी</FieldLabel>
+            <FieldLabel>{"Category / \u0936\u094d\u0930\u0947\u0923\u0940"}</FieldLabel>
             <select
               className="demo-select"
               value={formState.caste}
@@ -122,7 +125,7 @@ export default function AdaptiveForm({
 
         {activeFields.includes("age") ? (
           <div className="demo-field">
-            <FieldLabel>Age / आयु</FieldLabel>
+            <FieldLabel>{"Age / \u0906\u092f\u0941"}</FieldLabel>
             <select
               className="demo-select"
               value={formState.ageBand}
@@ -158,7 +161,7 @@ export default function AdaptiveForm({
 
         {activeFields.includes("landBand") ? (
           <div className="demo-field">
-            <FieldLabel>Land size / जमीन</FieldLabel>
+            <FieldLabel>{"Land size / \u091c\u092e\u0940\u0928"}</FieldLabel>
             <select
               className="demo-select"
               value={formState.landBand}
@@ -175,14 +178,18 @@ export default function AdaptiveForm({
         ) : null}
       </div>
 
-      {activeFields.includes("notes") ? (
+      {showNotes && activeFields.includes("notes") ? (
         <div className="demo-field onboard-notes-field">
-          <FieldLabel>Anything else we should know? / कुछ और बताना है?</FieldLabel>
+          <FieldLabel>
+            {"Anything else we should know? / \u0915\u0941\u091b \u0914\u0930 \u092c\u0924\u093e\u0928\u093e \u0939\u0948?"}
+          </FieldLabel>
           <p className="type-caption">
             Optional. Add any special detail only if it will help us find better schemes.
           </p>
           <p className="type-caption hi" lang="hi">
-            वैकल्पिक है। सिर्फ वही अतिरिक्त बात लिखें जो बेहतर योजनाएं ढूंढने में मदद करे।
+            {
+              "\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915 \u0939\u0948\u0964 \u0938\u093f\u0930\u094d\u092b \u0935\u0939\u0940 \u0905\u0924\u093f\u0930\u093f\u0915\u094d\u0924 \u092c\u093e\u0924 \u0932\u093f\u0916\u0947\u0902 \u091c\u094b \u092c\u0947\u0939\u0924\u0930 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0922\u0942\u0902\u0922\u0928\u0947 \u092e\u0947\u0902 \u092e\u0926\u0926 \u0915\u0930\u0947\u0964"
+            }
           </p>
           <textarea
             className="demo-select onboard-notes"
@@ -203,7 +210,9 @@ export default function AdaptiveForm({
 
       <div className="onboard-form-footer">
         <p className="type-caption hi" lang="hi">
-          आगे हम इसी जानकारी से आपके लिए सही योजनाएं ढूंढेंगे।
+          {
+            "\u0906\u0917\u0947 \u0939\u092e \u0907\u0938\u0940 \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u0938\u0947 \u0906\u092a\u0915\u0947 \u0932\u093f\u090f \u0938\u0939\u0940 \u092f\u094b\u091c\u0928\u093e\u090f\u0902 \u0922\u0942\u0902\u0922\u0947\u0902\u0917\u0947\u0964"
+          }
         </p>
         <button
           type="submit"

@@ -1,17 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import CategoryHighlights from "../components/CategoryHighlights";
+import FamilyProfilesPanel from "../components/FamilyProfilesPanel";
 import HomeHero from "../components/HomeHero";
 import LastMatchSummary from "../components/LastMatchSummary";
 import RecentMatches from "../components/RecentMatches";
 import UrgencyBanner from "../components/UrgencyBanner";
 import UserTypeGrid from "../components/UserTypeGrid";
+import { setActiveProfileId } from "../lib/activeProfile";
 import { getAuthToken } from "../lib/authStorage";
 import { fetchHomeData } from "../lib/homeApi";
-import { fetchSavedProfile } from "../lib/onboardApi";
+import { fetchProfileMembers, fetchSavedProfile } from "../lib/onboardApi";
 import { getProfileDraft, getProfileDraftStorageMode, hasProfileDraft } from "../lib/profileDraft";
+import { fetchCurrentUser } from "../lib/registrationApi";
+
+function normalizeComparisonName(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
 
 function formatCachedDate(date) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -47,6 +57,7 @@ function buildUrgencyText(urgentSchemes) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const authToken = getAuthToken();
   const localDraft = getProfileDraft();
   const [language, setLanguage] = useState("en");
@@ -66,15 +77,43 @@ export default function HomePage() {
     enabled: Boolean(authToken),
   });
 
+  const currentUserQuery = useQuery({
+    queryKey: ["current-user"],
+    queryFn: fetchCurrentUser,
+    enabled: Boolean(authToken),
+  });
+
+  const profileMembersQuery = useQuery({
+    queryKey: ["profile-members"],
+    queryFn: fetchProfileMembers,
+    enabled: Boolean(authToken),
+  });
+
   const hasSyncedProfile = Boolean(savedProfileQuery.data);
   const hasDeviceDraft = Boolean(localDraft);
   const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes);
+  const activeProfileName =
+    savedProfileQuery.data?.profileName || localDraft?.profileName || "";
+  const accountOwnerHasProfile = useMemo(() => {
+    const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
+    if (!ownerName) {
+      return false;
+    }
+
+    return (profileMembersQuery.data || []).some(
+      (member) => normalizeComparisonName(member.profileName) === ownerName
+    );
+  }, [currentUserQuery.data?.name, profileMembersQuery.data]);
   const savedProfileLabel = hasSyncedProfile
-    ? "Saved profile"
+    ? activeProfileName
+      ? `${activeProfileName}'s profile`
+      : "Saved profile"
     : draftStorageMode === "draft_only"
-      ? "Saved on device"
+      ? activeProfileName
+        ? `${activeProfileName} on device`
+        : "Saved on device"
       : "Saved profile";
 
   useEffect(() => {
@@ -90,6 +129,18 @@ export default function HomePage() {
     }
 
     navigate("/onboard");
+  }
+
+  function handleProfileSwitch(member) {
+    if (!member?.id) {
+      return;
+    }
+
+    setActiveProfileId(member.id);
+    queryClient.cancelQueries({ queryKey: ["home-data"] });
+    queryClient.cancelQueries({ queryKey: ["home-saved-profile"] });
+    queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
+    queryClient.invalidateQueries({ queryKey: ["home-data"] });
   }
 
   return (
@@ -136,6 +187,18 @@ export default function HomePage() {
               {"\u00d7"}
             </button>
           </div>
+        ) : null}
+
+        {hasProfile && (profileMembersQuery.data?.length || 0) > 1 ? (
+          <FamilyProfilesPanel
+            members={profileMembersQuery.data || []}
+            activeProfileId={savedProfileQuery.data?.id || ""}
+            onSelect={handleProfileSwitch}
+            onCreateNew={() => navigate("/profile")}
+            onCreateOwnerProfile={() => navigate("/profile")}
+            accountOwnerName={currentUserQuery.data?.name || ""}
+            accountOwnerHasProfile={accountOwnerHasProfile}
+          />
         ) : null}
 
         <CategoryHighlights

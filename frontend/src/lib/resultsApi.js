@@ -15,6 +15,7 @@ const NEAR_MISS_LIMIT = 12;
 
 const RELEVANT_NEAR_MISS_CATEGORIES = {
   farmer: ["agriculture", "finance", "housing", "labour"],
+  business: ["finance", "skill_and_employment", "housing", "labour"],
   women: ["women", "health", "education", "finance", "housing"],
   student: ["education", "finance", "skill_and_employment"],
   worker: ["labour", "finance", "housing", "skill_and_employment", "health"],

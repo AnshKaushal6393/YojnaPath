@@ -1,9 +1,8 @@
 export default function AccountSection({
   name,
   phone,
-  lang,
+  currentProfileName,
   onNameChange,
-  onLangChange,
   onSave,
   onLogout,
   isSaving = false,
@@ -12,7 +11,10 @@ export default function AccountSection({
     <section className="profile-card">
       <div className="section-heading">
         <h2 className="type-h2">Account info</h2>
-        <p className="type-caption">Keep your basic account details up to date.</p>
+        <p className="type-caption">
+          Logged in as {name || "account owner"}{phone ? ` · ${phone}` : ""}.
+          {currentProfileName ? ` Currently viewing: ${currentProfileName}.` : ""}
+        </p>
       </div>
 
       <div className="profile-account-grid">
@@ -32,13 +34,6 @@ export default function AccountSection({
           <span className="type-label">Phone number</span>
           <div className="profile-account-value">
             <p className="type-body-en">{phone || "Not available"}</p>
-          </div>
-        </div>
-
-        <div className="demo-field">
-          <span className="type-label">Preferred language</span>
-          <div className="profile-account-value">
-            <p className="type-body-en">{lang === "en" ? "English" : "हिंदी"}</p>
           </div>
         </div>
       </div>

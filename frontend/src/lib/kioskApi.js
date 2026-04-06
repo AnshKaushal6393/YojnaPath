@@ -5,6 +5,7 @@ const KIOSK_TOKEN_KEY = "yojnapath_kiosk_token";
 const KIOSK_ID_KEY = "yojnapath_kiosk_id";
 const RELEVANT_KIOSK_CATEGORIES = {
   farmer: ["agriculture", "finance", "housing", "labour"],
+  business: ["finance", "skill_and_employment", "housing", "labour"],
   women: ["women", "health", "education", "finance", "housing"],
   student: ["education", "finance", "skill_and_employment"],
   worker: ["labour", "finance", "housing", "skill_and_employment", "health"],

@@ -1,4 +1,5 @@
-import { apiGet, apiPost } from "./api";
+import { apiDelete, apiGet, apiPost } from "./api";
+import { getActiveProfileId, setActiveProfileId } from "./activeProfile";
 import { getAuthToken } from "./authStorage";
 
 const INCOME_MAP = {
@@ -69,8 +70,32 @@ function mapProfileToFormState(profile) {
   };
 }
 
-export function buildOnboardDraft(selectedUserType, formState, storageMode = "draft_only") {
+function mapApiProfileToDraft(profile) {
+  if (!profile?.state || !profile?.occupation) {
+    return null;
+  }
+
   return {
+    id: profile.id,
+    isPrimary: Boolean(profile.isPrimary),
+    profileName: profile.profileName || "",
+    relation: profile.relation || "",
+    selectedUserType: profile.occupation,
+    formState: mapProfileToFormState(profile),
+    storageMode: "synced",
+  };
+}
+
+export function buildOnboardDraft(
+  selectedUserType,
+  formState,
+  storageMode = "draft_only",
+  extras = {}
+) {
+  return {
+    id: extras.id || "",
+    profileName: extras.profileName || "",
+    relation: extras.relation || "",
     selectedUserType,
     formState,
     storageMode,
@@ -95,26 +120,58 @@ export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
   };
 }
 
-export async function fetchSavedProfile() {
+export async function fetchProfileMembers() {
+  const token = getAuthToken();
+  if (!token) {
+    return [];
+  }
+
+  const payload = await apiGet("/api/profile/members", { token });
+  const members = (payload?.profiles || []).map(mapApiProfileToDraft).filter(Boolean);
+
+  if (members[0]?.id && !getActiveProfileId()) {
+    setActiveProfileId(members[0].id);
+  }
+
+  return members;
+}
+
+function resolveRequestedProfileId(profileId) {
+  if (!profileId) {
+    return getActiveProfileId();
+  }
+
+  if (typeof profileId === "string") {
+    return profileId;
+  }
+
+  return getActiveProfileId();
+}
+
+export async function fetchSavedProfile(profileId = getActiveProfileId()) {
   const token = getAuthToken();
   if (!token) {
     return null;
   }
 
-  const profile = await apiGet("/api/profile", { token });
+  const resolvedProfileId = resolveRequestedProfileId(profileId);
+  const query = resolvedProfileId ? `?profileId=${encodeURIComponent(resolvedProfileId)}` : "";
+  const profile = await apiGet(`/api/profile${query}`, { token });
+  const mappedProfile = mapApiProfileToDraft(profile);
 
-  if (!profile?.state || !profile?.occupation) {
-    return null;
+  if (mappedProfile?.id) {
+    setActiveProfileId(mappedProfile.id);
   }
 
-  return {
-    selectedUserType: profile.occupation,
-    formState: mapProfileToFormState(profile),
-    storageMode: "synced",
-  };
+  return mappedProfile;
 }
 
-export async function saveProfileToBackend(selectedUserType, formState, lang = "hi") {
+export async function saveProfileToBackend(
+  selectedUserType,
+  formState,
+  lang = "hi",
+  options = {}
+) {
   const token = getAuthToken();
 
   if (!token) {
@@ -126,12 +183,43 @@ export async function saveProfileToBackend(selectedUserType, formState, lang = "
 
   const profile = await apiPost(
     "/api/profile",
-    buildProfilePayload(selectedUserType, formState, lang),
+    {
+      ...buildProfilePayload(selectedUserType, formState, lang),
+      profileId: options.profileId || null,
+      profileName: options.profileName || null,
+      relation: options.relation || null,
+    },
     { token }
   );
+
+  if (profile?.id) {
+    setActiveProfileId(profile.id);
+  }
 
   return {
     mode: "synced",
     profile,
+  };
+}
+
+export async function deleteProfileMember(profileId, preferredActiveProfileId = "") {
+  const token = getAuthToken();
+
+  if (!token || !profileId) {
+    throw new Error("Profile could not be deleted right now.");
+  }
+
+  const payload = await apiDelete(`/api/profile/${encodeURIComponent(profileId)}`, { token });
+  const members = (payload?.profiles || []).map(mapApiProfileToDraft).filter(Boolean);
+  const nextActiveProfileId =
+    members.find((member) => member.id === preferredActiveProfileId)?.id || members[0]?.id || "";
+
+  if (nextActiveProfileId) {
+    setActiveProfileId(nextActiveProfileId);
+  }
+
+  return {
+    members,
+    nextActiveProfileId,
   };
 }

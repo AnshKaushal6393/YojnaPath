@@ -1,3 +1,5 @@
+import { USER_TYPE_OPTIONS } from "../data/profileOptions";
+
 export default function HomeHero({
   language,
   onLanguageChange,
@@ -5,7 +7,7 @@ export default function HomeHero({
   onProfileModeChange,
   savedProfileLabel = "Saved profile",
   schemeCount = 0,
-  userTypeCount = 8,
+  userTypeCount = USER_TYPE_OPTIONS.length,
 }) {
   return (
     <section className="home-hero">

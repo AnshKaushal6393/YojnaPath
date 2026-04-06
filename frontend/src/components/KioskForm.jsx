@@ -2,6 +2,7 @@ import { useState } from "react";
 
 const USER_TYPES = [
   { value: "farmer", label: "Farmer" },
+  { value: "business", label: "MSME / Business" },
   { value: "women", label: "Women" },
   { value: "student", label: "Student" },
   { value: "worker", label: "Worker" },

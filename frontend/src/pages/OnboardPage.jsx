@@ -5,6 +5,7 @@ import BottomNav from "../components/BottomNav";
 import AdaptiveForm from "../components/AdaptiveForm";
 import OnboardingSteps from "../components/OnboardingSteps";
 import UserTypeSelector from "../components/UserTypeSelector";
+import { clearActiveProfileId } from "../lib/activeProfile";
 import { clearAuthToken, getAuthToken } from "../lib/authStorage";
 import {
   buildOnboardDraft,
@@ -20,6 +21,7 @@ import { clearStoredPhone, clearToken } from "../utils/auth";
 
 const REQUIRED_FIELDS_BY_USER_TYPE = {
   farmer: ["state", "gender", "caste", "ageBand", "incomeBand", "landBand"],
+  business: ["state", "gender", "caste", "ageBand", "incomeBand"],
   women: ["state", "caste", "ageBand", "incomeBand"],
   student: ["state", "gender", "caste", "ageBand", "incomeBand"],
   worker: ["state", "gender", "caste", "ageBand", "incomeBand"],
@@ -33,6 +35,7 @@ function getInitialDraft() {
   const draft = getProfileDraft();
 
   return {
+    profileName: draft?.profileName || "",
     selectedUserType: draft?.selectedUserType || "farmer",
     formState: {
       state: draft?.formState?.state || "",
@@ -51,6 +54,7 @@ export default function OnboardPage() {
   const location = useLocation();
   const authToken = getAuthToken();
   const initialDraft = useMemo(() => getInitialDraft(), []);
+  const [memberName, setMemberName] = useState(initialDraft.profileName);
   const [selectedUserType, setSelectedUserType] = useState(initialDraft.selectedUserType);
   const [formState, setFormState] = useState(initialDraft.formState);
   const [submitMessage, setSubmitMessage] = useState("");
@@ -75,21 +79,34 @@ export default function OnboardPage() {
     }
 
     setSelectedUserType(savedProfileQuery.data.selectedUserType);
+    setMemberName(savedProfileQuery.data.profileName || "");
     setFormState(savedProfileQuery.data.formState);
     hasPrefilledFromSavedProfileRef.current = true;
     saveProfileDraft(
       buildOnboardDraft(
         savedProfileQuery.data.selectedUserType,
         savedProfileQuery.data.formState,
-        savedProfileQuery.data.storageMode
+        savedProfileQuery.data.storageMode,
+        {
+          id: savedProfileQuery.data.id,
+          profileName: savedProfileQuery.data.profileName,
+          relation: savedProfileQuery.data.relation,
+        }
       )
     );
   }, [savedProfileQuery.data]);
 
   const saveProfileMutation = useMutation({
-    mutationFn: () => saveProfileToBackend(selectedUserType, formState),
+    mutationFn: () =>
+      saveProfileToBackend(selectedUserType, formState, "hi", {
+        profileName: memberName.trim(),
+      }),
     onError: (error) => {
-      saveProfileDraft(buildOnboardDraft(selectedUserType, formState, "draft_only"));
+      saveProfileDraft(
+        buildOnboardDraft(selectedUserType, formState, "draft_only", {
+          profileName: memberName,
+        })
+      );
       setSubmitError(error.message || "Could not save profile right now.");
       setSubmitMessage("Your draft is safe on this device.");
     },
@@ -99,7 +116,11 @@ export default function OnboardPage() {
     setFormState((current) => {
       const nextValue = typeof updater === "function" ? updater(current) : updater;
       hasTouchedFormRef.current = true;
-      saveProfileDraft(buildOnboardDraft(selectedUserType, nextValue));
+      saveProfileDraft(
+        buildOnboardDraft(selectedUserType, nextValue, "draft_only", {
+          profileName: memberName,
+        })
+      );
       return nextValue;
     });
   }
@@ -107,7 +128,11 @@ export default function OnboardPage() {
   function handleUserTypeChange(nextType) {
     hasTouchedFormRef.current = true;
     setSelectedUserType(nextType);
-    saveProfileDraft(buildOnboardDraft(nextType, formState));
+    saveProfileDraft(
+      buildOnboardDraft(nextType, formState, "draft_only", {
+        profileName: memberName,
+      })
+    );
   }
 
   function validateRequiredFields() {
@@ -120,6 +145,7 @@ export default function OnboardPage() {
     clearToken();
     clearStoredPhone();
     clearProfileDraft();
+    clearActiveProfileId();
     navigate("/login", { replace: true });
   }
 
@@ -136,12 +162,22 @@ export default function OnboardPage() {
       return;
     }
 
+    if (memberName.trim().length < 2) {
+      setSubmitError("Please enter the family member name before continuing.");
+      setSubmitMessage("");
+      return;
+    }
+
     setSubmitError("");
     setSubmitMessage("");
 
     try {
       const result = await saveProfileMutation.mutateAsync();
-      saveProfileDraft(buildOnboardDraft(selectedUserType, formState, result.mode));
+      saveProfileDraft(
+        buildOnboardDraft(selectedUserType, formState, result.mode, {
+          profileName: memberName,
+        })
+      );
 
       if (isProfileEditMode) {
         setSubmitMessage("Details updated successfully.");
@@ -198,6 +234,27 @@ export default function OnboardPage() {
         </section>
 
         <OnboardingSteps />
+        <section className="onboard-card">
+          <label className="demo-field">
+            <span className="type-label">Family member name</span>
+            <input
+              type="text"
+              className="demo-select"
+              value={memberName}
+              onChange={(event) => {
+                const nextName = event.target.value;
+                setMemberName(nextName);
+                saveProfileDraft(
+                  buildOnboardDraft(selectedUserType, formState, "draft_only", {
+                    profileName: nextName,
+                  })
+                );
+              }}
+              placeholder="Who is this profile for?"
+              autoComplete="off"
+            />
+          </label>
+        </section>
         <UserTypeSelector selectedUserType={selectedUserType} onSelect={handleUserTypeChange} />
         <form id="onboard-profile-form" className="onboard-form-shell" onSubmit={handleSubmit}>
           <AdaptiveForm

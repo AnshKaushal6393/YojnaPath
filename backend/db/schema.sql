@@ -25,7 +25,10 @@ CREATE TABLE IF NOT EXISTS kiosks (
 
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  profile_name VARCHAR(120) NOT NULL DEFAULT 'Family member',
+  relation VARCHAR(40),
+  is_primary BOOLEAN NOT NULL DEFAULT FALSE,
   gender VARCHAR(10)
     CHECK (gender IN ('male', 'female', 'other')),
   caste VARCHAR(10)
@@ -34,6 +37,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     CHECK (
       occupation IN (
         'farmer',
+        'business',
         'women',
         'worker',
         'health',
