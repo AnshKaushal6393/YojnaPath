@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import CategoryHighlights from "../components/CategoryHighlights";
@@ -9,11 +10,16 @@ import LastMatchSummary from "../components/LastMatchSummary";
 import RecentMatches from "../components/RecentMatches";
 import UrgencyBanner from "../components/UrgencyBanner";
 import UserTypeGrid from "../components/UserTypeGrid";
+import { hasStoredAppLanguage, setAppLanguage, syncAppLanguage } from "../i18n/language";
 import { setActiveProfileId } from "../lib/activeProfile";
 import { getAuthToken } from "../lib/authStorage";
 import { fetchHomeData } from "../lib/homeApi";
 import { fetchProfileMembers, fetchSavedProfile } from "../lib/onboardApi";
-import { getProfileDraft, getProfileDraftStorageMode, hasProfileDraft } from "../lib/profileDraft";
+import {
+  getProfileDraft,
+  getProfileDraftStorageMode,
+  hasProfileDraft,
+} from "../lib/profileDraft";
 import { fetchCurrentUser } from "../lib/registrationApi";
 
 function normalizeComparisonName(value) {
@@ -30,37 +36,38 @@ function formatCachedDate(date) {
   }).format(date);
 }
 
-function buildUrgencyText(urgentSchemes) {
+function buildUrgencyText(urgentSchemes, t) {
   const [firstScheme] = urgentSchemes || [];
 
   if (!firstScheme) {
     return "";
   }
 
-  const schemeName = firstScheme.schemeName || "A saved scheme";
+  const schemeName = firstScheme.schemeName || t("home.urgency.fallbackScheme");
   const daysRemaining = Number(firstScheme.daysRemaining);
 
   if (Number.isFinite(daysRemaining) && daysRemaining <= 0) {
-    return `${schemeName} closes today`;
+    return t("home.urgency.closesToday", { scheme: schemeName });
   }
 
   if (Number.isFinite(daysRemaining) && daysRemaining === 1) {
-    return `${schemeName} closes tomorrow`;
+    return t("home.urgency.closesTomorrow", { scheme: schemeName });
   }
 
   if (Number.isFinite(daysRemaining)) {
-    return `${schemeName} closes in ${daysRemaining} days`;
+    return t("home.urgency.closesInDays", { scheme: schemeName, days: daysRemaining });
   }
 
-  return `${schemeName} needs your attention soon`;
+  return t("home.urgency.attentionSoon", { scheme: schemeName });
 }
 
 export default function HomePage() {
+  const { i18n, t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const authToken = getAuthToken();
   const localDraft = getProfileDraft();
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
   const [hasProfile, setHasProfile] = useState(() => hasProfileDraft());
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
@@ -93,9 +100,9 @@ export default function HomePage() {
   const hasDeviceDraft = Boolean(localDraft);
   const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
   const urgentSchemes = homeQuery.data?.urgent || [];
-  const urgencyText = buildUrgencyText(urgentSchemes);
-  const activeProfileName =
-    savedProfileQuery.data?.profileName || localDraft?.profileName || "";
+  const urgencyText = buildUrgencyText(urgentSchemes, t);
+  const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
+
   const accountOwnerHasProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
     if (!ownerName) {
@@ -106,21 +113,51 @@ export default function HomePage() {
       (member) => normalizeComparisonName(member.profileName) === ownerName
     );
   }, [currentUserQuery.data?.name, profileMembersQuery.data]);
+
+  const accountOwnerProfileId = useMemo(() => {
+    const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
+    if (!ownerName) {
+      return "";
+    }
+
+    return (
+      (profileMembersQuery.data || []).find(
+        (member) => normalizeComparisonName(member.profileName) === ownerName
+      )?.id || ""
+    );
+  }, [currentUserQuery.data?.name, profileMembersQuery.data]);
+
   const savedProfileLabel = hasSyncedProfile
     ? activeProfileName
-      ? `${activeProfileName}'s profile`
-      : "Saved profile"
+      ? t("home.mode.ownerProfile", { name: activeProfileName })
+      : t("home.mode.savedProfile")
     : draftStorageMode === "draft_only"
       ? activeProfileName
-        ? `${activeProfileName} on device`
-        : "Saved on device"
-      : "Saved profile";
+        ? t("home.mode.onDevice", { name: activeProfileName })
+        : t("home.mode.savedProfile")
+      : t("home.mode.savedProfile");
 
   useEffect(() => {
     if (shouldShowSavedProfile) {
       setHasProfile(true);
     }
   }, [shouldShowSavedProfile]);
+
+  useEffect(() => {
+    setLanguage(i18n.resolvedLanguage || "en");
+  }, [i18n.resolvedLanguage]);
+
+  useEffect(() => {
+    if (hasStoredAppLanguage()) {
+      return;
+    }
+
+    syncAppLanguage({
+      explicitLang: currentUserQuery.data?.lang || "",
+      state: savedProfileQuery.data?.formState?.state || "",
+      fallback: "en",
+    });
+  }, [currentUserQuery.data?.lang, savedProfileQuery.data?.formState?.state]);
 
   function handleCategorySelect(categoryKey) {
     if (hasProfile && shouldShowSavedProfile) {
@@ -143,16 +180,23 @@ export default function HomePage() {
     queryClient.invalidateQueries({ queryKey: ["home-data"] });
   }
 
+  async function handleLanguageChange(nextLanguage) {
+    const applied = await setAppLanguage(nextLanguage);
+    setLanguage(applied);
+  }
+
   return (
     <main className="app-shell">
       <div className="home-page">
         <HomeHero
           language={language}
-          onLanguageChange={setLanguage}
+          onLanguageChange={handleLanguageChange}
           hasProfile={hasProfile && shouldShowSavedProfile}
           onProfileModeChange={setHasProfile}
           savedProfileLabel={savedProfileLabel}
-          schemeCount={homeQuery.data?.health?.schemeCount || homeQuery.data?.impact?.schemesInDatabase || 0}
+          schemeCount={
+            homeQuery.data?.health?.schemeCount || homeQuery.data?.impact?.schemesInDatabase || 0
+          }
         />
 
         <div className="home-public-links">
@@ -161,28 +205,25 @@ export default function HomePage() {
             className="detail-card__secondary-button"
             onClick={() => navigate("/impact")}
           >
-            View public impact
+            {t("home.links.impact")}
           </button>
           <button
             type="button"
             className="detail-card__secondary-button"
             onClick={() => navigate("/kiosk")}
           >
-            Kiosk mode
+            {t("home.links.kiosk")}
           </button>
         </div>
 
         {!offlineBannerDismissed && homeQuery.isError ? (
           <div className="offline-banner state-info" role="status" aria-live="polite">
-            <span className="type-caption">
-              Offline - showing results saved on {cachedDateLabel}. Connect to internet for fresh
-              results.
-            </span>
+            <span className="type-caption">{t("home.offline.banner", { date: cachedDateLabel })}</span>
             <button
               type="button"
               className="offline-banner__dismiss icon-hitbox"
               onClick={() => setOfflineBannerDismissed(true)}
-              aria-label="Dismiss offline banner"
+              aria-label={t("home.offline.dismiss")}
             >
               {"\u00d7"}
             </button>
@@ -194,12 +235,13 @@ export default function HomePage() {
             members={profileMembersQuery.data || []}
             activeProfileId={savedProfileQuery.data?.id || ""}
             onSelect={handleProfileSwitch}
-            onCreateNew={() => navigate("/profile")}
-            onCreateOwnerProfile={() => navigate("/profile")}
-            accountOwnerName={currentUserQuery.data?.name || ""}
-            accountOwnerHasProfile={accountOwnerHasProfile}
-          />
-        ) : null}
+          onCreateNew={() => navigate("/profile")}
+          onCreateOwnerProfile={() => navigate("/profile")}
+          accountOwnerName={currentUserQuery.data?.name || ""}
+          accountOwnerHasProfile={accountOwnerHasProfile}
+          accountOwnerProfileId={accountOwnerProfileId}
+        />
+      ) : null}
 
         <CategoryHighlights
           items={homeQuery.data?.categoryHighlights || []}

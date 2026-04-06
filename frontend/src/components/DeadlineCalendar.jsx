@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SchemeCountdown from "./SchemeCountdown";
 import StatusBadge from "./StatusBadge";
 
@@ -11,6 +12,8 @@ function formatDayHeading(dateValue) {
 }
 
 export default function DeadlineCalendar({ groups }) {
+  const { t } = useTranslation();
+
   return (
     <div className="deadline-calendar">
       {groups.map((group) => (
@@ -19,7 +22,7 @@ export default function DeadlineCalendar({ groups }) {
             <div>
               <h2 className="type-h2">{formatDayHeading(group.date)}</h2>
               <p className="type-caption">
-                {group.items.length} reminder{group.items.length === 1 ? "" : "s"} scheduled
+                {t("calendar.reminderScheduledCount", { count: group.items.length })}
               </p>
             </div>
           </div>
@@ -41,15 +44,17 @@ export default function DeadlineCalendar({ groups }) {
 
                 <div className="deadline-calendar__item-meta">
                   <StatusBadge status={item.status} />
-                  <span className="type-caption">Reminder: {item.remindAtLabel}</span>
+                  <span className="type-caption">
+                    {t("calendar.reminderMeta", { date: item.remindAtLabel })}
+                  </span>
                 </div>
 
                 <div className="deadline-calendar__item-actions">
                   <Link to="/tracker" className="detail-card__secondary-button">
-                    Manage in tracker
+                    {t("common.buttons.manageInTracker")}
                   </Link>
                   <Link to={`/schemes/${item.schemeId}`} className="detail-card__secondary-button">
-                    View scheme
+                    {t("common.buttons.viewScheme")}
                   </Link>
                 </div>
               </article>

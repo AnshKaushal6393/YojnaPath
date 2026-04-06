@@ -12,7 +12,9 @@ export default function DocumentList({ documents }) {
       <div className="detail-card__documents">
         {documents.map((document, index) => (
           <div key={`${document.en}-${index}`} className="detail-card__document">
-            <div className="detail-card__document-index type-micro">{String(index + 1).padStart(2, "0")}</div>
+            <div className="detail-card__document-check" aria-hidden="true">
+              <span className="detail-card__document-check-icon">{"\u2713"}</span>
+            </div>
             <div className="detail-card__document-copy">
               {document.en ? <p className="type-body-en">{document.en}</p> : null}
               {document.hi ? (

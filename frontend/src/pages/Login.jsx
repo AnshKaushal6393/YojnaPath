@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { apiPost } from "../utils/api";
 import { setStoredPhone } from "../utils/auth";
@@ -8,6 +9,7 @@ function normalizePhone(value) {
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +24,7 @@ export default function Login() {
     event.preventDefault();
 
     if (phone.length !== 10) {
-      setError("Enter a valid 10-digit phone number.");
+      setError(t("auth.login.invalidPhone"));
       return;
     }
 
@@ -33,7 +35,7 @@ export default function Login() {
       setStoredPhone(phone);
       navigate("/verify", { state: { phone } });
     } catch (submitError) {
-      setError(submitError.message || "Could not send OTP.");
+      setError(submitError.message || t("auth.login.sendOtpError"));
     } finally {
       setIsLoading(false);
     }
@@ -45,32 +47,30 @@ export default function Login() {
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
           <div className="mb-8 space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Login
+              {t("auth.login.eyebrow")}
             </p>
             <h1 className="text-[28px] font-bold leading-tight text-slate-950">
-              Sign in with your phone
+              {t("auth.login.title")}
             </h1>
-            <p className="text-sm leading-6 text-slate-500">
-              Enter your 10-digit number and we'll send a one-time password.
-            </p>
+            <p className="text-sm leading-6 text-slate-500">{t("auth.login.subtitle")}</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label htmlFor="phone" className="text-sm font-medium text-slate-700">
-                Phone number
+                {t("auth.login.phoneLabel")}
               </label>
               <input
                 id="phone"
                 type="tel"
                 inputMode="numeric"
                 autoComplete="tel"
-                placeholder="9876543210"
+                placeholder={t("auth.login.phonePlaceholder")}
                 value={phone}
                 onChange={handlePhoneChange}
                 className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
-              <p className="text-xs text-slate-500">Only 10 digits, no country code.</p>
+              <p className="text-xs text-slate-500">{t("auth.login.phoneHint")}</p>
             </div>
 
             {error ? (
@@ -84,7 +84,7 @@ export default function Login() {
               disabled={isLoading}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
-              {isLoading ? "Sending OTP..." : "Send OTP"}
+              {isLoading ? t("auth.login.sendingOtp") : t("auth.login.sendOtp")}
             </button>
           </form>
         </div>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/BottomNav";
 import DeadlineCalendar from "../components/DeadlineCalendar";
 import EmptyState from "../components/EmptyState";
@@ -27,6 +28,7 @@ function groupApplicationsByReminder(applications) {
 }
 
 export default function CalendarPage() {
+  const { t } = useTranslation();
   const [notificationPermission, setNotificationPermission] = useState(() =>
     getNotificationSupport() ? Notification.permission : "unsupported"
   );
@@ -51,12 +53,9 @@ export default function CalendarPage() {
           <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
 
           <div className="section-heading">
-            <p className="eyebrow">Calendar</p>
-            <h1 className="type-h1">Reminder calendar</h1>
-            <p className="type-body-en">
-              See all your scheduled reminder dates in one place, subscribe to free browser alerts,
-              and export them to your personal calendar.
-            </p>
+            <p className="eyebrow">{t("calendar.eyebrow")}</p>
+            <h1 className="type-h1">{t("calendar.title")}</h1>
+            <p className="type-body-en">{t("calendar.subtitle")}</p>
           </div>
 
           <div className="calendar-header__actions">
@@ -81,39 +80,37 @@ export default function CalendarPage() {
                     .map((item) => ({
                       title: `${item.schemeName} reminder`,
                       date: item.remindAt,
-                      details: `Reminder for ${item.schemeName} from YojnaPath.`,
+                      details: t("tracker.calendarDetails", { scheme: item.schemeName }),
                     }))
                 )
               }
             >
-              Export all reminders
+              {t("common.buttons.exportAll")}
             </button>
           </div>
         </section>
 
         <section className="calendar-summary">
           <div className="calendar-summary__chip calendar-summary__chip--count">
-            <span className="type-micro">Scheduled</span>
+            <span className="type-micro">{t("calendar.scheduled")}</span>
             <strong>{totalReminders}</strong>
           </div>
           <div className="calendar-summary__chip calendar-summary__chip--info">
-            <span className="type-micro">Browser alerts</span>
-            <strong>
-              {notificationPermission === "granted" ? "On" : "Off"}
-            </strong>
+            <span className="type-micro">{t("calendar.browserAlerts")}</span>
+            <strong>{notificationPermission === "granted" ? t("calendar.on") : t("calendar.off")}</strong>
           </div>
         </section>
 
         {trackerQuery.isLoading ? (
           <section className="calendar-panel">
-            <p className="type-h2">Loading reminder calendar...</p>
-            <p className="type-caption">Bringing your saved reminder dates from the tracker.</p>
+            <p className="type-h2">{t("calendar.loadingTitle")}</p>
+            <p className="type-caption">{t("calendar.loadingBody")}</p>
           </section>
         ) : null}
 
         {trackerQuery.error ? (
           <section className="calendar-panel">
-            <p className="type-h2">Could not load calendar</p>
+            <p className="type-h2">{t("calendar.errorTitle")}</p>
             <p className="type-caption">{trackerQuery.error.message}</p>
           </section>
         ) : null}
@@ -121,13 +118,10 @@ export default function CalendarPage() {
         {!trackerQuery.isLoading && !trackerQuery.error && totalReminders === 0 ? (
           <section className="calendar-panel">
             <EmptyState
-              title="No reminder dates yet"
-              titleHi="अभी कोई रिमाइंडर तारीख नहीं है"
-              description="Set a reminder date from tracker and it will appear here automatically."
-              tips={[
-                "Open Tracker and choose a future reminder date.",
-                "Enable browser reminders here for free alerts.",
-              ]}
+              title={t("calendar.emptyTitle")}
+              titleHi={t("calendar.emptyTitleHi")}
+              description={t("calendar.emptyDescription")}
+              tips={t("calendar.emptyTips", { returnObjects: true })}
             />
           </section>
         ) : null}

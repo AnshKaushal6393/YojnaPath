@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export default function EmptyState({
   title,
   titleHi = "",
@@ -5,6 +7,7 @@ export default function EmptyState({
   suggestions,
   tips,
 }) {
+  const { t } = useTranslation();
   const items = Array.isArray(suggestions)
     ? suggestions
     : Array.isArray(tips)
@@ -33,7 +36,7 @@ export default function EmptyState({
             const titleText = typeof item === "string" ? item : item.title;
             const detailText =
               typeof item === "string"
-                ? "Update this part of your profile to unlock more likely matches."
+                ? t("common.states.emptyFallbackDetail")
                 : item.detail;
 
             return (

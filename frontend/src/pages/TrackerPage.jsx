@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/BottomNav";
 import ApplicationTimeline from "../components/ApplicationTimeline";
 import EmptyState from "../components/EmptyState";
@@ -17,6 +18,7 @@ function addDays(value, days) {
 }
 
 export default function TrackerPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [notificationPermission, setNotificationPermission] = useState(() =>
     getNotificationSupport() ? Notification.permission : "unsupported"
@@ -46,12 +48,9 @@ export default function TrackerPage() {
       <div className="tracker-page">
         <section className="tracker-header">
           <div className="section-heading">
-            <p className="eyebrow">Tracker</p>
-            <h1 className="type-h1">Applied schemes timeline</h1>
-            <p className="type-body-en">
-              Track application progress, update statuses, and keep free browser and calendar
-              reminders on for schemes you do not want to miss.
-            </p>
+            <p className="eyebrow">{t("tracker.eyebrow")}</p>
+            <h1 className="type-h1">{t("tracker.title")}</h1>
+            <p className="type-body-en">{t("tracker.subtitle")}</p>
           </div>
           {getNotificationSupport() ? (
             <button
@@ -64,22 +63,22 @@ export default function TrackerPage() {
               disabled={notificationPermission === "granted"}
             >
               {notificationPermission === "granted"
-                ? "Browser notifications enabled"
-                : "Enable browser notifications"}
+                ? t("common.buttons.browserNotificationsEnabled")
+                : t("common.buttons.enableBrowserNotifications")}
             </button>
           ) : null}
         </section>
 
         {trackerQuery.isLoading ? (
           <section className="tracker-panel">
-            <p className="type-h2">Loading tracked applications...</p>
-            <p className="type-caption">Fetching your timeline from the backend.</p>
+            <p className="type-h2">{t("tracker.loadingTitle")}</p>
+            <p className="type-caption">{t("tracker.loadingBody")}</p>
           </section>
         ) : null}
 
         {trackerQuery.error ? (
           <section className="tracker-panel">
-            <p className="type-h2">Could not load tracker</p>
+            <p className="type-h2">{t("tracker.errorTitle")}</p>
             <p className="type-caption">{trackerQuery.error.message}</p>
           </section>
         ) : null}
@@ -87,13 +86,10 @@ export default function TrackerPage() {
         {!trackerQuery.isLoading && !trackerQuery.error && applications.length === 0 ? (
           <section className="tracker-panel">
             <EmptyState
-              title="No tracked schemes yet"
-              titleHi="अभी कोई ट्रैक की गई योजना नहीं है"
-              description="Mark a scheme as applied from the detail page to start tracking its status."
-              tips={[
-                "Open a useful scheme from results or saved.",
-                "Tap Mark as applied once you submit the application.",
-              ]}
+              title={t("tracker.emptyTitle")}
+              titleHi={t("tracker.emptyTitleHi")}
+              description={t("tracker.emptyDescription")}
+              tips={t("tracker.emptyTips", { returnObjects: true })}
             />
           </section>
         ) : null}
@@ -102,8 +98,12 @@ export default function TrackerPage() {
           <section className="tracker-panel">
             <ApplicationTimeline
               applications={applications}
-              updatingSchemeId={updateMutation.isPending ? updateMutation.variables?.schemeId || "" : ""}
-              onStatusChange={(schemeId, status) => updateMutation.mutate({ schemeId, payload: { status } })}
+              updatingSchemeId={
+                updateMutation.isPending ? updateMutation.variables?.schemeId || "" : ""
+              }
+              onStatusChange={(schemeId, status) =>
+                updateMutation.mutate({ schemeId, payload: { status } })
+              }
               onToggleReminder={(application) =>
                 updateMutation.mutate({
                   schemeId: application.schemeId,

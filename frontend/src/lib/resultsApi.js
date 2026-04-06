@@ -12,6 +12,7 @@ import {
 
 const RESULTS_LIMIT = 200;
 const NEAR_MISS_LIMIT = 12;
+const TOTAL_MATCH_RULES = 14;
 
 const RELEVANT_NEAR_MISS_CATEGORIES = {
   farmer: ["agriculture", "finance", "housing", "labour"],
@@ -27,6 +28,33 @@ const RELEVANT_NEAR_MISS_CATEGORIES = {
 
 function normalizeScope(value) {
   return String(value || "central").toLowerCase();
+}
+
+function toMatchPercent(score, totalCriteria, matchStatus = "matched") {
+  const hasValidScore = typeof score === "number" && !Number.isNaN(score);
+  const hasValidCriteria =
+    typeof totalCriteria === "number" && !Number.isNaN(totalCriteria) && totalCriteria > 0;
+
+  if (!hasValidScore || !hasValidCriteria) {
+    if (matchStatus === "matched") {
+      return 70;
+    }
+
+    if (matchStatus === "near-miss") {
+      return 48;
+    }
+
+    return null;
+  }
+
+  const passedRatio = score / totalCriteria;
+  const specificityRatio = Math.min(totalCriteria / TOTAL_MATCH_RULES, 1);
+
+  if (matchStatus === "matched") {
+    return Math.round(72 + specificityRatio * 28);
+  }
+
+  return Math.round(40 + passedRatio * 35 + specificityRatio * 10);
 }
 
 function mapSchemeToCard(scheme, matchStatus = "matched") {
@@ -56,6 +84,7 @@ function mapSchemeToCard(scheme, matchStatus = "matched") {
       hasDevanagariText(descriptionHi) && isMeaningfullyDifferent(descriptionHi, description)
         ? descriptionHi
         : "",
+    matchScorePercent: toMatchPercent(scheme.matchScore, scheme.totalCriteria, matchStatus),
     matchStatus,
   };
 }

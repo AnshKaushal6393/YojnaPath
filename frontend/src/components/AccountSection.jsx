@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 export default function AccountSection({
   name,
   phone,
@@ -7,33 +9,41 @@ export default function AccountSection({
   onLogout,
   isSaving = false,
 }) {
+  const { t } = useTranslation();
+  const phoneText = phone ? ` · ${phone}` : "";
+
   return (
     <section className="profile-card">
       <div className="section-heading">
-        <h2 className="type-h2">Account info</h2>
+        <h2 className="type-h2">{t("profile.account.title")}</h2>
         <p className="type-caption">
-          Logged in as {name || "account owner"}{phone ? ` · ${phone}` : ""}.
-          {currentProfileName ? ` Currently viewing: ${currentProfileName}.` : ""}
+          {t("profile.account.loggedInAs", {
+            name: name || t("profile.account.accountOwnerFallback"),
+            phone: phoneText,
+          })}
+          {currentProfileName
+            ? ` ${t("profile.account.currentProfile", { name: currentProfileName })}`
+            : ""}
         </p>
       </div>
 
       <div className="profile-account-grid">
         <label className="demo-field">
-          <span className="type-label">Name</span>
+          <span className="type-label">{t("profile.account.name")}</span>
           <input
             type="text"
             className="demo-select"
             value={name}
             onChange={(event) => onNameChange(event.target.value)}
-            placeholder="Enter your name"
+            placeholder={t("profile.account.namePlaceholder")}
             autoComplete="name"
           />
         </label>
 
         <div className="demo-field">
-          <span className="type-label">Phone number</span>
+          <span className="type-label">{t("profile.account.phone")}</span>
           <div className="profile-account-value">
-            <p className="type-body-en">{phone || "Not available"}</p>
+            <p className="type-body-en">{phone || t("profile.account.phoneUnavailable")}</p>
           </div>
         </div>
       </div>
@@ -45,10 +55,10 @@ export default function AccountSection({
           onClick={onSave}
           disabled={isSaving}
         >
-          {isSaving ? "Saving account..." : "Save account info"}
+          {isSaving ? t("profile.account.savingAccount") : t("profile.account.saveAccount")}
         </button>
         <button type="button" className="onboard-logout-button" onClick={onLogout}>
-          Log out
+          {t("profile.account.logout")}
         </button>
       </div>
     </section>

@@ -1,12 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { completeRegistration, fetchCurrentUser, getPostRegistrationDestination } from "../lib/registrationApi";
+import { setAppLanguage } from "../i18n/language";
+import {
+  completeRegistration,
+  fetchCurrentUser,
+  getPostRegistrationDestination,
+} from "../lib/registrationApi";
 
 function normalizeName(value) {
   return value.replace(/\s+/g, " ").trimStart().slice(0, 120);
 }
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [lang, setLang] = useState("hi");
@@ -28,6 +35,7 @@ export default function Register() {
 
         if (user?.lang) {
           setLang(user.lang);
+          setAppLanguage(user.lang);
         }
 
         if (user?.name) {
@@ -39,7 +47,7 @@ export default function Register() {
         }
       } catch (loadError) {
         if (isMounted) {
-          setError(loadError.message || "Could not load your account.");
+          setError(loadError.message || t("auth.register.loadError"));
         }
       } finally {
         if (isMounted) {
@@ -53,13 +61,13 @@ export default function Register() {
     return () => {
       isMounted = false;
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   async function handleSubmit(event) {
     event.preventDefault();
 
     if (!isValid) {
-      setError("Please enter your name.");
+      setError(t("auth.register.nameError"));
       return;
     }
 
@@ -70,10 +78,11 @@ export default function Register() {
         name: normalizeName(name).trim(),
         lang,
       });
+      await setAppLanguage(lang);
       const nextPath = await getPostRegistrationDestination();
       navigate(nextPath, { replace: true });
     } catch (submitError) {
-      setError(submitError.message || "Could not save your details.");
+      setError(submitError.message || t("auth.register.saveError"));
     } finally {
       setIsLoading(false);
     }
@@ -85,20 +94,18 @@ export default function Register() {
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
           <div className="mb-8 space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Welcome
+              {t("auth.register.eyebrow")}
             </p>
             <h1 className="text-[28px] font-bold leading-tight text-slate-950">
-              Complete your account
+              {t("auth.register.title")}
             </h1>
-            <p className="text-sm leading-6 text-slate-500">
-              Add your name once so the app can greet you properly and save your account.
-            </p>
+            <p className="text-sm leading-6 text-slate-500">{t("auth.register.subtitle")}</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium text-slate-700">
-                Your name
+                {t("auth.register.nameLabel")}
               </label>
               <input
                 id="name"
@@ -109,18 +116,20 @@ export default function Register() {
                   setName(normalizeName(event.target.value));
                   setError("");
                 }}
-                placeholder="Enter your full name"
+                placeholder={t("auth.register.namePlaceholder")}
                 disabled={isLoading || isCheckingUser}
                 className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
             </div>
 
             <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-slate-700">Preferred language</legend>
+              <legend className="text-sm font-medium text-slate-700">
+                {t("auth.register.preferredLanguage")}
+              </legend>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { value: "hi", label: "à¤¹à¤¿à¤‚à¤¦à¥€" },
-                  { value: "en", label: "English" },
+                  { value: "hi", label: t("common.language.hindi") },
+                  { value: "en", label: t("common.language.english") },
                 ].map((option) => {
                   const isSelected = lang === option.value;
                   return (
@@ -156,7 +165,11 @@ export default function Register() {
               disabled={isLoading || isCheckingUser}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
-              {isCheckingUser ? "Loading..." : isLoading ? "Saving..." : "Continue"}
+              {isCheckingUser
+                ? t("auth.register.loading")
+                : isLoading
+                  ? t("auth.register.saving")
+                  : t("auth.register.continue")}
             </button>
           </form>
         </div>

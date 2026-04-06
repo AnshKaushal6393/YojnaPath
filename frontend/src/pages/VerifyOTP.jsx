@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import OTPInput from "../components/OTPInput";
 import { fetchSavedProfile } from "../lib/onboardApi";
 import { apiPost } from "../utils/api";
@@ -12,6 +13,7 @@ function normalizeOtp(value) {
 }
 
 export default function VerifyOTP() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const phoneFromState = location.state?.phone || "";
@@ -42,7 +44,7 @@ export default function VerifyOTP() {
     event.preventDefault();
 
     if (otp.length !== 6) {
-      setError("Enter the 6-digit OTP.");
+      setError(t("auth.verify.invalidOtp"));
       return;
     }
 
@@ -64,7 +66,7 @@ export default function VerifyOTP() {
       const savedProfile = await fetchSavedProfile();
       navigate(savedProfile ? "/results" : "/onboard", { replace: true });
     } catch (verifyError) {
-      setError(verifyError.message || "Could not verify OTP.");
+      setError(verifyError.message || t("auth.verify.verifyError"));
     } finally {
       setIsLoading(false);
     }
@@ -82,7 +84,7 @@ export default function VerifyOTP() {
       setStoredPhone(phone);
       setCountdown(RESEND_SECONDS);
     } catch (resendError) {
-      setError(resendError.message || "Could not resend OTP.");
+      setError(resendError.message || t("auth.verify.resendError"));
     } finally {
       setIsResending(false);
     }
@@ -94,21 +96,23 @@ export default function VerifyOTP() {
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
           <div className="mb-8 space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Verify OTP
+              {t("auth.verify.eyebrow")}
             </p>
             <h1 className="text-[28px] font-bold leading-tight text-slate-950">
-              Enter the 6-digit code
+              {t("auth.verify.title")}
             </h1>
-            <p className="text-sm leading-6 text-slate-500">
-              We sent a code to <span className="font-semibold text-slate-700">{phone}</span>
-            </p>
+            <p className="text-sm leading-6 text-slate-500">{t("auth.verify.sentTo", { phone })}</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleVerify}>
-            <OTPInput value={otp} onChange={(value) => {
-              setOtp(normalizeOtp(value));
-              setError("");
-            }} disabled={isLoading} />
+            <OTPInput
+              value={otp}
+              onChange={(value) => {
+                setOtp(normalizeOtp(value));
+                setError("");
+              }}
+              disabled={isLoading}
+            />
 
             {error ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -121,7 +125,7 @@ export default function VerifyOTP() {
               disabled={isLoading}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
-              {isLoading ? "Verifying..." : "Verify OTP"}
+              {isLoading ? t("auth.verify.verifying") : t("auth.verify.verify")}
             </button>
           </form>
 
@@ -132,10 +136,12 @@ export default function VerifyOTP() {
               disabled={countdown > 0 || isResending}
               className="text-sm font-medium text-emerald-700 transition hover:text-emerald-800 disabled:cursor-not-allowed disabled:text-slate-400"
             >
-              {isResending ? "Resending..." : "Resend OTP"}
+              {isResending ? t("auth.verify.resending") : t("auth.verify.resend")}
             </button>
             <span className="text-sm text-slate-500">
-              {countdown > 0 ? `Resend in ${countdown}s` : "You can resend now"}
+              {countdown > 0
+                ? t("auth.verify.resendIn", { count: countdown })
+                : t("auth.verify.resendNow")}
             </span>
           </div>
         </div>

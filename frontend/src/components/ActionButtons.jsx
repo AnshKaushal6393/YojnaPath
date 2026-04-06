@@ -14,6 +14,7 @@ function copyToClipboard(text) {
 
 export default function ActionButtons({
   schemeName,
+  benefitAmount,
   applyUrl,
   documents,
   schemeUrl,
@@ -46,6 +47,26 @@ export default function ActionButtons({
     await copyToClipboard(content || "No documents listed.");
   }
 
+  function handleWhatsappShare() {
+    const topDocuments = documents
+      .slice(0, 3)
+      .map((document) => document.en || document.hi)
+      .filter(Boolean)
+      .join(", ");
+
+    const message = [
+      `YojnaPath scheme: ${schemeName}`,
+      benefitAmount ? `Benefit: ${benefitAmount}` : "",
+      topDocuments ? `Documents: ${topDocuments}` : "",
+      applyUrl ? `Apply: ${applyUrl}` : "",
+      schemeUrl ? `Details: ${schemeUrl}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <div className="detail-actions">
       {applyUrl ? (
@@ -55,9 +76,12 @@ export default function ActionButtons({
           rel="noreferrer"
           className="detail-card__apply btn-primary tap-target"
         >
-          <span className="type-label">Open apply link</span>
+          <span className="type-label">Apply now</span>
         </a>
       ) : null}
+      <button type="button" className="detail-card__secondary-button" onClick={handleWhatsappShare}>
+        Share on WhatsApp
+      </button>
       <button type="button" className="detail-card__secondary-button" onClick={handleCopyDocuments}>
         Copy documents list
       </button>

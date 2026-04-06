@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import BottomNav from "../components/BottomNav";
 import SchemeDetail from "../components/SchemeDetail";
@@ -7,6 +8,7 @@ import { fetchSavedSchemes, removeSavedScheme, saveScheme } from "../lib/savedAp
 import { createTrackedApplication } from "../lib/trackerApi";
 
 export default function SchemeDetailPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { schemeId = "" } = useParams();
@@ -54,20 +56,20 @@ export default function SchemeDetailPage() {
       <div className="detail-page">
         <div className="detail-page__header">
           <Link to="/" className="detail-page__back type-label tap-target">
-            {"\u2190"} Back to schemes
+            {"\u2190"} {t("common.buttons.backToSchemes")}
           </Link>
         </div>
 
         {detailQuery.isLoading ? (
           <section className="detail-card">
-            <p className="type-h2">Loading scheme details...</p>
-            <p className="type-caption">Fetching full information from the live backend.</p>
+            <p className="type-h2">{t("schemeDetail.loadingTitle")}</p>
+            <p className="type-caption">{t("schemeDetail.loadingBody")}</p>
           </section>
         ) : null}
 
         {detailQuery.error ? (
           <section className="detail-card">
-            <p className="type-h2">Could not load scheme details</p>
+            <p className="type-h2">{t("schemeDetail.errorTitle")}</p>
             <p className="type-caption">{detailQuery.error.message}</p>
           </section>
         ) : null}

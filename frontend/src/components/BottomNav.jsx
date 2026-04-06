@@ -1,16 +1,18 @@
 import { NavLink } from "react-router-dom";
-
-const ITEMS = [
-  { key: "home", label: "Home", to: "/" },
-  { key: "saved", label: "Saved", to: "/saved" },
-  { key: "calendar", label: "Calendar", to: "/calendar" },
-  { key: "profile", label: "Profile", to: "/profile" },
-];
+import { useTranslation } from "react-i18next";
 
 export default function BottomNav({ active = "home" }) {
+  const { t } = useTranslation();
+  const items = [
+    { key: "home", label: t("common.navigation.home"), to: "/" },
+    { key: "saved", label: t("common.navigation.saved"), to: "/saved" },
+    { key: "calendar", label: t("common.navigation.calendar"), to: "/calendar" },
+    { key: "profile", label: t("common.navigation.profile"), to: "/profile" },
+  ];
+
   return (
-    <nav className="bottom-nav" aria-label="Primary navigation">
-      {ITEMS.map((item) => (
+    <nav className="bottom-nav" aria-label={t("common.navigation.home")}>
+      {items.map((item) => (
         <NavLink
           key={item.key}
           to={item.to}

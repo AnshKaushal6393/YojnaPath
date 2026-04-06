@@ -12,6 +12,7 @@ export default function SchemeCard({
   matchStatus,
   description,
   descriptionHi,
+  matchScorePercent,
   staggerIndex = 0,
 }) {
   const navigate = useNavigate();
@@ -56,6 +57,10 @@ export default function SchemeCard({
   const showMinistry = isMeaningful(ministry);
   const showHindiName = isMeaningful(schemeNameHi);
   const showHindiDescription = isMeaningful(descriptionHi);
+  const matchScore =
+    typeof matchScorePercent === "number" && Number.isFinite(matchScorePercent)
+      ? Math.max(0, Math.min(100, Math.round(matchScorePercent)))
+      : null;
 
   function openDetail() {
     navigate(`/schemes/${schemeId}`);
@@ -93,7 +98,6 @@ export default function SchemeCard({
       </div>
 
       <div className="scheme-card__content">
-        {showMinistry ? <p className="type-caption">{ministry}</p> : null}
         <div className="scheme-card__identity">
           <div className={`scheme-card__icon-box ${categoryMeta.tone}`} aria-hidden="true">
             {categoryMeta.icon}
@@ -101,11 +105,23 @@ export default function SchemeCard({
           <div className="scheme-card__title-block">
             <h3 className="scheme-card__title-en">{schemeName}</h3>
             {showHindiName ? <p className="scheme-card__title-hi hi">{schemeNameHi}</p> : null}
+            {showMinistry ? <p className="scheme-card__ministry type-caption">{ministry}</p> : null}
           </div>
         </div>
         <p className="scheme-description scheme-description--en">{description}</p>
         {showHindiDescription ? (
           <p className="scheme-description scheme-description--hi hi">{descriptionHi}</p>
+        ) : null}
+        {matchScore != null ? (
+          <div className="scheme-card__match-block" aria-hidden="true">
+            <div className="scheme-card__match-label-row">
+              <span className="scheme-card__match-label">Match quality</span>
+              <span className="scheme-card__match-value">{matchScore}%</span>
+            </div>
+            <div className="scheme-card__match-track">
+              <span className="scheme-card__match-fill" style={{ width: `${matchScore}%` }} />
+            </div>
+          </div>
         ) : null}
         <span className="scheme-card__expand-row" aria-hidden="true">
           <span className="scheme-card__expand-label">View full details</span>

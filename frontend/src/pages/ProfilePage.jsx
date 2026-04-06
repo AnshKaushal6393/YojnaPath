@@ -305,6 +305,19 @@ export default function ProfilePage() {
     );
   }, [name, profileMembersQuery.data]);
 
+  const accountOwnerProfileId = useMemo(() => {
+    const ownerName = normalizeComparisonName(name);
+    if (!ownerName) {
+      return "";
+    }
+
+    return (
+      (profileMembersQuery.data || []).find(
+        (member) => normalizeComparisonName(member.profileName) === ownerName
+      )?.id || ""
+    );
+  }, [name, profileMembersQuery.data]);
+
   function resetCreateMemberModal() {
     setShowCreateMemberModal(false);
     setNewMemberName("");
@@ -471,6 +484,7 @@ export default function ProfilePage() {
           isDeleting={deleteMemberMutation.isPending}
           accountOwnerName={name}
           accountOwnerHasProfile={accountOwnerHasProfile}
+          accountOwnerProfileId={accountOwnerProfileId}
         />
 
         <ProfileIdentityCard

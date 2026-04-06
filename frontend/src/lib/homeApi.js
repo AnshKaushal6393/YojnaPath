@@ -68,6 +68,7 @@ function mapSchemeDetailToCard(scheme) {
     category,
     state: scheme.state || "central",
     ministry: normalizeMinistry(scheme.ministry, category, schemeName),
+    matchScorePercent: null,
     matchStatus: "matched",
     description,
     descriptionHi:

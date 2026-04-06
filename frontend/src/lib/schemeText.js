@@ -8,22 +8,10 @@ const TEXT_REPLACEMENTS = [
   ["&amp;quot;", '"'],
   ["&amp;#39;", "'"],
   ["&amp;amp;", "&"],
-  ["ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¹", "₹"],
-  ["ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¹", "₹"],
-  ["ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¹", "₹"],
-  ["ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“", "–"],
-  ["ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â", "—"],
-  ["ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ", "–"],
-  ["ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“", "–"],
-  ["ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢", "'"],
-  ["ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢", "'"],
-  ["ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢", "'"],
-  ["ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ", '"'],
-  ["ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â", '"'],
-  ["ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“", '"'],
-  ["ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â", '"'],
-  ["ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ", '"'],
-  ["ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â", '"'],
+  ["Ã¢â€šÂ¹", "₹"],
+  ["â‚¹", "₹"],
+  ["Ã¢â‚¬â€œ", "-"],
+  ["Ã¢â‚¬â€", "-"],
 ];
 
 function decodeUtf8Mojibake(value) {
@@ -50,7 +38,8 @@ function stripMarkdownArtifacts(value) {
   return String(value ?? "")
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/gi, "$1")
     .replace(/\*\*(.*?)\*\*/g, "$1")
-    .replace(/__(.*?)__/g, "$1");
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/<br\s*\/?>/gi, " ");
 }
 
 export function normalizeText(value, fallback = "") {
@@ -66,17 +55,17 @@ export function normalizeText(value, fallback = "") {
     let current = text;
 
     if (
-      /[ÃƒÆ’Ã†â€™ÃƒÆ’ÃƒÂ ÃƒÆ’Ã‚Â¢ÃÃÂ¢Ãà¤]/.test(current) ||
-      current.includes("ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡") ||
-      current.includes("ÃƒÆ’Ã‚Â Ãƒâ€šÃ‚Â¤") ||
-      current.includes("ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢")
+      /[ÃÂâ€¢â‚¬]/.test(current) ||
+      current.includes("Ã¢â€šÂ¹") ||
+      current.includes("Ã¢â‚¬â€œ") ||
+      current.includes("Ã¢â‚¬â€")
     ) {
       current = decodeUtf8Mojibake(current).trim() || current;
     }
 
     current = applyReplacementTable(current);
     current = stripMarkdownArtifacts(current);
-    current = current.replace(/ÃƒÂ¯Ã‚Â¿Ã‚Â½|ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½|ï¿½/g, "");
+    current = current.replace(/Ãƒ|Ã‚|Â|ï¿½/g, "");
 
     if (current === text) {
       break;
@@ -107,13 +96,19 @@ export function toSentenceCase(value) {
 }
 
 export function formatBenefitAmount(value) {
-  if (value == null || Number.isNaN(Number(value))) {
+  const numericValue = Number(value);
+
+  if (value == null || Number.isNaN(numericValue)) {
+    return "Benefit available";
+  }
+
+  if (numericValue <= 0 || numericValue < 100) {
     return "Benefit available";
   }
 
   const formatted = new Intl.NumberFormat("en-IN", {
     maximumFractionDigits: 0,
-  }).format(Number(value));
+  }).format(numericValue);
 
   return `₹${formatted}`;
 }

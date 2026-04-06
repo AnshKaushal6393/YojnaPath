@@ -1,11 +1,13 @@
+import { useTranslation } from "react-i18next";
+
 function formatTimestamp(value) {
   if (!value) {
-    return "Unavailable";
+    return "";
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unavailable";
+    return "";
   }
 
   return new Intl.DateTimeFormat("en-IN", {
@@ -15,6 +17,7 @@ function formatTimestamp(value) {
 }
 
 export default function LastMatchSummary({ impact, health, isLoading, error, onExplore }) {
+  const { t } = useTranslation();
   const schemeCount = health?.schemeCount ?? impact?.schemesInDatabase ?? 0;
   const lastUpdated = impact?.lastUpdated || health?.timestamp;
 
@@ -22,9 +25,9 @@ export default function LastMatchSummary({ impact, health, isLoading, error, onE
     return (
       <section className="home-section">
         <div className="summary-card status-border-matched">
-          <p className="type-micro">Live backend summary</p>
-          <h2 className="type-h2">Loading latest snapshot...</h2>
-          <p className="type-caption">Fetching public data from the backend service.</p>
+          <p className="type-micro">{t("home.backendSummary.tag")}</p>
+          <h2 className="type-h2">{t("home.backendSummary.loadingTitle")}</h2>
+          <p className="type-caption">{t("home.backendSummary.loadingBody")}</p>
         </div>
       </section>
     );
@@ -34,8 +37,8 @@ export default function LastMatchSummary({ impact, health, isLoading, error, onE
     return (
       <section className="home-section">
         <div className="summary-card status-border-expired">
-          <p className="type-micro">Live backend summary</p>
-          <h2 className="type-h2">Could not reach backend</h2>
+          <p className="type-micro">{t("home.backendSummary.tag")}</p>
+          <h2 className="type-h2">{t("home.backendSummary.errorTitle")}</h2>
           <p className="type-caption">{error.message}</p>
         </div>
       </section>
@@ -47,8 +50,8 @@ export default function LastMatchSummary({ impact, health, isLoading, error, onE
       <div className="summary-card status-border-matched">
         <div className="summary-card__top">
           <div>
-            <p className="type-micro">Live backend summary</p>
-            <h2 className="type-h2">{schemeCount} schemes available</h2>
+            <p className="type-micro">{t("home.backendSummary.tag")}</p>
+            <h2 className="type-h2">{t("home.backendSummary.schemesAvailable", { count: schemeCount })}</h2>
           </div>
           <div className="scheme-card__benefit-chip">
             <p className="type-benefit">v{health?.version || "0.0.0"}</p>
@@ -56,16 +59,16 @@ export default function LastMatchSummary({ impact, health, isLoading, error, onE
         </div>
 
         <p className="type-body-en">
-          Backend is connected. Public inventory and summary data are loading from the live API.
+          {t("home.backendSummary.body")}
         </p>
-        <p className="type-caption">Updated on {formatTimestamp(lastUpdated)}</p>
+        <p className="type-caption">{t("home.backendSummary.updatedOn", { date: formatTimestamp(lastUpdated) })}</p>
 
         <button
           type="button"
           className="summary-card__button btn-primary tap-target"
           onClick={onExplore}
         >
-          <span className="type-label">Explore live schemes</span>
+          <span className="type-label">{t("home.backendSummary.explore")}</span>
         </button>
       </div>
     </section>

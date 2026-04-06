@@ -26,8 +26,10 @@ export default function FamilyProfilesPanel({
   isDeleting = false,
   accountOwnerName = "",
   accountOwnerHasProfile = false,
+  accountOwnerProfileId = "",
 }) {
   const accountOwnerMember =
+    members.find((member) => member.id === accountOwnerProfileId) ||
     members.find(
       (member) =>
         normalizeComparisonName(member.profileName) ===

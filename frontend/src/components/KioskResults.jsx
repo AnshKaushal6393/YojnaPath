@@ -22,6 +22,7 @@ export default function KioskResults({ results }) {
             category={scheme.category}
             state={scheme.state}
             ministry={scheme.ministry}
+            matchScorePercent={scheme.matchScorePercent}
             matchStatus={scheme.matchStatus}
             description={scheme.description}
             descriptionHi={scheme.descriptionHi}

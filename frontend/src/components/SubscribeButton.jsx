@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function SubscribeButton({ permission, onEnable, disabled = false }) {
+  const { t } = useTranslation();
   const isEnabled = permission === "granted";
 
   return (
@@ -8,7 +11,9 @@ export default function SubscribeButton({ permission, onEnable, disabled = false
       onClick={onEnable}
       disabled={disabled || isEnabled}
     >
-      {isEnabled ? "Browser reminders enabled" : "Enable browser reminders"}
+      {isEnabled
+        ? t("common.buttons.browserNotificationsEnabled")
+        : t("common.buttons.enableBrowserNotifications")}
     </button>
   );
 }

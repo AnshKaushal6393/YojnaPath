@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { downloadCalendarFile, openGoogleCalendarEvent } from "../lib/calendar";
 import StatusBadge from "./StatusBadge";
 import ReminderToggle from "./ReminderToggle";
@@ -13,6 +14,7 @@ export default function ApplicationTimeline({
   onToggleReminder,
   onSetReminderDate,
 }) {
+  const { t } = useTranslation();
   const [draftDates, setDraftDates] = useState({});
 
   useEffect(() => {
@@ -28,7 +30,9 @@ export default function ApplicationTimeline({
           <div className="application-card__line" aria-hidden="true" />
           <div className="application-card__top">
             <div>
-              <p className="type-caption">Applied on {application.appliedAtLabel}</p>
+              <p className="type-caption">
+                {t("tracker.appliedOn", { date: application.appliedAtLabel })}
+              </p>
               <h2 className="type-h2">{application.schemeName}</h2>
               {application.schemeNameHi ? (
                 <p className="type-caption hi" lang="hi">
@@ -47,7 +51,7 @@ export default function ApplicationTimeline({
               htmlFor={`application-status-${application.schemeId}`}
               className="application-inline-label"
             >
-              <span className="type-label">Application status</span>
+              <span className="type-label">{t("tracker.applicationStatus")}</span>
             </label>
             <select
               id={`application-status-${application.schemeId}`}
@@ -59,7 +63,7 @@ export default function ApplicationTimeline({
             >
               {STATUS_OPTIONS.map((status) => (
                 <option key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {t(`tracker.statuses.${status}`)}
                 </option>
               ))}
             </select>
@@ -74,7 +78,7 @@ export default function ApplicationTimeline({
           <div className="application-reminder-controls">
             <label className="application-reminder-controls__field">
               <span className="type-label" id={`reminder-date-label-${application.schemeId}`}>
-                Reminder date
+                {t("tracker.reminderDate")}
               </span>
               <input
                 id={`reminder-date-${application.schemeId}`}
@@ -103,19 +107,21 @@ export default function ApplicationTimeline({
                 updatingSchemeId === application.schemeId || !(draftDates[application.schemeId] || "")
               }
             >
-              Save reminder date
+              {t("common.buttons.saveReminderDate")}
             </button>
           </div>
 
           <div className="application-card__meta">
             {application.hasPastReminder ? (
               <p className="type-caption" role="status">
-                Previous reminder date has passed. Choose a new future date.
+                {t("tracker.previousReminderPassed")}
               </p>
             ) : application.reminderEnabled ? (
-              <p className="type-caption">Reminder date: {application.remindAtLabel}</p>
+              <p className="type-caption">
+                {t("tracker.reminderScheduled", { date: application.remindAtLabel })}
+              </p>
             ) : (
-              <p className="type-caption">No reminder scheduled</p>
+              <p className="type-caption">{t("tracker.noReminder")}</p>
             )}
             {application.notes ? <p className="type-caption">{application.notes}</p> : null}
           </div>
@@ -128,12 +134,12 @@ export default function ApplicationTimeline({
                 openGoogleCalendarEvent({
                   title: `${application.schemeName} reminder`,
                   date: application.remindAt || draftDates[application.schemeId],
-                  details: `Reminder for ${application.schemeName} from YojnaPath.`,
+                  details: t("tracker.calendarDetails", { scheme: application.schemeName }),
                 })
               }
               disabled={!(application.remindAt || draftDates[application.schemeId])}
             >
-              Add to Google Calendar
+              {t("common.buttons.addToGoogleCalendar")}
             </button>
             <button
               type="button"
@@ -142,12 +148,12 @@ export default function ApplicationTimeline({
                 downloadCalendarFile({
                   title: `${application.schemeName} reminder`,
                   date: application.remindAt || draftDates[application.schemeId],
-                  details: `Reminder for ${application.schemeName} from YojnaPath.`,
+                  details: t("tracker.calendarDetails", { scheme: application.schemeName }),
                 })
               }
               disabled={!(application.remindAt || draftDates[application.schemeId])}
             >
-              Download calendar file
+              {t("common.buttons.downloadCalendarFile")}
             </button>
           </div>
         </article>

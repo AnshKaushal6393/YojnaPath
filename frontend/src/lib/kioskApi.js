@@ -3,6 +3,7 @@ import { formatBenefitAmount, normalizeText, toSentenceCase } from "./schemeText
 
 const KIOSK_TOKEN_KEY = "yojnapath_kiosk_token";
 const KIOSK_ID_KEY = "yojnapath_kiosk_id";
+const TOTAL_MATCH_RULES = 14;
 const RELEVANT_KIOSK_CATEGORIES = {
   farmer: ["agriculture", "finance", "housing", "labour"],
   business: ["finance", "skill_and_employment", "housing", "labour"],
@@ -17,6 +18,12 @@ const RELEVANT_KIOSK_CATEGORIES = {
 
 function normalizeScheme(scheme) {
   const category = String(scheme.categories?.[0] || "agriculture").toLowerCase();
+  const matchScorePercent =
+    typeof scheme.matchScore === "number" &&
+    typeof scheme.totalCriteria === "number" &&
+    scheme.totalCriteria > 0
+      ? Math.round(72 + Math.min(scheme.totalCriteria / TOTAL_MATCH_RULES, 1) * 28)
+      : 70;
 
   return {
     id: scheme.schemeId,
@@ -32,6 +39,7 @@ function normalizeScheme(scheme) {
       "Scheme details are available in the kiosk summary."
     ),
     descriptionHi: normalizeText(scheme.description?.hi, ""),
+    matchScorePercent,
     matchStatus: "matched",
   };
 }
