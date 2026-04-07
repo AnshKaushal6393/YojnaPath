@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const USER_TYPES = [
   { value: "farmer", label: "Farmer" },
@@ -60,6 +61,7 @@ function getInitialState() {
 }
 
 export default function KioskForm({ onSubmit, isBusy }) {
+  const { t } = useTranslation();
   const [formState, setFormState] = useState(() => getInitialState());
 
   function updateField(field, value) {
@@ -69,13 +71,11 @@ export default function KioskForm({ onSubmit, isBusy }) {
   return (
     <section className="kiosk-card">
       <div className="section-heading">
-        <h2 className="type-h2">Kiosk worker form</h2>
-        <p className="type-caption">
-          Enter kiosk code once, then fill the visitor details to generate a quick result sheet.
-        </p>
+        <h2 className="type-h2">{t("kiosk.formTitle")}</h2>
+        <p className="type-caption">{t("kiosk.formSubtitle")}</p>
         {import.meta.env.DEV ? (
           <p className="type-caption">
-            Development demo code: <strong>DEMO1234</strong>
+            {t("kiosk.demoCode")} <strong>DEMO1234</strong>
           </p>
         ) : null}
       </div>
@@ -88,7 +88,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
         }}
       >
         <label className="demo-field">
-          <span className="type-label">Kiosk code</span>
+          <span className="type-label">{t("kiosk.fields.kioskCode")}</span>
           <input
             id="kiosk-code"
             name="kioskCode"
@@ -96,13 +96,13 @@ export default function KioskForm({ onSubmit, isBusy }) {
             className="demo-select"
             value={formState.kioskCode}
             onChange={(event) => updateField("kioskCode", event.target.value.toUpperCase())}
-            placeholder="Enter 8-character kiosk code"
+            placeholder={t("kiosk.placeholders.kioskCode")}
             maxLength={8}
           />
         </label>
 
         <label className="demo-field">
-          <span className="type-label">State</span>
+          <span className="type-label">{t("kiosk.fields.state")}</span>
           <select
             id="kiosk-state"
             name="state"
@@ -110,7 +110,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
             value={formState.state}
             onChange={(event) => updateField("state", event.target.value)}
           >
-            <option value="">Select state</option>
+            <option value="">{t("kiosk.selects.state")}</option>
             {STATES.map((state) => (
               <option key={state} value={state}>
                 {state}
@@ -120,7 +120,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
         </label>
 
         <label className="demo-field">
-          <span className="type-label">User type</span>
+          <span className="type-label">{t("kiosk.fields.userType")}</span>
           <select
             id="kiosk-occupation"
             name="occupation"
@@ -141,7 +141,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Annual income</span>
+          <span className="type-label">{t("kiosk.fields.annualIncome")}</span>
           <input
             id="kiosk-annual-income"
             name="annualIncome"
@@ -150,12 +150,12 @@ export default function KioskForm({ onSubmit, isBusy }) {
             className="demo-select"
             value={formState.annualIncome}
             onChange={(event) => updateField("annualIncome", event.target.value)}
-            placeholder="Enter annual income"
+            placeholder={t("kiosk.placeholders.annualIncome")}
           />
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Category</span>
+          <span className="type-label">{t("kiosk.fields.category")}</span>
           <select
             id="kiosk-caste"
             name="caste"
@@ -163,7 +163,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
             value={formState.caste}
             onChange={(event) => updateField("caste", event.target.value)}
           >
-            <option value="">Select category</option>
+            <option value="">{t("kiosk.selects.category")}</option>
             {CASTES.map((caste) => (
               <option key={caste.value} value={caste.value}>
                 {caste.label}
@@ -173,7 +173,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Gender</span>
+          <span className="type-label">{t("kiosk.fields.gender")}</span>
           <select
             id="kiosk-gender"
             name="gender"
@@ -181,7 +181,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
             value={formState.gender}
             onChange={(event) => updateField("gender", event.target.value)}
           >
-            <option value="">Select gender</option>
+            <option value="">{t("kiosk.selects.gender")}</option>
             {GENDERS.map((gender) => (
               <option key={gender.value} value={gender.value}>
                 {gender.label}
@@ -191,7 +191,7 @@ export default function KioskForm({ onSubmit, isBusy }) {
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Age</span>
+          <span className="type-label">{t("kiosk.fields.age")}</span>
           <input
             id="kiosk-age"
             name="age"
@@ -200,12 +200,12 @@ export default function KioskForm({ onSubmit, isBusy }) {
             className="demo-select"
             value={formState.age}
             onChange={(event) => updateField("age", event.target.value)}
-            placeholder="Enter age"
+            placeholder={t("kiosk.placeholders.age")}
           />
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Land acres</span>
+          <span className="type-label">{t("kiosk.fields.landAcres")}</span>
           <input
             id="kiosk-land-acres"
             name="landAcres"
@@ -215,12 +215,12 @@ export default function KioskForm({ onSubmit, isBusy }) {
             className="demo-select"
             value={formState.landAcres}
             onChange={(event) => updateField("landAcres", event.target.value)}
-            placeholder="Enter land acres"
+            placeholder={t("kiosk.placeholders.landAcres")}
           />
         </label>
 
         <label className="demo-field">
-          <span className="type-label">Disability percent</span>
+          <span className="type-label">{t("kiosk.fields.disabilityPct")}</span>
           <input
             id="kiosk-disability-pct"
             name="disabilityPct"
@@ -230,12 +230,12 @@ export default function KioskForm({ onSubmit, isBusy }) {
             className="demo-select"
             value={formState.disabilityPct}
             onChange={(event) => updateField("disabilityPct", event.target.value)}
-            placeholder="0 to 100"
+            placeholder={t("kiosk.placeholders.disabilityPct")}
           />
         </label>
 
         <button type="submit" className="demo-submit-button btn-primary" disabled={isBusy}>
-          {isBusy ? "Generating results..." : "Generate kiosk results"}
+          {isBusy ? t("kiosk.generating") : t("kiosk.generate")}
         </button>
       </form>
     </section>

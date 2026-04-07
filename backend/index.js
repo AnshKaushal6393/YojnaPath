@@ -3,6 +3,7 @@ require("./config/env");
 const express = require("express");
 const { connectMongo } = require("./config/mongo");
 const { ensureDatabaseSchema } = require("./config/postgres");
+const { startDeadlineTrackerScheduler } = require("./services/deadlineTrackerService");
 
 const authRoutes = require("./routes/auth");
 const applicationsRoutes = require("./routes/applications");
@@ -37,6 +38,8 @@ if (require.main === module) {
     console.warn(`[mongo] ${error.message}`);
     console.warn("[mongo] Backend will continue with limited functionality until MongoDB is available.");
   });
+
+  startDeadlineTrackerScheduler();
 
   ensureDatabaseSchema()
     .catch((error) => {

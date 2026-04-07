@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
 import KioskForm from "../components/KioskForm";
@@ -8,6 +9,7 @@ import KioskResults from "../components/KioskResults";
 import { clearKioskSession, fetchKioskMatches, loginKiosk } from "../lib/kioskApi";
 
 export default function KioskPage() {
+  const { t } = useTranslation();
   const [results, setResults] = useState(null);
   const [error, setError] = useState("");
 
@@ -32,7 +34,7 @@ export default function KioskPage() {
       setError("");
     },
     onError: (mutationError) => {
-      setError(mutationError.message || "Could not generate kiosk results right now.");
+      setError(mutationError.message || t("kiosk.error"));
       setResults(null);
     },
   });
@@ -42,15 +44,13 @@ export default function KioskPage() {
       <div className="kiosk-page">
         <section className="kiosk-hero">
           <div className="section-heading">
-            <p className="eyebrow">KIOSK</p>
-            <h1 className="type-h1">CSC worker kiosk interface</h1>
-            <p className="type-body-en">
-              Run quick guided matches for walk-in visitors and export a printable result sheet.
-            </p>
+            <p className="eyebrow">{t("kiosk.eyebrow")}</p>
+            <h1 className="type-h1">{t("kiosk.title")}</h1>
+            <p className="type-body-en">{t("kiosk.subtitle")}</p>
           </div>
           <div className="kiosk-hero__actions">
             <Link to="/" className="detail-card__secondary-button">
-              Back to home
+              {t("kiosk.backHome")}
             </Link>
             <button
               type="button"
@@ -61,12 +61,15 @@ export default function KioskPage() {
                 setError("");
               }}
             >
-              Clear kiosk session
+              {t("kiosk.clearSession")}
             </button>
           </div>
         </section>
 
-        <KioskForm onSubmit={(formState) => kioskMutation.mutate(formState)} isBusy={kioskMutation.isPending} />
+        <KioskForm
+          onSubmit={(formState) => kioskMutation.mutate(formState)}
+          isBusy={kioskMutation.isPending}
+        />
 
         {error ? (
           <section className="kiosk-card">
@@ -87,13 +90,10 @@ export default function KioskPage() {
           !kioskMutation.isPending && (
             <section className="kiosk-card">
               <EmptyState
-                title="No kiosk results yet"
-                titleHi="अभी कोई कियोस्क परिणाम नहीं है"
-                description="Enter the kiosk code and visitor profile to generate an instant printable list."
-                tips={[
-                  "Use the assigned kiosk code first.",
-                  "Fill visitor details and generate the result sheet.",
-                ]}
+                title={t("kiosk.emptyTitle")}
+                titleHi={t("kiosk.emptyTitleHi")}
+                description={t("kiosk.emptyDescription")}
+                tips={t("kiosk.emptyTips", { returnObjects: true })}
               />
             </section>
           )

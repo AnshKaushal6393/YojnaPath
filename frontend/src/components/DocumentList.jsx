@@ -1,4 +1,8 @@
+import { useTranslation } from "react-i18next";
+
 export default function DocumentList({ documents }) {
+  const { t } = useTranslation();
+
   if (!documents.length) {
     return null;
   }
@@ -6,8 +10,8 @@ export default function DocumentList({ documents }) {
   return (
     <div className="detail-card__section">
       <div className="detail-section__header">
-        <h2 className="type-h2">Documents</h2>
-        <p className="type-caption">Keep these ready before you begin the application.</p>
+        <h2 className="type-h2">{t("documents.title")}</h2>
+        <p className="type-caption">{t("documents.subtitle")}</p>
       </div>
       <div className="detail-card__documents">
         {documents.map((document, index) => (

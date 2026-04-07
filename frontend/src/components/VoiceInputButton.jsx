@@ -1,6 +1,13 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { parseVoiceProfileTranscript } from "../lib/voiceProfileParser";
 
-export default function VoiceInputButton({ onTranscript }) {
+export default function VoiceInputButton({
+  availableFields = [],
+  onApply,
+  appendTranscriptToNotes = false,
+}) {
+  const { t } = useTranslation();
   const [isListening, setIsListening] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -9,7 +16,7 @@ export default function VoiceInputButton({ onTranscript }) {
       window.SpeechRecognition || window.webkitSpeechRecognition || null;
 
     if (!SpeechRecognition) {
-      setMessage("Voice input is not supported on this device. You can skip this field.");
+      setMessage(t("adaptiveForm.voiceUnsupported"));
       return;
     }
 
@@ -19,20 +26,26 @@ export default function VoiceInputButton({ onTranscript }) {
     recognition.maxAlternatives = 1;
 
     setIsListening(true);
-    setMessage(
-      "\u092c\u094b\u0932\u093f\u090f... \u091c\u094b \u091c\u0930\u0942\u0930\u0940 \u0932\u0917\u0947 \u0939\u092e \u0935\u0939 \u0932\u093f\u0916 \u0930\u0939\u0947 \u0939\u0948\u0902\u0964"
-    );
+    setMessage(t("adaptiveForm.voiceListeningHint"));
 
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
-      onTranscript(transcript);
+      const parsed = parseVoiceProfileTranscript(transcript, availableFields);
+      onApply({
+        ...parsed,
+        appendTranscriptToNotes,
+      });
       setMessage(
-        transcript ? `Captured: ${transcript}` : "No speech detected. You can type or skip."
+        parsed.matchedFields.length
+          ? t("adaptiveForm.voiceFieldsUpdated", {
+              fields: parsed.matchedFields.join(", "),
+            })
+          : t("adaptiveForm.voiceNoMatch")
       );
     };
 
     recognition.onerror = () => {
-      setMessage("Could not capture voice. You can type instead or leave it blank.");
+      setMessage(t("adaptiveForm.voiceError"));
     };
 
     recognition.onend = () => {
@@ -50,7 +63,9 @@ export default function VoiceInputButton({ onTranscript }) {
         onClick={handleVoiceCapture}
       >
         <span aria-hidden="true">{"\u{1F3A4}"}</span>
-        <span className="type-label">{isListening ? "Listening..." : "Add by voice"}</span>
+        <span className="type-label">
+          {isListening ? t("adaptiveForm.voiceListening") : t("adaptiveForm.voiceButton")}
+        </span>
       </button>
       {message ? <p className="type-caption">{message}</p> : null}
     </div>

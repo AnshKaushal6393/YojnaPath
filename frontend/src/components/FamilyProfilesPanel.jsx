@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
 
 function getUserTypeLabel(userType) {
@@ -28,6 +29,7 @@ export default function FamilyProfilesPanel({
   accountOwnerHasProfile = false,
   accountOwnerProfileId = "",
 }) {
+  const { t } = useTranslation();
   const accountOwnerMember =
     members.find((member) => member.id === accountOwnerProfileId) ||
     members.find(
@@ -40,11 +42,9 @@ export default function FamilyProfilesPanel({
 
   function renderMemberCard(member, options = {}) {
     const isPrimary = Boolean(options.isPrimary);
-    const displayName = isPrimary
-      ? "My profile"
-      : member.profileName || "Family member";
+    const displayName = isPrimary ? t("profilePanel.myProfile") : member.profileName || t("profilePanel.familyMember");
     const secondaryText = isPrimary
-      ? accountOwnerName || member.profileName || "Account owner"
+      ? accountOwnerName || member.profileName || t("profile.account.accountOwnerFallback")
       : getUserTypeLabel(member.selectedUserType);
     const isDeletePending = pendingDeleteMemberId === member.id;
 
@@ -63,7 +63,7 @@ export default function FamilyProfilesPanel({
           <div className="family-profile-chip__heading">
             <span className="type-label">{displayName}</span>
             {isPrimary ? (
-              <span className="family-profile-chip__badge">Logged in member</span>
+              <span className="family-profile-chip__badge">{t("profilePanel.loggedInMember")}</span>
             ) : null}
           </div>
           <span className="type-caption">{secondaryText}</span>
@@ -75,7 +75,7 @@ export default function FamilyProfilesPanel({
         {!isPrimary && members.length > 1 && typeof onDelete === "function" ? (
           isDeletePending ? (
             <div className="family-profile-chip__confirm">
-              <span className="type-caption">Delete this profile?</span>
+              <span className="type-caption">{t("profilePanel.deleteConfirm")}</span>
               <div className="family-profile-chip__confirm-actions">
                 <button
                   type="button"
@@ -83,7 +83,7 @@ export default function FamilyProfilesPanel({
                   onClick={() => onCancelDelete?.()}
                   disabled={isDeleting}
                 >
-                  Cancel
+                  {t("common.buttons.cancel")}
                 </button>
                 <button
                   type="button"
@@ -91,7 +91,7 @@ export default function FamilyProfilesPanel({
                   onClick={() => onConfirmDelete?.()}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {isDeleting ? t("profilePanel.deleting") : t("common.buttons.delete")}
                 </button>
               </div>
             </div>
@@ -101,10 +101,12 @@ export default function FamilyProfilesPanel({
               className="family-profile-chip__delete"
               onClick={() => onDelete?.(member)}
               disabled={isDeleting}
-              aria-label={`Delete ${member.profileName || "family member"} profile`}
-              title="Delete profile"
+              aria-label={t("profilePanel.deleteAria", {
+                name: member.profileName || t("profilePanel.familyMember"),
+              })}
+              title={t("profilePanel.deleteTitle")}
             >
-              Delete
+              {t("common.buttons.delete")}
             </button>
           )
         ) : null}
@@ -115,10 +117,8 @@ export default function FamilyProfilesPanel({
   return (
     <section className="profile-card">
       <div className="section-heading">
-        <h2 className="type-h2">Profiles for this account</h2>
-        <p className="type-caption">
-          One phone login can manage your own scheme profile plus separate family-member profiles.
-        </p>
+        <h2 className="type-h2">{t("profilePanel.title")}</h2>
+        <p className="type-caption">{t("profilePanel.subtitle")}</p>
       </div>
 
       {primaryMember ? (
@@ -130,20 +130,20 @@ export default function FamilyProfilesPanel({
           <div className="family-profile-chip family-profile-chip--primary family-profile-chip--owner-empty">
             <div className="family-profile-chip__main">
               <div className="family-profile-chip__heading">
-                <span className="type-label">My profile</span>
-                <span className="family-profile-chip__badge">Logged in member</span>
+                <span className="type-label">{t("profilePanel.myProfile")}</span>
+                <span className="family-profile-chip__badge">{t("profilePanel.loggedInMember")}</span>
               </div>
-              <span className="type-caption">{accountOwnerName || "Account owner"}</span>
               <span className="type-caption">
-                Your own scheme profile has not been created yet.
+                {accountOwnerName || t("profile.account.accountOwnerFallback")}
               </span>
+              <span className="type-caption">{t("profilePanel.ownerMissing")}</span>
             </div>
             <button
               type="button"
               className="onboard-secondary-button family-profile-chip__owner-action"
               onClick={onCreateOwnerProfile}
             >
-              Create my own profile
+              {t("profilePanel.createOwn")}
             </button>
           </div>
         </div>
@@ -152,8 +152,8 @@ export default function FamilyProfilesPanel({
       {familyMembers.length ? (
         <div className="family-profiles-secondary">
           <div className="section-heading family-profiles-secondary__heading">
-            <h3 className="type-h2">Other family members</h3>
-            <p className="type-caption">Switch between added member profiles for matching.</p>
+            <h3 className="type-h2">{t("profilePanel.otherMembers")}</h3>
+            <p className="type-caption">{t("profilePanel.otherMembersSubtitle")}</p>
           </div>
 
           <div className="family-profiles-grid">
@@ -163,14 +163,13 @@ export default function FamilyProfilesPanel({
       ) : null}
 
       <div className="family-profiles-grid">
-        
         <button
           type="button"
           className="family-profile-chip family-profile-chip--create"
           onClick={onCreateNew}
         >
-          <span className="type-label">+ Add member</span>
-          <span className="type-caption">Create another family profile</span>
+          <span className="type-label">{t("profilePanel.addMember")}</span>
+          <span className="type-caption">{t("profilePanel.addMemberSubtitle")}</span>
         </button>
       </div>
     </section>

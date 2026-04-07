@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import AccountSection from "../components/AccountSection";
-import AdaptiveForm from "../components/AdaptiveForm";
 import BottomNav from "../components/BottomNav";
 import FamilyProfilesPanel from "../components/FamilyProfilesPanel";
-import LanguageToggle from "../components/LanguageToggle";
 import ProfileIdentityCard from "../components/ProfileIdentityCard";
 import ProfileForm from "../components/ProfileForm";
 import UserTypeSelector from "../components/UserTypeSelector";
@@ -21,6 +20,7 @@ import {
 import { clearProfileDraft, saveProfileDraft } from "../lib/profileDraft";
 import { completeRegistration, fetchCurrentUser } from "../lib/registrationApi";
 import { clearStoredPhone, clearToken } from "../utils/auth";
+import AdaptiveForm from "../components/AdaptiveForm";
 
 const REQUIRED_FIELDS_BY_USER_TYPE = {
   farmer: ["state", "gender", "caste", "ageBand", "incomeBand", "landBand"],
@@ -58,6 +58,7 @@ function createEmptyFormState() {
 }
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeProfileId, setActiveProfileIdState] = useState(() => getActiveProfileId());
@@ -121,11 +122,7 @@ export default function ProfilePage() {
   }, [activeProfileId, profileMembersQuery.data]);
 
   useEffect(() => {
-    if (
-      !savedProfileQuery.data ||
-      hasTouchedProfileRef.current ||
-      hasPrefilledProfileRef.current
-    ) {
+    if (!savedProfileQuery.data || hasTouchedProfileRef.current || hasPrefilledProfileRef.current) {
       return;
     }
 
@@ -169,11 +166,11 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-data"] });
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
-      setSubmitMessage("Profile details updated successfully.");
+      setSubmitMessage(t("profileMessages.profileUpdated"));
       setSubmitError("");
     },
     onError: (error) => {
-      setSubmitError(error.message || "Could not save profile changes right now.");
+      setSubmitError(error.message || t("profileMessages.profileSaveError"));
       setSubmitMessage("");
     },
   });
@@ -187,11 +184,11 @@ export default function ProfilePage() {
     onSuccess: (user) => {
       setName(user?.name || name);
       setLang(user?.lang || lang);
-      setSubmitMessage("Account info updated successfully.");
+      setSubmitMessage(t("profileMessages.accountUpdated"));
       setSubmitError("");
     },
     onError: (error) => {
-      setSubmitError(error.message || "Could not save account info right now.");
+      setSubmitError(error.message || t("profileMessages.accountSaveError"));
       setSubmitMessage("");
     },
   });
@@ -228,11 +225,11 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
       resetCreateMemberModal();
-      setSubmitMessage("New family member profile added successfully.");
+      setSubmitMessage(t("profileMessages.memberCreated"));
       setSubmitError("");
     },
     onError: (error) => {
-      setSubmitError(error.message || "Could not add the family member right now.");
+      setSubmitError(error.message || t("profileMessages.memberCreateError"));
       setSubmitMessage("");
     },
   });
@@ -247,11 +244,7 @@ export default function ProfilePage() {
       hasTouchedProfileRef.current = false;
       hasPrefilledProfileRef.current = false;
 
-      if (nextActiveProfileId) {
-        setActiveProfileIdState(nextActiveProfileId);
-      } else {
-        setActiveProfileIdState("");
-      }
+      setActiveProfileIdState(nextActiveProfileId || "");
 
       if (nextActiveMember) {
         setSelectedUserType(nextActiveMember.selectedUserType);
@@ -265,12 +258,12 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
       setPendingDeleteMember(null);
-      setSubmitMessage("Family member profile deleted successfully.");
+      setSubmitMessage(t("profileMessages.memberDeleted"));
       setSubmitError("");
     },
     onError: (error) => {
       setPendingDeleteMember(null);
-      setSubmitError(error.message || "Could not delete the family member right now.");
+      setSubmitError(error.message || t("profileMessages.memberDeleteError"));
       setSubmitMessage("");
     },
   });
@@ -283,7 +276,9 @@ export default function ProfilePage() {
 
   const canSaveProfile = useMemo(() => {
     const requiredFields = REQUIRED_FIELDS_BY_USER_TYPE[selectedUserType] || [];
-    return memberName.trim().length >= 2 && requiredFields.every((field) => Boolean(formState[field]));
+    return (
+      memberName.trim().length >= 2 && requiredFields.every((field) => Boolean(formState[field]))
+    );
   }, [formState, memberName, selectedUserType]);
 
   const canSaveNewMember = useMemo(() => {
@@ -317,6 +312,17 @@ export default function ProfilePage() {
       )?.id || ""
     );
   }, [name, profileMembersQuery.data]);
+
+  const isOwnerProfile = useMemo(() => {
+    const ownerName = normalizeComparisonName(name);
+    const currentMemberName = normalizeComparisonName(memberName);
+
+    if (activeProfileId && accountOwnerProfileId) {
+      return activeProfileId === accountOwnerProfileId;
+    }
+
+    return Boolean(ownerName && currentMemberName && ownerName === currentMemberName);
+  }, [activeProfileId, accountOwnerProfileId, memberName, name]);
 
   function resetCreateMemberModal() {
     setShowCreateMemberModal(false);
@@ -353,7 +359,7 @@ export default function ProfilePage() {
   async function handleProfileSubmit(event) {
     event.preventDefault();
     if (!canSaveProfile) {
-      setSubmitError("Please add the member name and complete all required profile fields before saving.");
+      setSubmitError(t("profileMessages.completeProfileFields"));
       setSubmitMessage("");
       return;
     }
@@ -363,7 +369,7 @@ export default function ProfilePage() {
 
   async function handleAccountSave() {
     if (normalizeName(name).trim().length < 2) {
-      setSubmitError("Please enter your name before saving account info.");
+      setSubmitError(t("profileMessages.enterName"));
       setSubmitMessage("");
       return;
     }
@@ -439,7 +445,7 @@ export default function ProfilePage() {
     event.preventDefault();
 
     if (!canSaveNewMember) {
-      setSubmitError("Please complete the new member name and required profile fields.");
+      setSubmitError(t("profileMessages.completeMemberFields"));
       setSubmitMessage("");
       return;
     }
@@ -455,19 +461,9 @@ export default function ProfilePage() {
           <div className="matching-hero-shape matching-hero-shape--two" aria-hidden="true" />
 
           <div className="section-heading">
-            <p className="eyebrow">PROFILE</p>
-            <h1 className="type-h1">Manage your saved details</h1>
-            <p className="type-body-en">
-              Update your profile, preferred language, and account details from one place.
-            </p>
-            <p className="type-body-hi hi profile-hero__copy-clean" lang="hi">
-              {
-                "\u0905\u092a\u0928\u0940 \u092a\u094d\u0930\u094b\u092b\u093e\u0907\u0932, \u092a\u0938\u0902\u0926 \u0915\u0940 \u092d\u093e\u0937\u093e \u0914\u0930 \u0905\u0915\u093e\u0909\u0902\u091f \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u092f\u0939\u093e\u0901 \u0938\u0947 \u092c\u0926\u0932\u0947\u0902\u0964"
-              }
-            </p>
-            <p className="type-body-hi hi" lang="hi">
-              अपनी प्रोफाइल, पसंद की भाषा और अकाउंट जानकारी यहां से बदलें।
-            </p>
+            <p className="eyebrow">{t("profilePage.eyebrow")}</p>
+            <h1 className="type-h1">{t("profilePage.title")}</h1>
+            <p className="type-body-en">{t("profilePage.subtitle")}</p>
           </div>
         </section>
 
@@ -496,7 +492,9 @@ export default function ProfilePage() {
 
         <section className="profile-card">
           <label className="demo-field">
-            <span className="type-label">Family member name</span>
+            <span className="type-label">
+              {isOwnerProfile ? t("profilePage.profileName") : t("profilePage.memberName")}
+            </span>
             <input
               type="text"
               className="demo-select"
@@ -511,13 +509,15 @@ export default function ProfilePage() {
                   })
                 );
               }}
-              placeholder="Enter family member name"
+              placeholder={
+                isOwnerProfile
+                  ? t("profilePage.profileNamePlaceholder")
+                  : t("profilePage.memberNamePlaceholder")
+              }
               autoComplete="off"
             />
           </label>
         </section>
-
-        <LanguageToggle value={lang} onChange={setLang} disabled={isBusy} />
 
         <form id="profile-form" className="profile-form-shell" onSubmit={handleProfileSubmit}>
           <ProfileForm
@@ -550,7 +550,6 @@ export default function ProfilePage() {
             <span className="type-caption">{submitError}</span>
           </div>
         ) : null}
-
       </div>
 
       {showCreateMemberModal ? (
@@ -563,13 +562,11 @@ export default function ProfilePage() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="section-heading">
-              <p className="eyebrow">NEW MEMBER</p>
+              <p className="eyebrow">{t("profilePage.newMemberEyebrow")}</p>
               <h2 id="create-member-title" className="type-h2">
-                Add family member profile
+                {t("profilePage.newMemberTitle")}
               </h2>
-              <p className="type-caption">
-                Create a separate scheme profile for another person in the family.
-              </p>
+              <p className="type-caption">{t("profilePage.newMemberSubtitle")}</p>
             </div>
 
             <form
@@ -579,13 +576,13 @@ export default function ProfilePage() {
             >
               <section className="profile-card">
                 <label className="demo-field">
-                  <span className="type-label">Family member name</span>
+                  <span className="type-label">{t("profilePage.memberName")}</span>
                   <input
                     type="text"
                     className="demo-select"
                     value={newMemberName}
                     onChange={(event) => setNewMemberName(normalizeName(event.target.value))}
-                    placeholder="Enter family member name"
+                    placeholder={t("profilePage.memberNamePlaceholder")}
                     autoComplete="off"
                   />
                 </label>
@@ -601,9 +598,9 @@ export default function ProfilePage() {
                 formState={newMemberFormState}
                 onChange={handleNewMemberFormStateChange}
                 isSubmitting={createMemberMutation.isPending}
-                submitLabel="Create member profile"
-                title="Member profile form"
-                subtitle="Create this profile separately so the family can switch between members."
+                submitLabel={t("profilePage.newMemberTitle")}
+                title={t("profilePage.memberFormTitle")}
+                subtitle={t("profilePage.memberFormSubtitle")}
                 formId="create-member-profile-form"
               />
 
@@ -613,7 +610,7 @@ export default function ProfilePage() {
                   className="onboard-logout-button"
                   onClick={resetCreateMemberModal}
                 >
-                  Cancel
+                  {t("common.buttons.cancel")}
                 </button>
               </div>
             </form>

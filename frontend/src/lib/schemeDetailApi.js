@@ -94,7 +94,17 @@ function buildEligibilityItems(eligibility = {}) {
 }
 
 export async function fetchSchemeDetail(schemeId) {
-  const scheme = await apiGet(`/api/schemes/${schemeId}`);
+  let scheme;
+
+  try {
+    scheme = await apiGet(`/api/schemes/${schemeId}`);
+  } catch (error) {
+    if (error?.status === 404) {
+      throw new Error("This scheme is no longer open for applications.");
+    }
+
+    throw error;
+  }
 
   if (!isSchemeVisibleNow(scheme)) {
     throw new Error("This scheme is no longer open for applications.");
@@ -125,9 +135,11 @@ export async function fetchSchemeDetail(schemeId) {
       hi: normalizeText(scheme.officeAddress?.hi, ""),
     },
     deadline: {
-      opens: formatDateLabel(scheme.deadline?.opens),
-      closes: formatDateLabel(scheme.deadline?.closes),
-      recurring: Boolean(scheme.deadline?.recurring),
+      opens: formatDateLabel(scheme.effectiveDeadline?.opens || scheme.deadline?.opens),
+      closes: formatDateLabel(scheme.effectiveDeadline?.closes || scheme.deadline?.closes),
+      recurring: Boolean(
+        scheme.effectiveDeadline?.recurring ?? scheme.deadline?.recurring
+      ),
     },
     eligibilityItems: buildEligibilityItems(scheme.eligibility),
     tags: (scheme.tags || []).map((tag) => normalizeText(tag, "")).filter(Boolean),

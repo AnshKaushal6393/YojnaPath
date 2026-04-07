@@ -2,6 +2,12 @@ const { isMongoReady } = require("../config/mongo");
 const { Scheme } = require("../models/Scheme");
 const { getMatchingSchemes, matchScheme } = require("../engine/matcher");
 const { recordMatchAnalytics } = require("../services/analyticsService");
+const {
+  attachDeadlineInfo,
+  getUrgentSchemeIds,
+  getUrgentSchemesFromList,
+  isSchemeOpenForApplications,
+} = require("../services/deadlineTrackerService");
 const { topSchemesCache } = require("../services/topSchemesCache");
 
 function normalizeOptionalString(value) {
@@ -118,23 +124,10 @@ function getRequestProfile(req) {
   });
 }
 
-function addDays(date, days) {
-  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
-}
-
-function buildVisibleSchemeQuery(now = new Date()) {
+function buildVisibleSchemeQuery() {
   return {
     active: true,
-    $or: [
-      { "deadline.closes": null },
-      { "deadline.closes": { $gte: now } },
-    ],
   };
-}
-
-function getDaysRemaining(closesAt, now = new Date()) {
-  const diff = closesAt.getTime() - now.getTime();
-  return Math.ceil(diff / (24 * 60 * 60 * 1000));
 }
 
 function normalizeUserType(userType) {
@@ -201,11 +194,11 @@ async function getSchemeById(req, res) {
     schemeId,
   }).lean();
 
-  if (!scheme) {
+  if (!scheme || !isSchemeOpenForApplications(scheme)) {
     return res.status(404).json({ message: "Scheme not found" });
   }
 
-  return res.json(scheme);
+  return res.json(attachDeadlineInfo(scheme));
 }
 
 async function getUrgentSchemes(req, res) {
@@ -221,22 +214,27 @@ async function getUrgentSchemes(req, res) {
   }
 
   const now = new Date();
-  const deadlineThreshold = addDays(now, 7);
-  const schemes = await Scheme.find({
-    active: true,
-    "deadline.closes": {
-      $gte: now,
-      $lte: deadlineThreshold,
-    },
-  }).lean();
+  const cachedUrgentIds = await getUrgentSchemeIds(now);
+  const cachedSchemes = cachedUrgentIds.length
+    ? await Scheme.find({
+        schemeId: { $in: cachedUrgentIds },
+        active: true,
+      }).lean()
+    : [];
 
-  const urgentMatches = schemes
+  const sourceSchemes =
+    cachedSchemes.length > 0
+      ? cachedSchemes
+      : await Scheme.find({
+          active: true,
+        }).lean();
+
+  const urgentMatches = getUrgentSchemesFromList(sourceSchemes, now)
     .filter((scheme) => matchScheme(profile, scheme))
     .map((scheme) => ({
       ...scheme,
-      daysRemaining: getDaysRemaining(new Date(scheme.deadline.closes), now),
-    }))
-    .sort((a, b) => a.daysRemaining - b.daysRemaining);
+      daysRemaining: scheme.effectiveDeadline?.daysRemaining ?? null,
+    }));
 
   return res.json(urgentMatches);
 }
@@ -304,7 +302,7 @@ async function getAllSchemesLightweight(req, res) {
     }
   ).lean();
 
-  return res.json(schemes);
+  return res.json(schemes.filter((scheme) => isSchemeOpenForApplications(scheme)).map((scheme) => attachDeadlineInfo(scheme)));
 }
 
 module.exports = {

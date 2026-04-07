@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import ChartByState from "../components/ChartByState";
 import ChartByUserType from "../components/ChartByUserType";
@@ -24,6 +25,7 @@ async function fetchImpactData() {
 }
 
 export default function ImpactPage() {
+  const { t } = useTranslation();
   const impactQuery = useQuery({
     queryKey: ["impact-public"],
     queryFn: fetchImpactData,
@@ -36,29 +38,27 @@ export default function ImpactPage() {
       <div className="impact-page">
         <section className="impact-hero">
           <div className="section-heading">
-            <p className="eyebrow">IMPACT</p>
-            <h1 className="type-h1">Public impact dashboard</h1>
-            <p className="type-body-en">
-              See the public aggregate usage of YojnaPath without logging in.
-            </p>
+            <p className="eyebrow">{t("impact.eyebrow")}</p>
+            <h1 className="type-h1">{t("impact.title")}</h1>
+            <p className="type-body-en">{t("impact.subtitle")}</p>
           </div>
           <div className="impact-hero__actions">
             <Link to="/" className="detail-card__secondary-button">
-              Go to home
+              {t("impact.goHome")}
             </Link>
           </div>
         </section>
 
         {impactQuery.isLoading ? (
           <section className="impact-panel">
-            <p className="type-h2">Loading impact dashboard...</p>
-            <p className="type-caption">Fetching live public aggregate stats from the backend.</p>
+            <p className="type-h2">{t("impact.loadingTitle")}</p>
+            <p className="type-caption">{t("impact.loadingBody")}</p>
           </section>
         ) : null}
 
         {impactQuery.error ? (
           <section className="impact-panel">
-            <p className="type-h2">Could not load impact stats</p>
+            <p className="type-h2">{t("impact.errorTitle")}</p>
             <p className="type-caption">{impactQuery.error.message}</p>
           </section>
         ) : null}
@@ -68,7 +68,9 @@ export default function ImpactPage() {
             <ImpactStats stats={stats} />
 
             <section className="impact-panel impact-panel--meta">
-              <p className="type-caption">Last updated: {formatUpdatedAt(stats.lastUpdated)}</p>
+              <p className="type-caption">
+                {t("impact.lastUpdated", { date: formatUpdatedAt(stats.lastUpdated) })}
+              </p>
             </section>
 
             <div className="impact-chart-grid">

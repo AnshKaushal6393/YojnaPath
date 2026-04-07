@@ -118,6 +118,18 @@ export function isSchemeVisibleNow(scheme, now = new Date()) {
     return false;
   }
 
+  if (typeof scheme.effectiveDeadline?.isOpen === "boolean") {
+    return scheme.effectiveDeadline.isOpen;
+  }
+
+  const effectiveClosesAtRaw = scheme.effectiveDeadline?.closes;
+  if (effectiveClosesAtRaw) {
+    const effectiveClosesAt = new Date(effectiveClosesAtRaw);
+    if (!Number.isNaN(effectiveClosesAt.getTime())) {
+      return effectiveClosesAt.getTime() >= now.getTime();
+    }
+  }
+
   const closesAtRaw = scheme.deadline?.closes;
   if (!closesAtRaw) {
     return true;

@@ -406,6 +406,10 @@ select {
   margin-bottom: var(--sp16);
 }
 
+.section-heading .voice-input-block {
+  margin-top: var(--sp4);
+}
+
 .user-type-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

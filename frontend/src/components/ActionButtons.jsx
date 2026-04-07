@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 function copyToClipboard(text) {
   if (navigator.clipboard?.writeText) {
     return navigator.clipboard.writeText(text);
@@ -24,10 +26,12 @@ export default function ActionButtons({
   onTrackApplication,
   isTrackPending,
 }) {
+  const { t } = useTranslation();
+
   async function handleShare() {
     const shareData = {
       title: schemeName,
-      text: `Check this scheme on YojnaPath: ${schemeName}`,
+      text: t("actions.shareSchemeText", { scheme: schemeName }),
       url: schemeUrl,
     };
 
@@ -44,7 +48,7 @@ export default function ActionButtons({
       .map((document, index) => `${index + 1}. ${document.en || document.hi}`)
       .join("\n");
 
-    await copyToClipboard(content || "No documents listed.");
+    await copyToClipboard(content || t("actions.noDocuments"));
   }
 
   function handleWhatsappShare() {
@@ -55,11 +59,11 @@ export default function ActionButtons({
       .join(", ");
 
     const message = [
-      `YojnaPath scheme: ${schemeName}`,
-      benefitAmount ? `Benefit: ${benefitAmount}` : "",
-      topDocuments ? `Documents: ${topDocuments}` : "",
-      applyUrl ? `Apply: ${applyUrl}` : "",
-      schemeUrl ? `Details: ${schemeUrl}` : "",
+      t("actions.whatsappTitle", { scheme: schemeName }),
+      benefitAmount ? t("actions.whatsappBenefit", { benefit: benefitAmount }) : "",
+      topDocuments ? t("actions.whatsappDocuments", { documents: topDocuments }) : "",
+      applyUrl ? t("actions.whatsappApply", { url: applyUrl }) : "",
+      schemeUrl ? t("actions.whatsappDetails", { url: schemeUrl }) : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -76,14 +80,14 @@ export default function ActionButtons({
           rel="noreferrer"
           className="detail-card__apply btn-primary tap-target"
         >
-          <span className="type-label">Apply now</span>
+          <span className="type-label">{t("actions.applyNow")}</span>
         </a>
       ) : null}
       <button type="button" className="detail-card__secondary-button" onClick={handleWhatsappShare}>
-        Share on WhatsApp
+        {t("actions.shareWhatsapp")}
       </button>
       <button type="button" className="detail-card__secondary-button" onClick={handleCopyDocuments}>
-        Copy documents list
+        {t("actions.copyDocuments")}
       </button>
       <button
         type="button"
@@ -91,7 +95,11 @@ export default function ActionButtons({
         onClick={onToggleSave}
         disabled={isSavePending}
       >
-        {isSavePending ? "Updating..." : isSaved ? "Remove from saved" : "Save scheme"}
+        {isSavePending
+          ? t("actions.updating")
+          : isSaved
+            ? t("actions.removeSaved")
+            : t("actions.saveScheme")}
       </button>
       <button
         type="button"
@@ -99,10 +107,10 @@ export default function ActionButtons({
         onClick={onTrackApplication}
         disabled={isTrackPending}
       >
-        {isTrackPending ? "Saving..." : "Mark as applied"}
+        {isTrackPending ? t("actions.saving") : t("actions.markApplied")}
       </button>
       <button type="button" className="detail-card__secondary-button" onClick={handleShare}>
-        Share scheme
+        {t("actions.shareScheme")}
       </button>
     </div>
   );

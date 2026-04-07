@@ -1,4 +1,8 @@
 const { Scheme } = require("../models/Scheme");
+const {
+  attachDeadlineInfo,
+  isSchemeOpenForApplications,
+} = require("../services/deadlineTrackerService");
 
 const EDUCATION_LEVELS = [
   "none",
@@ -441,22 +445,22 @@ async function getMatchingSchemes(profile, options = {}) {
   const allSchemes = await schemeModel
     .find({
       active: true,
-      $or: [
-        { "deadline.closes": null },
-        { "deadline.closes": { $gte: now } },
-      ],
     })
     .lean();
   const matched = [];
   const nearMisses = [];
 
   for (const scheme of allSchemes) {
+    if (!isSchemeOpenForApplications(scheme, now)) {
+      continue;
+    }
+
     if (matchScheme(profile, scheme)) {
-      matched.push({
+      matched.push(attachDeadlineInfo({
         ...scheme,
         matchScore: matchScore(profile, scheme),
         totalCriteria: totalCriteria(scheme),
-      });
+      }, now));
       continue;
     }
 
@@ -470,13 +474,13 @@ async function getMatchingSchemes(profile, options = {}) {
       fails.length <= nearMissGap &&
       !hasBlockingNearMissFailure(fails)
     ) {
-      nearMisses.push({
+      nearMisses.push(attachDeadlineInfo({
         ...scheme,
         failedCriteria: fails,
         missedCriterion: buildGapMessage(profile, fails[0]),
         totalCriteria: totalCriteria(scheme),
         matchScore: matchScore(profile, scheme),
-      });
+      }, now));
     }
   }
 

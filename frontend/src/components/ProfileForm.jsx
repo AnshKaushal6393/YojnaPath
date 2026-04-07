@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import AdaptiveForm from "./AdaptiveForm";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
 import UserTypeSelector from "./UserTypeSelector";
@@ -17,6 +18,7 @@ export default function ProfileForm({
   isSubmitting,
   allowUserTypeChange = false,
 }) {
+  const { t } = useTranslation();
   const userTypeLabel = getUserTypeLabel(selectedUserType);
 
   return (
@@ -26,10 +28,11 @@ export default function ProfileForm({
       ) : (
         <section className="profile-card">
           <div className="section-heading">
-            <h2 className="type-h2">Member type</h2>
+            <h2 className="type-h2">{t("profileForm.memberTypeTitle")}</h2>
             <p className="type-caption">
-              This profile is currently set as <strong>{userTypeLabel}</strong>. If this
-              member needs a different profile type, create a new member profile instead.
+              {t("profileForm.memberTypeBody.before")}
+              <strong>{userTypeLabel}</strong>
+              {t("profileForm.memberTypeBody.after")}
             </p>
           </div>
         </section>
@@ -39,9 +42,9 @@ export default function ProfileForm({
         formState={formState}
         onChange={onFormStateChange}
         isSubmitting={isSubmitting}
-        submitLabel="Save profile changes"
-        title="Profile details"
-        subtitle="अपनी जानकारी बदलें ताकि मिलान बेहतर और सही रहे।"
+        submitLabel={t("profileForm.saveChanges")}
+        title={t("profileForm.detailsTitle")}
+        subtitle={t("profileForm.detailsSubtitle")}
         formId="profile-form"
         showNotes={false}
       />

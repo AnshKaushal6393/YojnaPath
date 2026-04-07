@@ -16,6 +16,7 @@ export default function SchemeDetailPage() {
     queryKey: ["scheme-detail", schemeId],
     queryFn: () => fetchSchemeDetail(schemeId),
     enabled: Boolean(schemeId),
+    retry: false,
   });
   const savedQuery = useQuery({
     queryKey: ["saved-schemes"],
