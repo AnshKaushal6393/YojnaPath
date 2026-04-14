@@ -15,6 +15,7 @@ const savedRoutes = require("./routes/saved");
 const schemesRoutes = require("./routes/schemes");
 
 const app = express();
+app.set("trust proxy", 1);
 
 function parseAllowedOrigins(rawValue) {
   return String(rawValue || "")
