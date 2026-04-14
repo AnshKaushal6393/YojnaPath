@@ -133,7 +133,7 @@ export default function Register() {
               <LanguageToggle
                 value={lang}
                 onChange={handleLanguageChange}
-                disabled={isLoading || isCheckingUser}
+                disabled={isLoading}
               />
             </div>
 
