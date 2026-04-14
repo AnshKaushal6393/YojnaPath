@@ -2,7 +2,8 @@ import { clearActiveProfileId } from "./activeProfile";
 import { clearAuthToken, getAuthToken } from "./authStorage";
 import { clearStoredPhone, clearToken } from "../utils/auth";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
 let hasHandledUnauthorized = false;
 
 function handleUnauthorizedResponse() {
