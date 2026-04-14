@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { setAppLanguage } from "../i18n/language";
+import LanguageToggle from "../components/LanguageToggle";
 import {
   completeRegistration,
   fetchCurrentUser,
@@ -22,6 +23,12 @@ export default function Register() {
   const [isCheckingUser, setIsCheckingUser] = useState(true);
 
   const isValid = useMemo(() => normalizeName(name).trim().length >= 2, [name]);
+
+  async function handleLanguageChange(nextLang) {
+    setLang(nextLang);
+    setError("");
+    await setAppLanguage(nextLang);
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -122,37 +129,13 @@ export default function Register() {
               />
             </div>
 
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-slate-700">
-                {t("auth.register.preferredLanguage")}
-              </legend>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { value: "hi", label: t("common.language.hindi") },
-                  { value: "en", label: t("common.language.english") },
-                ].map((option) => {
-                  const isSelected = lang === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        setLang(option.value);
-                        setError("");
-                      }}
-                      disabled={isLoading || isCheckingUser}
-                      className={`flex h-14 items-center justify-center rounded-2xl border text-sm font-semibold transition ${
-                        isSelected
-                          ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                          : "border-slate-200 bg-white text-slate-600"
-                      } disabled:cursor-not-allowed disabled:bg-slate-50`}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
+            <div className="register-language-shell">
+              <LanguageToggle
+                value={lang}
+                onChange={handleLanguageChange}
+                disabled={isLoading || isCheckingUser}
+              />
+            </div>
 
             {error ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
