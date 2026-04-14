@@ -71,6 +71,7 @@ export default function HomeHero({
           onClick={() => onProfileModeChange(false)}
         >
           <span className="type-label">{t("home.mode.newUser")}</span>
+
         </button>
         <button
           type="button"

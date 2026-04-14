@@ -1,6 +1,31 @@
-import { getAuthToken } from "./authStorage";
+import { clearActiveProfileId } from "./activeProfile";
+import { clearAuthToken, getAuthToken } from "./authStorage";
+import { clearStoredPhone, clearToken } from "../utils/auth";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+let hasHandledUnauthorized = false;
+
+function handleUnauthorizedResponse() {
+  if (typeof window === "undefined" || hasHandledUnauthorized) {
+    return;
+  }
+
+  hasHandledUnauthorized = true;
+  clearAuthToken();
+  clearToken();
+  clearStoredPhone();
+  clearActiveProfileId();
+
+  const publicAuthPaths = ["/login", "/verify", "/register"];
+  if (!publicAuthPaths.includes(window.location.pathname)) {
+    window.location.replace("/login");
+    return;
+  }
+
+  window.setTimeout(() => {
+    hasHandledUnauthorized = false;
+  }, 0);
+}
 
 async function parseJson(response) {
   const contentType = response.headers.get("content-type") || "";
@@ -26,6 +51,10 @@ async function apiRequest(path, options = {}) {
   const payload = await parseJson(response);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      handleUnauthorizedResponse();
+    }
+
     const error = new Error(payload?.message || `Request failed: ${response.status}`);
     error.status = response.status;
     error.payload = payload;
