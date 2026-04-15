@@ -52,8 +52,12 @@ const en = {
       onDevice: "{{name}} on device",
     },
     links: {
+      impactEyebrow: "Public page",
       impact: "See impact",
+      impactBody: "Open a public snapshot of matches, benefit value, and reach.",
+      kioskEyebrow: "Assisted help",
       kiosk: "For CSC workers",
+      kioskBody: "Help a visitor quickly and generate a printable result sheet.",
     },
     offline: {
       banner:
@@ -412,6 +416,11 @@ const en = {
     eyebrow: "ASSISTED MODE",
     title: "CSC visitor desk",
     subtitle: "Help visitors find schemes and export a result sheet.",
+    heroChips: {
+      walkIn: "Walk-in support",
+      quickMatch: "Quick matching",
+      resultSheet: "Printable result sheet",
+    },
     backHome: "Back to home",
     clearSession: "New visitor session",
     error: "Could not generate results right now.",
@@ -456,6 +465,11 @@ const en = {
     eyebrow: "PUBLIC IMPACT",
     title: "YojnaPath public impact",
     subtitle: "See public numbers, estimated benefit value, and usage trends without logging in.",
+    heroChips: {
+      matches: "Total matches",
+      value: "Benefit value",
+      noPii: "No personal data",
+    },
     goHome: "Go to home",
     snapshotLabel: "Public snapshot",
     snapshotBody: "A quick view of matches, value, and reach across the platform.",
@@ -473,9 +487,13 @@ const en = {
     publicNote: "These numbers are shown as public totals only. No personal information is included.",
     stats: {
       usersServed: "People served",
+      usersServedBody: "Profiles and visitors helped across the platform.",
       totalMatches: "Total matches",
+      totalMatchesBody: "Eligibility matches generated from saved and assisted flows.",
       schemesInDatabase: "Schemes available",
+      schemesInDatabaseBody: "Active schemes available for people to explore.",
       totalBenefitValue: "Estimated benefit value",
+      totalBenefitValueBody: "Approximate value surfaced through tracked scheme applications.",
     },
     charts: {
       userTypeTitle: "By user type",

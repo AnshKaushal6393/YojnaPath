@@ -19,6 +19,7 @@ const STAT_ITEMS = [
     accent: "People",
     tone: "impact-stat-card--users",
     labelKey: "impact.stats.usersServed",
+    bodyKey: "impact.stats.usersServedBody",
     formatter: (value) => new Intl.NumberFormat("en-IN").format(Number(value || 0)),
   },
   {
@@ -26,6 +27,7 @@ const STAT_ITEMS = [
     accent: "Matches",
     tone: "impact-stat-card--matches",
     labelKey: "impact.stats.totalMatches",
+    bodyKey: "impact.stats.totalMatchesBody",
     formatter: (value) => new Intl.NumberFormat("en-IN").format(Number(value || 0)),
   },
   {
@@ -33,6 +35,7 @@ const STAT_ITEMS = [
     accent: "Schemes",
     tone: "impact-stat-card--schemes",
     labelKey: "impact.stats.schemesInDatabase",
+    bodyKey: "impact.stats.schemesInDatabaseBody",
     formatter: (value) => new Intl.NumberFormat("en-IN").format(Number(value || 0)),
   },
   {
@@ -40,6 +43,7 @@ const STAT_ITEMS = [
     accent: "Value",
     tone: "impact-stat-card--benefits",
     labelKey: "impact.stats.totalBenefitValue",
+    bodyKey: "impact.stats.totalBenefitValueBody",
     formatter: formatMoney,
   },
 ];
@@ -57,6 +61,7 @@ export default function ImpactStats({ stats }) {
           <div className="impact-stat-card__copy">
             <h2 className="type-h1 impact-stat-card__value">{item.formatter(stats?.[item.key])}</h2>
             <p className="type-caption impact-stat-card__label">{t(item.labelKey)}</p>
+            <p className="type-caption impact-stat-card__body">{t(item.bodyKey)}</p>
           </div>
         </article>
       ))}

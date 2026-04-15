@@ -47,6 +47,11 @@ export default function KioskPage() {
             <p className="eyebrow">{t("kiosk.eyebrow")}</p>
             <h1 className="type-h1">{t("kiosk.title")}</h1>
             <p className="type-body-en">{t("kiosk.subtitle")}</p>
+            <div className="hero-chip-row">
+              <span className="hero-chip">{t("kiosk.heroChips.walkIn")}</span>
+              <span className="hero-chip">{t("kiosk.heroChips.quickMatch")}</span>
+              <span className="hero-chip">{t("kiosk.heroChips.resultSheet")}</span>
+            </div>
           </div>
           <div className="kiosk-hero__actions">
             <Link to="/" className="detail-card__secondary-button">

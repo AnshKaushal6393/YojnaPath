@@ -206,17 +206,21 @@ export default function HomePage() {
         <div className="home-public-links">
           <button
             type="button"
-            className="detail-card__secondary-button"
+            className="home-link-card"
             onClick={() => navigate("/impact")}
           >
-            {t("home.links.impact")}
+            <span className="home-link-card__eyebrow">{t("home.links.impactEyebrow")}</span>
+            <span className="home-link-card__title">{t("home.links.impact")}</span>
+            <span className="home-link-card__body">{t("home.links.impactBody")}</span>
           </button>
           <button
             type="button"
-            className="detail-card__secondary-button"
+            className="home-link-card"
             onClick={() => navigate("/kiosk")}
           >
-            {t("home.links.kiosk")}
+            <span className="home-link-card__eyebrow">{t("home.links.kioskEyebrow")}</span>
+            <span className="home-link-card__title">{t("home.links.kiosk")}</span>
+            <span className="home-link-card__body">{t("home.links.kioskBody")}</span>
           </button>
         </div>
 

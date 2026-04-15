@@ -47,6 +47,11 @@ export default function ImpactPage() {
             <p className="eyebrow">{t("impact.eyebrow")}</p>
             <h1 className="type-h1">{t("impact.title")}</h1>
             <p className="type-body-en">{t("impact.subtitle")}</p>
+            <div className="hero-chip-row">
+              <span className="hero-chip">{t("impact.heroChips.matches")}</span>
+              <span className="hero-chip">{t("impact.heroChips.value")}</span>
+              <span className="hero-chip">{t("impact.heroChips.noPii")}</span>
+            </div>
           </div>
           <div className="impact-hero__actions">
             <Link to="/" className="detail-card__secondary-button">
