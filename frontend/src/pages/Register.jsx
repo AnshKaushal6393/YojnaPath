@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { setAppLanguage } from "../i18n/language";
+import { getStoredAppLanguage, setAppLanguage } from "../i18n/language";
 import LanguageToggle from "../components/LanguageToggle";
+import { resizeImageBlobToDataUrl } from "../lib/photoCapture";
 import {
   completeRegistration,
   fetchCurrentUser,
@@ -13,68 +14,11 @@ function normalizeName(value) {
   return value.replace(/\s+/g, " ").trimStart().slice(0, 120);
 }
 
-const MAX_IMAGE_WIDTH = 720;
-const MAX_IMAGE_HEIGHT = 720;
-const PHOTO_QUALITY = 0.8;
-
-async function loadImageFromBlob(blob) {
-  return new Promise((resolve, reject) => {
-    const objectUrl = window.URL.createObjectURL(blob);
-    const image = new Image();
-    image.onload = () => {
-      window.URL.revokeObjectURL(objectUrl);
-      resolve(image);
-    };
-    image.onerror = () => {
-      window.URL.revokeObjectURL(objectUrl);
-      reject(new Error("Could not load selected image"));
-    };
-    image.src = objectUrl;
-  });
-}
-
-async function resizeImageBlob(blob) {
-  const image = await loadImageFromBlob(blob);
-  const scale = Math.min(
-    1,
-    MAX_IMAGE_WIDTH / image.width || 1,
-    MAX_IMAGE_HEIGHT / image.height || 1
-  );
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(image.width * scale));
-  canvas.height = Math.max(1, Math.round(image.height * scale));
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("Canvas is not available");
-  }
-
-  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (nextBlob) => {
-        if (!nextBlob) {
-          reject(new Error("Could not prepare the photo"));
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("Could not read the photo"));
-        reader.readAsDataURL(nextBlob);
-      },
-      "image/jpeg",
-      PHOTO_QUALITY
-    );
-  });
-}
-
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [lang, setLang] = useState("hi");
+  const [lang, setLang] = useState(() => getStoredAppLanguage() || "hi");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUser, setIsCheckingUser] = useState(true);
@@ -129,7 +73,9 @@ export default function Register() {
           return;
         }
 
-        if (user?.lang) {
+        const storedLang = getStoredAppLanguage();
+
+        if (!storedLang && user?.lang) {
           setLang(user.lang);
           setAppLanguage(user.lang);
         }
@@ -165,7 +111,7 @@ export default function Register() {
     return () => {
       isMounted = false;
     };
-  }, [navigate, t]);
+  }, [navigate]);
 
   async function handleUsePhoto(nextPhotoUrl) {
     setPhotoUrl(nextPhotoUrl);
@@ -243,7 +189,7 @@ export default function Register() {
             }
 
             try {
-              resolve(await resizeImageBlob(blob));
+              resolve(await resizeImageBlobToDataUrl(blob));
             } catch (processingError) {
               reject(processingError);
             }
@@ -275,7 +221,7 @@ export default function Register() {
     try {
       setIsProcessingPhoto(true);
       setError("");
-      const processed = await resizeImageBlob(file);
+      const processed = await resizeImageBlobToDataUrl(file);
       setPhotoUrl(processed);
       setCameraOpen(false);
       stopCameraStream();
@@ -464,8 +410,7 @@ export default function Register() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
-                capture="user"
+                accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange}
                 className="hidden"
               />

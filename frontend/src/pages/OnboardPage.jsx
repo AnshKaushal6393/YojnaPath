@@ -12,6 +12,7 @@ import {
   fetchSavedProfile,
   saveProfileToBackend,
 } from "../lib/onboardApi";
+import { fetchCurrentUser } from "../lib/registrationApi";
 import {
   clearProfileDraft,
   getProfileDraft,
@@ -55,6 +56,7 @@ export default function OnboardPage() {
   const authToken = getAuthToken();
   const initialDraft = useMemo(() => getInitialDraft(), []);
   const [memberName, setMemberName] = useState(initialDraft.profileName);
+  const [accountName, setAccountName] = useState("");
   const [selectedUserType, setSelectedUserType] = useState(initialDraft.selectedUserType);
   const [formState, setFormState] = useState(initialDraft.formState);
   const [submitMessage, setSubmitMessage] = useState("");
@@ -68,6 +70,16 @@ export default function OnboardPage() {
     queryFn: fetchSavedProfile,
     enabled: Boolean(authToken),
   });
+
+  const currentUserQuery = useQuery({
+    queryKey: ["current-user"],
+    queryFn: fetchCurrentUser,
+    enabled: Boolean(authToken),
+  });
+
+  const isOwnerProfile = useMemo(() => {
+    return Boolean(accountName && (!savedProfileQuery.data || memberName.trim() === accountName.trim()));
+  }, [accountName, memberName, savedProfileQuery.data]);
 
   useEffect(() => {
     if (
@@ -95,6 +107,24 @@ export default function OnboardPage() {
       )
     );
   }, [savedProfileQuery.data]);
+
+  useEffect(() => {
+    const currentUserName = currentUserQuery.data?.name || "";
+    if (!currentUserName) {
+      return;
+    }
+
+    setAccountName(currentUserName);
+
+    if (!savedProfileQuery.data && !hasTouchedFormRef.current && !memberName.trim()) {
+      setMemberName(currentUserName);
+      saveProfileDraft(
+        buildOnboardDraft(selectedUserType, formState, "draft_only", {
+          profileName: currentUserName,
+        })
+      );
+    }
+  }, [currentUserQuery.data, formState, memberName, savedProfileQuery.data, selectedUserType]);
 
   const saveProfileMutation = useMutation({
     mutationFn: () =>
@@ -163,7 +193,11 @@ export default function OnboardPage() {
     }
 
     if (memberName.trim().length < 2) {
-      setSubmitError("Please enter the family member name before continuing.");
+      setSubmitError(
+        isOwnerProfile
+          ? "Please enter your profile name before continuing."
+          : "Please enter the family member name before continuing."
+      );
       setSubmitMessage("");
       return;
     }
@@ -236,13 +270,14 @@ export default function OnboardPage() {
         <OnboardingSteps />
         <section className="onboard-card">
           <label className="demo-field">
-            <span className="type-label">Family member name</span>
+            <span className="type-label">{isOwnerProfile ? "Profile name" : "Family member name"}</span>
             <input
               type="text"
               className="demo-select"
               value={memberName}
               onChange={(event) => {
                 const nextName = event.target.value;
+                hasTouchedFormRef.current = true;
                 setMemberName(nextName);
                 saveProfileDraft(
                   buildOnboardDraft(selectedUserType, formState, "draft_only", {
@@ -250,7 +285,7 @@ export default function OnboardPage() {
                   })
                 );
               }}
-              placeholder="Who is this profile for?"
+              placeholder={isOwnerProfile ? "Enter your name" : "Who is this profile for?"}
               autoComplete="off"
             />
           </label>

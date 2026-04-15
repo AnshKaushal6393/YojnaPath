@@ -1,3 +1,5 @@
+import { getStoredPhone } from "../utils/auth";
+
 const PROFILE_DRAFT_KEY = "yojnapath_profile_draft";
 
 export function getProfileDraft() {
@@ -11,7 +13,14 @@ export function getProfileDraft() {
   }
 
   try {
-    return JSON.parse(rawValue);
+    const parsed = JSON.parse(rawValue);
+    const currentPhone = getStoredPhone();
+
+    if (parsed?.ownerPhone && currentPhone && parsed.ownerPhone !== currentPhone) {
+      return null;
+    }
+
+    return parsed;
   } catch {
     return null;
   }
@@ -22,7 +31,13 @@ export function saveProfileDraft(value) {
     return;
   }
 
-  window.localStorage.setItem(PROFILE_DRAFT_KEY, JSON.stringify(value));
+  window.localStorage.setItem(
+    PROFILE_DRAFT_KEY,
+    JSON.stringify({
+      ...value,
+      ownerPhone: getStoredPhone() || "",
+    })
+  );
 }
 
 export function clearProfileDraft() {
