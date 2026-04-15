@@ -29,10 +29,6 @@ function validateName(name) {
 }
 
 function validatePhotoUrl(photoUrl) {
-  if (!photoUrl) {
-    return true;
-  }
-
   const value = String(photoUrl).trim();
   if (!value.startsWith("data:image/")) {
     return false;
@@ -175,19 +171,25 @@ async function register(req, res) {
   const lang = req.body?.lang === "en" ? "en" : "hi";
   const photoUrl = req.body?.photoUrl ? String(req.body.photoUrl).trim() : "";
 
+  const existingUser = await getUserById(req.user.id);
+
+  if (!existingUser) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
   if (!validateName(name)) {
     return res.status(400).json({ message: "Name must be at least 2 characters long" });
   }
 
-  if (!validatePhotoUrl(photoUrl)) {
+  if (!photoUrl && !existingUser.photo_url) {
+    return res.status(400).json({ message: "Photo is required to complete registration" });
+  }
+
+  if (photoUrl && !validatePhotoUrl(photoUrl)) {
     return res.status(400).json({ message: "Photo must be a valid image under 2 MB" });
   }
 
   const user = await completeUserRegistration(req.user.id, { name, lang, photoUrl });
-
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
 
   return res.json({
     user: serializeUser(user),

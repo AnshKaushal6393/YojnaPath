@@ -91,11 +91,16 @@ export default function Register() {
     [name, photoUrl]
   );
 
+  function stopCameraStream() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  }
+
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
-      }
+      stopCameraStream();
     };
   }, []);
 
@@ -127,6 +132,10 @@ export default function Register() {
         if (user?.lang) {
           setLang(user.lang);
           setAppLanguage(user.lang);
+        }
+
+        if (user?.name) {
+          setName(user.name);
         }
 
         if (user?.photoUrl) {
@@ -161,10 +170,7 @@ export default function Register() {
   async function handleUsePhoto(nextPhotoUrl) {
     setPhotoUrl(nextPhotoUrl);
     setCameraOpen(false);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
+    stopCameraStream();
   }
 
   async function handleOpenCamera() {
@@ -180,6 +186,7 @@ export default function Register() {
     try {
       setIsOpeningCamera(true);
       setError("");
+      stopCameraStream();
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
         audio: false,
@@ -271,6 +278,7 @@ export default function Register() {
       const processed = await resizeImageBlob(file);
       setPhotoUrl(processed);
       setCameraOpen(false);
+      stopCameraStream();
     } catch (fileError) {
       setError(
         fileError.message ||
@@ -490,10 +498,7 @@ export default function Register() {
                       type="button"
                       onClick={() => {
                         setCameraOpen(false);
-                        if (streamRef.current) {
-                          streamRef.current.getTracks().forEach((track) => track.stop());
-                          streamRef.current = null;
-                        }
+                        stopCameraStream();
                       }}
                       className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100"
                     >
