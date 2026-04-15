@@ -61,9 +61,9 @@ const en = {
       onDevice: "{{name}} on device",
     },
     links: {
-      impactEyebrow: "Public page",
-      impact: "See impact",
-      impactBody: "Open a public snapshot of matches, benefit value, and reach.",
+      profileEyebrow: "Your details",
+      profile: "Manage profile",
+      profileBody: "Update your photo, family members, and saved details for better matching.",
       kioskEyebrow: "Assisted help",
       kiosk: "For CSC workers",
       kioskBody: "Help a visitor quickly and generate a printable result sheet.",

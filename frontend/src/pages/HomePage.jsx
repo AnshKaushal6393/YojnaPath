@@ -207,11 +207,20 @@ export default function HomePage() {
           <button
             type="button"
             className="home-link-card"
-            onClick={() => navigate("/impact")}
+            onClick={() => navigate("/profile")}
           >
-            <span className="home-link-card__eyebrow">{t("home.links.impactEyebrow")}</span>
-            <span className="home-link-card__title">{t("home.links.impact")}</span>
-            <span className="home-link-card__body">{t("home.links.impactBody")}</span>
+            <span className="home-link-card__eyebrow">
+              {t("home.links.profileEyebrow", { defaultValue: "Your details" })}
+            </span>
+            <span className="home-link-card__title">
+              {t("home.links.profile", { defaultValue: "Manage profile" })}
+            </span>
+            <span className="home-link-card__body">
+              {t("home.links.profileBody", {
+                defaultValue:
+                  "Update your photo, family members, and saved details for better matching.",
+              })}
+            </span>
           </button>
           <button
             type="button"

@@ -14,26 +14,12 @@ export default defineConfig(({ mode }) => {
     apiOrigin = "";
   }
 
-  function isApiRequest(url) {
-    return url.pathname.startsWith("/api/") && (!apiOrigin || url.origin === apiOrigin);
-  }
-
-  function isSchemesAllRequest(url) {
-    return url.pathname === "/api/schemes/all" && (!apiOrigin || url.origin === apiOrigin);
-  }
-
-  function isSchemeDetailRequest(url) {
-    return (
-      /^\/api\/schemes\/[^/]+$/.test(url.pathname) &&
-      !url.pathname.endsWith("/match") &&
-      !url.pathname.endsWith("/urgent") &&
-      (!apiOrigin || url.origin === apiOrigin)
-    );
-  }
-
-  function isStaticDataRequest(url) {
-    return ["/api/health", "/api/impact"].includes(url.pathname) && (!apiOrigin || url.origin === apiOrigin);
-  }
+  const escapedApiOrigin = apiOrigin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const apiPrefix = apiOrigin ? `^${escapedApiOrigin}` : "";
+  const schemesAllPattern = new RegExp(`${apiPrefix}/api/schemes/all$`);
+  const schemeDetailPattern = new RegExp(`${apiPrefix}/api/schemes/[^/]+$`);
+  const staticDataPattern = new RegExp(`${apiPrefix}/api/(health|impact)$`);
+  const apiRequestPattern = new RegExp(`${apiPrefix}/api/`);
 
   return {
     plugins: [
@@ -66,7 +52,8 @@ export default defineConfig(({ mode }) => {
           navigateFallback: "/index.html",
           runtimeCaching: [
             {
-              urlPattern: ({ url, request }) => request.method === "GET" && isSchemesAllRequest(url),
+              urlPattern: schemesAllPattern,
+              method: "GET",
               handler: "CacheFirst",
               options: {
                 cacheName: "schemes-v1",
@@ -80,7 +67,8 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: ({ url, request }) => request.method === "GET" && isSchemeDetailRequest(url),
+              urlPattern: schemeDetailPattern,
+              method: "GET",
               handler: "StaleWhileRevalidate",
               options: {
                 cacheName: "scheme-detail-v1",
@@ -94,7 +82,8 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: ({ url, request }) => request.method === "GET" && isStaticDataRequest(url),
+              urlPattern: staticDataPattern,
+              method: "GET",
               handler: "NetworkFirst",
               options: {
                 cacheName: "app-meta-v1",
@@ -109,7 +98,8 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: ({ url, request }) => request.method === "GET" && isApiRequest(url),
+              urlPattern: apiRequestPattern,
+              method: "GET",
               handler: "NetworkFirst",
               options: {
                 cacheName: "api-fallback-v1",
