@@ -371,6 +371,18 @@ const hi = {
     title: "दस्तावेज़",
     subtitle: "आवेदन शुरू करने से पहले इन्हें तैयार रखें।",
   },
+  checklist: {
+    title: "चेकलिस्ट",
+    subtitle: "क्या तैयार है यह देखें और बाद के लिए सरल PDF डाउनलोड करें।",
+    download: "चेकलिस्ट डाउनलोड करें",
+    generating: "PDF बन रही है...",
+    brandTitle: "YojnaPath चेकलिस्ट",
+    generatedInBrowser: "आपके ब्राउज़र में बनाया गया",
+    benefitFallback: "लाभ उपलब्ध है",
+    scanToApply: "आवेदन के लिए स्कैन करें",
+    documentsAndChecks: "दस्तावेज़ और जाँच सूची",
+    officialApplyLink: "आधिकारिक आवेदन लिंक",
+  },
   actions: {
     applyNow: "अभी आवेदन करें",
     shareWhatsapp: "WhatsApp पर शेयर करें",

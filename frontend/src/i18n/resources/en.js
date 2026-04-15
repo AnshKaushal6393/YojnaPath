@@ -376,6 +376,18 @@ const en = {
     title: "Documents",
     subtitle: "Keep these ready before you begin the application.",
   },
+  checklist: {
+    title: "Checklist",
+    subtitle: "Track what is ready now and download a simple checklist for later.",
+    download: "Download checklist",
+    generating: "Generating PDF...",
+    brandTitle: "YojnaPath checklist",
+    generatedInBrowser: "Generated in your browser",
+    benefitFallback: "Benefit available",
+    scanToApply: "Scan to apply",
+    documentsAndChecks: "Documents and checks",
+    officialApplyLink: "Official apply link",
+  },
   actions: {
     applyNow: "Apply now",
     shareWhatsapp: "Share on WhatsApp",

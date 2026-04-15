@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { generateChecklistPdf, getChecklistItemCount } from "../lib/checklistPdf";
 
 function copyToClipboard(text) {
   if (navigator.clipboard?.writeText) {
@@ -15,6 +17,7 @@ function copyToClipboard(text) {
 }
 
 export default function ActionButtons({
+  scheme,
   schemeId,
   schemeName,
   benefitAmount,
@@ -29,7 +32,9 @@ export default function ActionButtons({
   onTrackApplication,
   isTrackPending,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [isExportingChecklist, setIsExportingChecklist] = useState(false);
+  const canDownloadChecklist = Boolean(scheme && getChecklistItemCount(scheme));
 
   async function handleShare() {
     const shareData = {
@@ -74,6 +79,29 @@ export default function ActionButtons({
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
+  async function handleChecklistDownload() {
+    if (!scheme) {
+      return;
+    }
+
+    try {
+      setIsExportingChecklist(true);
+      await generateChecklistPdf(scheme, {
+        lang: i18n.resolvedLanguage,
+        labels: {
+          brandTitle: t("checklist.brandTitle"),
+          generatedInBrowser: t("checklist.generatedInBrowser"),
+          benefitFallback: t("checklist.benefitFallback"),
+          scanToApply: t("checklist.scanToApply"),
+          documentsAndChecks: t("checklist.documentsAndChecks"),
+          officialApplyLink: t("checklist.officialApplyLink"),
+        },
+      });
+    } finally {
+      setIsExportingChecklist(false);
+    }
+  }
+
   return (
     <div className="detail-actions">
       {applyUrl ? (
@@ -92,6 +120,16 @@ export default function ActionButtons({
       <button type="button" className="detail-card__secondary-button" onClick={handleCopyDocuments}>
         {t("actions.copyDocuments")}
       </button>
+      {canDownloadChecklist ? (
+        <button
+          type="button"
+          className="detail-card__secondary-button"
+          onClick={handleChecklistDownload}
+          disabled={isExportingChecklist}
+        >
+          {isExportingChecklist ? t("checklist.generating") : t("checklist.download")}
+        </button>
+      ) : null}
       <button
         type="button"
         className="detail-card__secondary-button"

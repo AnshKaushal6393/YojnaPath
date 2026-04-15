@@ -180,6 +180,7 @@ export default function SchemeDetail({
       <DocumentList documents={scheme.documents} />
       <ChecklistGenerator scheme={scheme} />
       <ActionButtons
+        scheme={scheme}
         schemeId={scheme.id}
         schemeName={scheme.schemeName}
         benefitAmount={scheme.benefitAmount}
