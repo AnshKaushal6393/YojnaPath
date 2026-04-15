@@ -48,6 +48,8 @@ async function ensureProfilesSchema() {
             ALTER TABLE profiles
               ADD COLUMN IF NOT EXISTS relation VARCHAR(40);
             ALTER TABLE profiles
+              ADD COLUMN IF NOT EXISTS photo_url TEXT;
+            ALTER TABLE profiles
               ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
             UPDATE profiles p
             SET
@@ -109,6 +111,7 @@ function mapProfileRow(row) {
     userId: row.user_id,
     profileName: row.profile_name,
     relation: row.relation,
+    photoUrl: row.photo_url || null,
     isPrimary: row.is_primary,
     state: row.state,
     occupation: row.occupation,
@@ -135,6 +138,7 @@ async function getProfileByUserId(userId, profileId = null) {
         p.user_id,
         p.profile_name,
         p.relation,
+        p.photo_url,
         p.is_primary,
         p.state,
         p.occupation,
@@ -171,6 +175,7 @@ async function listProfilesByUserId(userId) {
         p.user_id,
         p.profile_name,
         p.relation,
+        p.photo_url,
         p.is_primary,
         p.state,
         p.occupation,
@@ -225,6 +230,10 @@ async function upsertProfile(userId, profileId, profile) {
     );
     const existingCount = existingCountResult.rows[0]?.count ?? 0;
 
+    if (!profileId && existingCount > 0 && !profile.photoUrl) {
+      throw new Error("photoUrl is required for family members");
+    }
+
     let result;
     if (profileId) {
       result = await client.query(
@@ -233,17 +242,18 @@ async function upsertProfile(userId, profileId, profile) {
           SET
             profile_name = $3,
             relation = $4,
-            state = $5,
-            occupation = $6,
-            annual_income = $7,
-            caste = $8,
-            gender = $9,
-            age = $10,
-            land_acres = $11,
-            disability_pct = $12,
-            is_student = $13,
-            is_migrant = $14,
-            district = $15,
+            photo_url = COALESCE($5, photo_url),
+            state = $6,
+            occupation = $7,
+            annual_income = $8,
+            caste = $9,
+            gender = $10,
+            age = $11,
+            land_acres = $12,
+            disability_pct = $13,
+            is_student = $14,
+            is_migrant = $15,
+            district = $16,
             updated_at = NOW()
           WHERE user_id = $1 AND id = $2
           RETURNING
@@ -251,6 +261,7 @@ async function upsertProfile(userId, profileId, profile) {
             user_id,
             profile_name,
             relation,
+            photo_url,
             is_primary,
             state,
             occupation,
@@ -269,6 +280,7 @@ async function upsertProfile(userId, profileId, profile) {
           profileId,
           resolvedProfileName,
           profile.relation,
+          profile.photoUrl,
           profile.state,
           profile.occupation,
           profile.annualIncome,
@@ -290,6 +302,7 @@ async function upsertProfile(userId, profileId, profile) {
             profile_name,
             relation,
             is_primary,
+            photo_url,
             state,
             occupation,
             annual_income,
@@ -304,13 +317,14 @@ async function upsertProfile(userId, profileId, profile) {
             updated_at
           )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW()
           )
           RETURNING
             id,
             user_id,
             profile_name,
             relation,
+            photo_url,
             is_primary,
             state,
             occupation,
@@ -329,6 +343,7 @@ async function upsertProfile(userId, profileId, profile) {
           resolvedProfileName,
           profile.relation,
           existingCount === 0,
+          profile.photoUrl,
           profile.state,
           profile.occupation,
           profile.annualIncome,
@@ -439,6 +454,7 @@ async function deleteProfileByUserId(userId, profileId) {
           p.user_id,
           p.profile_name,
           p.relation,
+          p.photo_url,
           p.is_primary,
           p.state,
           p.occupation,

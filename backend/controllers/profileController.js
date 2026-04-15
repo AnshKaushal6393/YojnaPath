@@ -55,6 +55,19 @@ function normalizeBoolean(value, fallback = false) {
   return null;
 }
 
+function validatePhotoUrl(photoUrl) {
+  const value = String(photoUrl ?? "").trim();
+  if (!value) {
+    return true;
+  }
+
+  if (!value.startsWith("data:image/")) {
+    return false;
+  }
+
+  return value.length <= 2_000_000;
+}
+
 function buildProfilePayload(body) {
   const annualIncomeRaw = body?.annualIncome ?? body?.annual_income;
   const landAcresRaw = body?.landAcres ?? body?.land_acres;
@@ -77,6 +90,7 @@ function buildProfilePayload(body) {
     isMigrant: normalizeBoolean(isMigrantRaw, false),
     district: normalizeOptionalString(body?.district),
     lang: normalizeOptionalString(body?.lang)?.toLowerCase() ?? null,
+    photoUrl: normalizeOptionalString(body?.photoUrl ?? body?.photo_url),
   };
 }
 
@@ -141,6 +155,10 @@ function validateProfilePayload(profile) {
     return "relation must be at most 40 characters";
   }
 
+  if (!validatePhotoUrl(profile.photoUrl)) {
+    return "photoUrl must be a valid image under 2 MB";
+  }
+
   return null;
 }
 
@@ -172,8 +190,16 @@ async function saveProfile(req, res) {
     return res.status(400).json({ message: validationError });
   }
 
-  const savedProfile = await upsertProfile(userId, profileId, profile);
-  return res.json(savedProfile);
+  try {
+    const savedProfile = await upsertProfile(userId, profileId, profile);
+    return res.json(savedProfile);
+  } catch (error) {
+    if (error.message === "photoUrl is required for family members") {
+      return res.status(400).json({ message: error.message });
+    }
+
+    throw error;
+  }
 }
 
 async function deleteProfile(req, res) {

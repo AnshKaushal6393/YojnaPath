@@ -80,6 +80,7 @@ function mapApiProfileToDraft(profile) {
     isPrimary: Boolean(profile.isPrimary),
     profileName: profile.profileName || "",
     relation: profile.relation || "",
+    photoUrl: profile.photoUrl || "",
     selectedUserType: profile.occupation,
     formState: mapProfileToFormState(profile),
     storageMode: "synced",
@@ -96,6 +97,7 @@ export function buildOnboardDraft(
     id: extras.id || "",
     profileName: extras.profileName || "",
     relation: extras.relation || "",
+    photoUrl: extras.photoUrl || "",
     selectedUserType,
     formState,
     storageMode,
@@ -188,6 +190,7 @@ export async function saveProfileToBackend(
       profileId: options.profileId || null,
       profileName: options.profileName || null,
       relation: options.relation || null,
+      photoUrl: options.photoUrl || null,
     },
     { token }
   );

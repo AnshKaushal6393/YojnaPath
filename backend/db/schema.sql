@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   profile_name VARCHAR(120) NOT NULL DEFAULT 'Family member',
   relation VARCHAR(40),
+  photo_url TEXT,
   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
   gender VARCHAR(10)
     CHECK (gender IN ('male', 'female', 'other')),
