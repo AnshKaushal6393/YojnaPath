@@ -1,19 +1,4 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
-function copyToClipboard(text) {
-  if (navigator.clipboard?.writeText) {
-    return navigator.clipboard.writeText(text);
-  }
-
-  const input = document.createElement("textarea");
-  input.value = text;
-  document.body.appendChild(input);
-  input.select();
-  document.execCommand("copy");
-  document.body.removeChild(input);
-  return Promise.resolve();
-}
 
 export default function ActionButtons({
   schemeName,
@@ -28,16 +13,6 @@ export default function ActionButtons({
   isTrackPending,
 }) {
   const { t } = useTranslation();
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-
-  async function handleCopyDocuments() {
-    const content = documents
-      .map((document, index) => `${index + 1}. ${document.en || document.hi}`)
-      .join("\n");
-
-    await copyToClipboard(content || t("actions.noDocuments"));
-    setIsMoreOpen(false);
-  }
 
   function handleWhatsappShare() {
     const topDocuments = documents
@@ -57,7 +32,6 @@ export default function ActionButtons({
       .join("\n");
 
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-    setIsMoreOpen(false);
   }
 
   return (
@@ -95,35 +69,6 @@ export default function ActionButtons({
       >
         {isTrackPending ? t("actions.saving") : t("actions.markApplied")}
       </button>
-      <div className={`detail-actions__menu ${isMoreOpen ? "is-open" : ""}`}>
-        <button
-          type="button"
-          className="detail-card__secondary-button"
-          onClick={() => setIsMoreOpen((current) => !current)}
-          aria-expanded={isMoreOpen}
-          aria-haspopup="menu"
-        >
-          {t("actions.more")}
-        </button>
-        {isMoreOpen ? (
-          <div className="detail-actions__dropdown" role="menu">
-            <button
-              type="button"
-              className="detail-actions__dropdown-item"
-              onClick={handleWhatsappShare}
-            >
-              {t("actions.shareWhatsapp")}
-            </button>
-            <button
-              type="button"
-              className="detail-actions__dropdown-item"
-              onClick={handleCopyDocuments}
-            >
-              {t("actions.copyDocuments")}
-            </button>
-          </div>
-        ) : null}
-      </div>
     </div>
   );
 }
