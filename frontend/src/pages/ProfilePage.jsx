@@ -637,7 +637,7 @@ export default function ProfilePage() {
 
         <ProfileIdentityCard
           name={memberName || name}
-          photoUrl={isOwnerProfile ? photoUrl : ""}
+          photoUrl={isOwnerProfile ? photoUrl : savedProfileQuery.data?.photoUrl || ""}
           selectedUserType={selectedUserType}
           state={formState.state}
           caste={formState.caste}
@@ -739,6 +739,114 @@ export default function ProfilePage() {
                     autoComplete="off"
                   />
                 </label>
+              </section>
+
+              <section className="profile-card">
+                <div className="space-y-3">
+                  <div className="section-heading">
+                    <h3 className="type-h2">Family member photo</h3>
+                    <p className="type-caption">
+                      Add a clear face photo so CSC workers can confirm the correct person.
+                    </p>
+                  </div>
+
+                  {newMemberPhotoUrl ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white p-3">
+                        <img
+                          src={newMemberPhotoUrl}
+                          alt="Selected family member"
+                          className="h-20 w-20 rounded-full border border-emerald-100 object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900">Photo ready</p>
+                          <p className="text-sm text-slate-500">
+                            This picture will be saved with the family member profile.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          className="onboard-secondary-button"
+                          onClick={handleOpenMemberCamera}
+                          disabled={isOpeningMemberCamera || isProcessingMemberPhoto}
+                        >
+                          Retake photo
+                        </button>
+                        <button
+                          type="button"
+                          className="onboard-logout-button"
+                          onClick={() => setNewMemberPhotoUrl("")}
+                          disabled={isProcessingMemberPhoto}
+                        >
+                          Remove photo
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <button
+                        type="button"
+                        className="onboard-secondary-button"
+                        onClick={handleOpenMemberCamera}
+                        disabled={isOpeningMemberCamera || isProcessingMemberPhoto}
+                      >
+                        {isOpeningMemberCamera ? "Opening camera..." : "Open camera"}
+                      </button>
+                      <button
+                        type="button"
+                        className="onboard-secondary-button"
+                        onClick={() => memberFileInputRef.current?.click()}
+                        disabled={isProcessingMemberPhoto}
+                      >
+                        Upload from gallery
+                      </button>
+                    </div>
+                  )}
+
+                  <input
+                    ref={memberFileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleMemberPhotoFileChange}
+                    className="hidden"
+                  />
+
+                  {memberCameraOpen ? (
+                    <div className="space-y-3 rounded-3xl border border-emerald-100 bg-white p-3">
+                      <div className="overflow-hidden rounded-[24px] bg-slate-950">
+                        <video
+                          ref={memberVideoRef}
+                          playsInline
+                          muted
+                          autoPlay
+                          className="aspect-square w-full object-cover"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          className="onboard-secondary-button"
+                          onClick={handleCaptureMemberPhoto}
+                          disabled={isProcessingMemberPhoto}
+                        >
+                          {isProcessingMemberPhoto ? "Preparing photo..." : "Take photo"}
+                        </button>
+                        <button
+                          type="button"
+                          className="onboard-logout-button"
+                          onClick={() => {
+                            setMemberCameraOpen(false);
+                            stopMemberCameraStream();
+                          }}
+                        >
+                          {t("common.buttons.cancel")}
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </section>
 
               <UserTypeSelector
