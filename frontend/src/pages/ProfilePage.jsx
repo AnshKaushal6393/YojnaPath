@@ -72,6 +72,7 @@ export default function ProfilePage() {
   const [lang, setLang] = useState("hi");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [pendingDeleteMember, setPendingDeleteMember] = useState(null);
@@ -102,6 +103,7 @@ export default function ProfilePage() {
     setName(currentUserQuery.data.name || "");
     setLang(currentUserQuery.data.lang || "hi");
     setPhone(currentUserQuery.data.phone || "");
+    setPhotoUrl(currentUserQuery.data.photoUrl || "");
     hasPrefilledAccountRef.current = true;
   }, [currentUserQuery.data]);
 
@@ -180,10 +182,13 @@ export default function ProfilePage() {
       completeRegistration({
         name: normalizeName(name).trim(),
         lang,
+        photoUrl: photoUrl || undefined,
       }),
-    onSuccess: (user) => {
+    onSuccess: async (user) => {
       setName(user?.name || name);
       setLang(user?.lang || lang);
+      setPhotoUrl(user?.photoUrl || photoUrl);
+      await queryClient.invalidateQueries({ queryKey: ["current-user"] });
       setSubmitMessage(t("profileMessages.accountUpdated"));
       setSubmitError("");
     },
@@ -485,6 +490,7 @@ export default function ProfilePage() {
 
         <ProfileIdentityCard
           name={memberName || name}
+          photoUrl={isOwnerProfile ? photoUrl : ""}
           selectedUserType={selectedUserType}
           state={formState.state}
           caste={formState.caste}

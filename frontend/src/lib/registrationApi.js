@@ -17,13 +17,14 @@ export async function fetchCurrentUser() {
   return payload.user || null;
 }
 
-export async function completeRegistration({ name, lang }) {
+export async function completeRegistration({ name, lang, photoUrl }) {
   const token = getTokenOrThrow();
   const payload = await apiPost(
     "/api/auth/register",
     {
       name,
       lang,
+      photoUrl: photoUrl || undefined,
     },
     { token }
   );

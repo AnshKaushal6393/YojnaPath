@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { setAppLanguage } from "../i18n/language";
@@ -13,6 +13,63 @@ function normalizeName(value) {
   return value.replace(/\s+/g, " ").trimStart().slice(0, 120);
 }
 
+const MAX_IMAGE_WIDTH = 720;
+const MAX_IMAGE_HEIGHT = 720;
+const PHOTO_QUALITY = 0.8;
+
+async function loadImageFromBlob(blob) {
+  return new Promise((resolve, reject) => {
+    const objectUrl = window.URL.createObjectURL(blob);
+    const image = new Image();
+    image.onload = () => {
+      window.URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      window.URL.revokeObjectURL(objectUrl);
+      reject(new Error("Could not load selected image"));
+    };
+    image.src = objectUrl;
+  });
+}
+
+async function resizeImageBlob(blob) {
+  const image = await loadImageFromBlob(blob);
+  const scale = Math.min(
+    1,
+    MAX_IMAGE_WIDTH / image.width || 1,
+    MAX_IMAGE_HEIGHT / image.height || 1
+  );
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.width * scale));
+  canvas.height = Math.max(1, Math.round(image.height * scale));
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Canvas is not available");
+  }
+
+  context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (nextBlob) => {
+        if (!nextBlob) {
+          reject(new Error("Could not prepare the photo"));
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not read the photo"));
+        reader.readAsDataURL(nextBlob);
+      },
+      "image/jpeg",
+      PHOTO_QUALITY
+    );
+  });
+}
+
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -21,8 +78,35 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUser, setIsCheckingUser] = useState(true);
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [isOpeningCamera, setIsOpeningCamera] = useState(false);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const videoRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const streamRef = useRef(null);
 
-  const isValid = useMemo(() => normalizeName(name).trim().length >= 2, [name]);
+  const isValid = useMemo(
+    () => normalizeName(name).trim().length >= 2 && Boolean(photoUrl),
+    [name, photoUrl]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cameraOpen || !videoRef.current || !streamRef.current) {
+      return;
+    }
+
+    videoRef.current.srcObject = streamRef.current;
+    videoRef.current.play().catch(() => {});
+  }, [cameraOpen]);
 
   async function handleLanguageChange(nextLang) {
     setLang(nextLang);
@@ -43,6 +127,10 @@ export default function Register() {
         if (user?.lang) {
           setLang(user.lang);
           setAppLanguage(user.lang);
+        }
+
+        if (user?.photoUrl) {
+          setPhotoUrl(user.photoUrl);
         }
 
         if (user?.name) {
@@ -70,11 +158,151 @@ export default function Register() {
     };
   }, [navigate, t]);
 
+  async function handleUsePhoto(nextPhotoUrl) {
+    setPhotoUrl(nextPhotoUrl);
+    setCameraOpen(false);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  }
+
+  async function handleOpenCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError(
+        t("auth.register.cameraUnsupported", {
+          defaultValue: "Camera is not available on this device. Upload a photo instead.",
+        })
+      );
+      return;
+    }
+
+    try {
+      setIsOpeningCamera(true);
+      setError("");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      setCameraOpen(true);
+    } catch (cameraError) {
+      setError(
+        cameraError.message ||
+          t("auth.register.cameraError", {
+            defaultValue: "Could not open the camera right now.",
+          })
+      );
+    } finally {
+      setIsOpeningCamera(false);
+    }
+  }
+
+  async function handleCapturePhoto() {
+    if (!videoRef.current) {
+      return;
+    }
+
+    try {
+      setIsProcessingPhoto(true);
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 720;
+      canvas.height = video.videoHeight || 720;
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error(
+          t("auth.register.cameraError", {
+            defaultValue: "Could not open the camera right now.",
+          })
+        );
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const captured = await new Promise((resolve, reject) => {
+        canvas.toBlob(
+          async (blob) => {
+            if (!blob) {
+              reject(
+                new Error(
+                  t("auth.register.photoProcessError", {
+                    defaultValue: "Could not prepare the photo. Please try again.",
+                  })
+                )
+              );
+              return;
+            }
+
+            try {
+              resolve(await resizeImageBlob(blob));
+            } catch (processingError) {
+              reject(processingError);
+            }
+          },
+          "image/jpeg",
+          PHOTO_QUALITY
+        );
+      });
+
+      await handleUsePhoto(captured);
+    } catch (captureError) {
+      setError(
+        captureError.message ||
+          t("auth.register.photoProcessError", {
+            defaultValue: "Could not prepare the photo. Please try again.",
+          })
+      );
+    } finally {
+      setIsProcessingPhoto(false);
+    }
+  }
+
+  async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsProcessingPhoto(true);
+      setError("");
+      const processed = await resizeImageBlob(file);
+      setPhotoUrl(processed);
+      setCameraOpen(false);
+    } catch (fileError) {
+      setError(
+        fileError.message ||
+          t("auth.register.photoProcessError", {
+            defaultValue: "Could not prepare the photo. Please try again.",
+          })
+      );
+    } finally {
+      setIsProcessingPhoto(false);
+      event.target.value = "";
+    }
+  }
+
+  function handleRemovePhoto() {
+    setPhotoUrl("");
+    setError("");
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!isValid) {
+    if (normalizeName(name).trim().length < 2) {
       setError(t("auth.register.nameError"));
+      return;
+    }
+
+    if (!photoUrl) {
+      setError(
+        t("auth.register.photoRequired", {
+          defaultValue: "Please add your photo before continuing.",
+        })
+      );
       return;
     }
 
@@ -84,6 +312,7 @@ export default function Register() {
       await completeRegistration({
         name: normalizeName(name).trim(),
         lang,
+        photoUrl,
       });
       await setAppLanguage(lang);
       const nextPath = await getPostRegistrationDestination();
@@ -129,6 +358,152 @@ export default function Register() {
               />
             </div>
 
+            <div className="space-y-3 rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">
+                  {t("auth.register.photoLabel", { defaultValue: "Your photo" })}
+                </label>
+                <p className="text-sm leading-6 text-slate-500">
+                  {t("auth.register.photoHint", {
+                    defaultValue:
+                      "Take a clear face photo now. You can use the camera or upload one from your gallery.",
+                  })}
+                </p>
+              </div>
+
+              {photoUrl ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-white p-3">
+                    <img
+                      src={photoUrl}
+                      alt={t("auth.register.photoPreviewAlt", {
+                        defaultValue: "Selected profile photo",
+                      })}
+                      className="h-20 w-20 rounded-full border border-emerald-100 object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t("auth.register.photoReadyTitle", { defaultValue: "Photo ready" })}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {t("auth.register.photoReadyBody", {
+                          defaultValue: "This picture will be used as your profile photo after signup.",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={handleOpenCamera}
+                      disabled={isLoading || isCheckingUser || isOpeningCamera || isProcessingPhoto}
+                      className="h-12 rounded-2xl border border-emerald-200 bg-white px-4 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {t("auth.register.retakePhoto", { defaultValue: "Retake photo" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      disabled={isLoading || isCheckingUser || isProcessingPhoto}
+                      className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {t("auth.register.removePhoto", { defaultValue: "Remove photo" })}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex h-28 items-center justify-center rounded-3xl border border-dashed border-emerald-200 bg-white text-center">
+                    <div className="space-y-1 px-4">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t("auth.register.photoEmptyTitle", {
+                          defaultValue: "Add your profile photo",
+                        })}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {t("auth.register.photoEmptyBody", {
+                          defaultValue:
+                            "This helps show the right person on profile and assisted CSC flows.",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={handleOpenCamera}
+                      disabled={isLoading || isCheckingUser || isOpeningCamera || isProcessingPhoto}
+                      className="flex h-12 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                    >
+                      {isOpeningCamera
+                        ? t("auth.register.openingCamera", {
+                            defaultValue: "Opening camera...",
+                          })
+                        : t("auth.register.openCamera", { defaultValue: "Open camera" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading || isCheckingUser || isProcessingPhoto}
+                      className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {t("auth.register.uploadPhoto", { defaultValue: "Upload from gallery" })}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              {cameraOpen ? (
+                <div className="space-y-3 rounded-3xl border border-emerald-100 bg-white p-3">
+                  <div className="overflow-hidden rounded-[24px] bg-slate-950">
+                    <video
+                      ref={videoRef}
+                      playsInline
+                      muted
+                      autoPlay
+                      className="aspect-square w-full object-cover"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={handleCapturePhoto}
+                      disabled={isProcessingPhoto}
+                      className="flex h-12 items-center justify-center rounded-2xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                    >
+                      {isProcessingPhoto
+                        ? t("auth.register.processingPhoto", {
+                            defaultValue: "Preparing photo...",
+                          })
+                        : t("auth.register.capturePhoto", { defaultValue: "Take photo" })}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCameraOpen(false);
+                        if (streamRef.current) {
+                          streamRef.current.getTracks().forEach((track) => track.stop());
+                          streamRef.current = null;
+                        }
+                      }}
+                      className="h-12 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-100"
+                    >
+                      {t("common.buttons.cancel")}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <div className="register-language-shell">
               <LanguageToggle
                 value={lang}
@@ -145,7 +520,7 @@ export default function Register() {
 
             <button
               type="submit"
-              disabled={isLoading || isCheckingUser}
+              disabled={isLoading || isCheckingUser || !isValid}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
               {isCheckingUser

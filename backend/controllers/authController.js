@@ -28,6 +28,19 @@ function validateName(name) {
   return String(name ?? "").trim().replace(/\s+/g, " ").length >= 2;
 }
 
+function validatePhotoUrl(photoUrl) {
+  if (!photoUrl) {
+    return true;
+  }
+
+  const value = String(photoUrl).trim();
+  if (!value.startsWith("data:image/")) {
+    return false;
+  }
+
+  return value.length <= 2_000_000;
+}
+
 function serializeUser(user) {
   if (!user) {
     return null;
@@ -37,6 +50,7 @@ function serializeUser(user) {
     id: user.id,
     phone: user.phone,
     name: user.name || null,
+    photoUrl: user.photo_url || null,
     lang: user.lang,
     needsRegistration: !user.name,
   };
@@ -159,12 +173,17 @@ async function me(req, res) {
 async function register(req, res) {
   const name = String(req.body?.name ?? "").trim().replace(/\s+/g, " ");
   const lang = req.body?.lang === "en" ? "en" : "hi";
+  const photoUrl = req.body?.photoUrl ? String(req.body.photoUrl).trim() : "";
 
   if (!validateName(name)) {
     return res.status(400).json({ message: "Name must be at least 2 characters long" });
   }
 
-  const user = await completeUserRegistration(req.user.id, { name, lang });
+  if (!validatePhotoUrl(photoUrl)) {
+    return res.status(400).json({ message: "Photo must be a valid image under 2 MB" });
+  }
+
+  const user = await completeUserRegistration(req.user.id, { name, lang, photoUrl });
 
   if (!user) {
     return res.status(404).json({ message: "User not found" });

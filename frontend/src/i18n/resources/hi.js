@@ -42,6 +42,7 @@ const hi = {
       installHint: "तेज एक्सेस, फुल-स्क्रीन अनुभव और ऑफलाइन सपोर्ट के लिए ऐप इंस्टॉल करें।",
       iosHint: "iPhone या iPad पर Safari में साइट खोलें, Share पर टैप करें, फिर Add to Home Screen चुनें।",
       installedToast: "YojnaPath आपके डिवाइस पर इंस्टॉल हो गया है।",
+      unsupportedHint: "{{browser}} में यहां ऐप इंस्टॉल उपलब्ध नहीं है। Chrome, Edge या iPhone पर Safari आज़माएं।",
     },
   },
   home: {

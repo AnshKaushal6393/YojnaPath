@@ -14,6 +14,7 @@ function toTitleCase(value) {
 
 export default function ProfileIdentityCard({
   name,
+  photoUrl,
   selectedUserType,
   state,
   caste,
@@ -23,9 +24,17 @@ export default function ProfileIdentityCard({
 
   return (
     <section className="profile-identity-card">
-      <div className={`profile-identity-card__avatar ${userTypeMeta.className}`} aria-hidden="true">
-        {userTypeMeta.icon}
-      </div>
+      {photoUrl ? (
+        <img
+          src={photoUrl}
+          alt={name || "Profile photo"}
+          className="profile-identity-card__photo"
+        />
+      ) : (
+        <div className={`profile-identity-card__avatar ${userTypeMeta.className}`} aria-hidden="true">
+          {userTypeMeta.icon}
+        </div>
+      )}
       <div className="profile-identity-card__copy">
         <h2 className="type-h2">{name || "Your profile"}</h2>
         <p className="type-body-en">

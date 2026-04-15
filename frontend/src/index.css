@@ -2362,7 +2362,7 @@ select {
 
 .detail-card__meta-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--sp12);
 }
 
@@ -2745,6 +2745,16 @@ select {
   line-height: 1;
   flex: 0 0 auto;
   color: var(--brand-text);
+}
+
+.profile-identity-card__photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  border: 2px solid rgba(15, 110, 86, 0.12);
+  box-shadow: 0 10px 22px rgba(15, 110, 86, 0.14);
 }
 
 .profile-identity-card__copy {
@@ -3369,6 +3379,90 @@ select {
 }
 
 @media (max-width: 639px) {
+  .calendar-header__actions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .calendar-header__actions > * {
+    width: 100%;
+  }
+
+  .deadline-calendar__group-header,
+  .deadline-calendar__item-top,
+  .deadline-calendar__item-meta,
+  .deadline-calendar__item-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .deadline-calendar__item-actions > * {
+    width: 100%;
+  }
+
+  .family-profiles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .family-profile-chip {
+    min-height: auto;
+  }
+
+  .profile-card {
+    padding: var(--sp16);
+  }
+
+  .results-filters-card {
+    padding: var(--sp12);
+  }
+
+  .results-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .results-pagination .type-caption {
+    text-align: center;
+  }
+
+  .results-page-button {
+    width: 100%;
+  }
+
+  .results-near-miss-actions {
+    align-items: stretch;
+  }
+
+  .results-near-miss-actions .results-page-button {
+    width: 100%;
+  }
+
+  .detail-page__header {
+    flex-wrap: wrap;
+  }
+
+  .detail-page__back {
+    width: 100%;
+  }
+
+  .detail-card {
+    padding: var(--sp16);
+  }
+
+  .detail-card__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .detail-card__top .scheme-card__benefit-chip {
+    align-self: flex-start;
+  }
+
+  .detail-card__document-copy,
+  .detail-checklist__copy {
+    min-width: 0;
+  }
+
   .onboard-steps {
     grid-template-columns: 1fr;
   }

@@ -10,6 +10,7 @@ async function ensureUserColumns() {
       await ensureDatabaseSchema();
       const pool = getPool();
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)`);
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT`);
       await pool.query(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_completed_at TIMESTAMP`
       );
@@ -32,7 +33,7 @@ async function findOrCreateUserByPhone(phone, lang = "hi") {
       ON CONFLICT (phone) DO UPDATE SET
         lang = COALESCE(EXCLUDED.lang, users.lang),
         last_login = NOW()
-      RETURNING id, phone, name, lang, registration_completed_at
+      RETURNING id, phone, name, photo_url, lang, registration_completed_at
     `,
     [phone, lang]
   );
@@ -45,7 +46,7 @@ async function getUserById(userId) {
   const pool = getPool();
   const result = await pool.query(
     `
-      SELECT id, phone, name, lang, registration_completed_at
+      SELECT id, phone, name, photo_url, lang, registration_completed_at
       FROM users
       WHERE id = $1
       LIMIT 1
@@ -56,24 +57,26 @@ async function getUserById(userId) {
   return result.rows[0] || null;
 }
 
-async function completeUserRegistration(userId, { name, lang }) {
+async function completeUserRegistration(userId, { name, lang, photoUrl }) {
   await ensureUserColumns();
   const pool = getPool();
   const normalizedName = String(name || "").trim().replace(/\s+/g, " ");
   const normalizedLang = lang === "en" ? "en" : "hi";
+  const normalizedPhotoUrl = photoUrl ? String(photoUrl).trim() : null;
 
   const result = await pool.query(
     `
       UPDATE users
       SET
         name = $2,
-        lang = $3,
+        photo_url = COALESCE($3, photo_url),
+        lang = $4,
         registration_completed_at = COALESCE(registration_completed_at, NOW()),
         last_login = NOW()
       WHERE id = $1
-      RETURNING id, phone, name, lang, registration_completed_at
+      RETURNING id, phone, name, photo_url, lang, registration_completed_at
     `,
-    [userId, normalizedName, normalizedLang]
+    [userId, normalizedName, normalizedPhotoUrl, normalizedLang]
   );
 
   return result.rows[0] || null;

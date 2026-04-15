@@ -4,7 +4,7 @@ import { usePwaInstallPrompt } from "../hooks/usePwaInstallPrompt";
 
 export default function InstallAppButton({ buttonClassName = "", hintClassName = "" }) {
   const { t } = useTranslation();
-  const { canInstall, installApp, isInstalled, showIosInstructions } = usePwaInstallPrompt();
+  const { canInstall, installApp, installSupport, isInstalled, showIosInstructions } = usePwaInstallPrompt();
   const [showHelp, setShowHelp] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const wasInstalledRef = useRef(isInstalled);
@@ -35,7 +35,7 @@ export default function InstallAppButton({ buttonClassName = "", hintClassName =
     );
   }
 
-  if (!canInstall && !showIosInstructions) {
+  if (!canInstall && !showIosInstructions && !installSupport.showUnsupportedHint) {
     return null;
   }
 
@@ -45,7 +45,7 @@ export default function InstallAppButton({ buttonClassName = "", hintClassName =
         <button type="button" className={buttonClassName} onClick={installApp}>
           {t("common.buttons.downloadApp")}
         </button>
-      ) : (
+      ) : showIosInstructions ? (
         <button
           type="button"
           className={buttonClassName}
@@ -53,10 +53,15 @@ export default function InstallAppButton({ buttonClassName = "", hintClassName =
         >
           {t("common.buttons.howToInstall")}
         </button>
-      )}
+      ) : null}
       {(showHelp || canInstall) ? (
         <p className={`install-app__hint ${hintClassName}`.trim()}>
           {canInstall ? t("common.pwa.installHint") : t("common.pwa.iosHint")}
+        </p>
+      ) : null}
+      {installSupport.showUnsupportedHint ? (
+        <p className={`install-app__hint ${hintClassName}`.trim()}>
+          {t("common.pwa.unsupportedHint", { browser: installSupport.browserLabel || "this browser" })}
         </p>
       ) : null}
       {showToast ? (

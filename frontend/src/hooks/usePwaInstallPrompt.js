@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   getDeferredInstallPrompt,
+  getInstallSupportState,
   isIosDevice,
   isStandaloneMode,
   setDeferredInstallPrompt,
@@ -49,6 +50,7 @@ export function usePwaInstallPrompt() {
       canInstall: Boolean(deferredPrompt) && !isInstalled,
       installApp,
       isInstalled,
+      installSupport: getInstallSupportState(),
       showIosInstructions: isIosDevice() && !isInstalled,
     }),
     [deferredPrompt, isInstalled]
