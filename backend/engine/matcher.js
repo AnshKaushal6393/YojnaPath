@@ -433,6 +433,44 @@ function hasBlockingNearMissFailure(fails) {
   );
 }
 
+function getNearMisses(profile, allSchemes, matchedIds = new Set(), options = {}) {
+  const {
+    nearMissGap = 1,
+    limitNearMisses = Infinity,
+    now = new Date(),
+  } = options;
+
+  const nearMisses = allSchemes
+    .filter((scheme) => isSchemeOpenForApplications(scheme, now))
+    .filter((scheme) => !matchedIds.has(scheme.schemeId))
+    .filter((scheme) => isStateRelevant(profile, scheme))
+    .map((scheme) => ({
+      scheme,
+      fails: getFailedCriteria(profile, scheme),
+    }))
+    .filter(
+      ({ fails }) =>
+        fails.length > 0 &&
+        fails.length <= nearMissGap &&
+        !hasBlockingNearMissFailure(fails)
+    )
+    .map(({ scheme, fails }) =>
+      attachDeadlineInfo(
+        {
+          ...scheme,
+          failedCriteria: fails,
+          missedCriterion: buildGapMessage(profile, fails[0]),
+          totalCriteria: totalCriteria(scheme),
+          matchScore: matchScore(profile, scheme),
+        },
+        now
+      )
+    );
+
+  nearMisses.sort(sortByRelevance);
+  return nearMisses.slice(0, limitNearMisses);
+}
+
 async function getMatchingSchemes(profile, options = {}) {
   const {
     schemeModel = Scheme,
@@ -448,7 +486,7 @@ async function getMatchingSchemes(profile, options = {}) {
     })
     .lean();
   const matched = [];
-  const nearMisses = [];
+  const matchedIds = new Set();
 
   for (const scheme of allSchemes) {
     if (!isSchemeOpenForApplications(scheme, now)) {
@@ -461,31 +499,17 @@ async function getMatchingSchemes(profile, options = {}) {
         matchScore: matchScore(profile, scheme),
         totalCriteria: totalCriteria(scheme),
       }, now));
+      matchedIds.add(scheme.schemeId);
       continue;
-    }
-
-    if (!isStateRelevant(profile, scheme)) {
-      continue;
-    }
-
-    const fails = getFailedCriteria(profile, scheme);
-    if (
-      fails.length > 0 &&
-      fails.length <= nearMissGap &&
-      !hasBlockingNearMissFailure(fails)
-    ) {
-      nearMisses.push(attachDeadlineInfo({
-        ...scheme,
-        failedCriteria: fails,
-        missedCriterion: buildGapMessage(profile, fails[0]),
-        totalCriteria: totalCriteria(scheme),
-        matchScore: matchScore(profile, scheme),
-      }, now));
     }
   }
 
   matched.sort(sortByRelevance);
-  nearMisses.sort(sortByRelevance);
+  const nearMisses = getNearMisses(profile, allSchemes, matchedIds, {
+    nearMissGap,
+    limitNearMisses,
+    now,
+  });
 
   return {
     count: matched.length,
@@ -503,6 +527,7 @@ module.exports = {
   STATE_NAMES_HI,
   buildGapMessage,
   getFailedCriteria,
+  getNearMisses,
   getMatchingSchemes,
   matchScore,
   matchScheme,

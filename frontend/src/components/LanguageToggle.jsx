@@ -3,6 +3,14 @@ import { useTranslation } from "react-i18next";
 export default function LanguageToggle({ value, onChange, disabled = false }) {
   const { t } = useTranslation();
 
+  function handleLanguageSelect(nextLanguage) {
+    if (nextLanguage === value) {
+      return;
+    }
+
+    onChange(nextLanguage);
+  }
+
   return (
     <section className="profile-card">
       <div className="section-heading">
@@ -16,7 +24,7 @@ export default function LanguageToggle({ value, onChange, disabled = false }) {
         <button
           type="button"
           className={`lt-btn ${value === "hi" ? "on" : ""}`}
-          onClick={() => onChange("hi")}
+          onClick={() => handleLanguageSelect("hi")}
           disabled={disabled}
           aria-pressed={value === "hi"}
         >
@@ -25,7 +33,7 @@ export default function LanguageToggle({ value, onChange, disabled = false }) {
         <button
           type="button"
           className={`lt-btn ${value === "en" ? "on" : ""}`}
-          onClick={() => onChange("en")}
+          onClick={() => handleLanguageSelect("en")}
           disabled={disabled}
           aria-pressed={value === "en"}
         >

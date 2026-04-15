@@ -1,4 +1,7 @@
 const {
+  buildGapMessage,
+  getFailedCriteria,
+  getNearMisses,
   getMatchingSchemes,
   matchScheme,
 } = require("../matcher");
@@ -185,5 +188,72 @@ describe("Phase 1 matcher required tests", () => {
 
     expect(matchScheme(profile, scheme)).toBe(false);
     expect(result.nearMissCount).toBe(1);
+  });
+
+  test("11. getNearMisses excludes matched schemes and keeps only one-fail cases", () => {
+    const profile = createProfile({ annual_income: 220000 });
+    const oneFailScheme = createScheme({
+      schemeId: "ONE_FAIL",
+      eligibility: {
+        ...createScheme().eligibility,
+        maxAnnualIncome: 200000,
+      },
+    });
+    const twoFailScheme = createScheme({
+      schemeId: "TWO_FAIL",
+      eligibility: {
+        ...createScheme().eligibility,
+        maxAnnualIncome: 200000,
+        minAge: 40,
+      },
+    });
+    const matchedLikeScheme = createScheme({
+      schemeId: "MATCHED_ID",
+      eligibility: {
+        ...createScheme().eligibility,
+        maxAnnualIncome: 200000,
+      },
+    });
+
+    const result = getNearMisses(
+      profile,
+      [oneFailScheme, twoFailScheme, matchedLikeScheme],
+      new Set(["MATCHED_ID"])
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0].schemeId).toBe("ONE_FAIL");
+  });
+
+  test("12. getNearMisses does not return blocked category failures", () => {
+    const profile = createProfile({ caste: "sc" });
+    const scheme = createScheme({
+      schemeId: "CASTE_FAIL",
+      eligibility: {
+        ...createScheme().eligibility,
+        caste: ["general"],
+      },
+    });
+
+    const result = getNearMisses(profile, [scheme], new Set());
+
+    expect(result).toHaveLength(0);
+  });
+
+  test("13. gap message explains the single failed criterion", () => {
+    const profile = createProfile({ annual_income: 220000 });
+    const scheme = createScheme({
+      eligibility: {
+        ...createScheme().eligibility,
+        maxAnnualIncome: 200000,
+      },
+    });
+
+    const [fail] = getFailedCriteria(profile, scheme);
+    const message = buildGapMessage(profile, fail);
+
+    expect(fail.type).toBe("maxAnnualIncome");
+    expect(message.en).toContain("above the");
+    expect(message.en).toContain("Rs. 2,00,000");
   });
 });

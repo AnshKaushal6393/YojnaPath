@@ -15,8 +15,11 @@ function copyToClipboard(text) {
 }
 
 export default function ActionButtons({
+  schemeId,
   schemeName,
   benefitAmount,
+  category,
+  state,
   applyUrl,
   documents,
   schemeUrl,

@@ -181,6 +181,10 @@ export default function HomePage() {
   }
 
   async function handleLanguageChange(nextLanguage) {
+    if (nextLanguage === language) {
+      return;
+    }
+
     const applied = await setAppLanguage(nextLanguage);
     setLanguage(applied);
   }
