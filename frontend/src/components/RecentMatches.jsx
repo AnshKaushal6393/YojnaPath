@@ -5,11 +5,11 @@ export default function RecentMatches({ schemes, isLoading, error }) {
     <section className="home-section home-section--matches">
       <div className="section-heading">
         <h2 className="type-h2">Recent matches</h2>
-        <p className="type-caption">Live scheme cards fetched from the backend.</p>
+        <p className="type-caption">A quick look at schemes you can explore now.</p>
       </div>
 
       {isLoading ? (
-        <p className="type-body-en">Loading live schemes...</p>
+        <p className="type-body-en">Loading schemes...</p>
       ) : null}
 
       {error ? <p className="type-caption">Could not load schemes: {error.message}</p> : null}
@@ -38,14 +38,12 @@ export default function RecentMatches({ schemes, isLoading, error }) {
 
       {!isLoading && !error && schemes.length === 0 ? (
         <div className="empty-state">
-          <p className="type-h3">Live matches will appear here</p>
+          <p className="type-h3">Matches will appear here</p>
           <p className="type-body-en">
-            The backend connection is working, but there are no featured scheme cards ready to show
-            yet.
+            There are no featured schemes ready to show yet.
           </p>
           <p className="type-caption">
-            Refresh after seeding more schemes or switch to a saved profile to see personalized
-            results.
+            Try again shortly or switch to a saved profile to see personalized results.
           </p>
         </div>
       ) : null}
