@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { generateChecklistPdf, getChecklistItemCount } from "../lib/checklistPdf";
 
 function copyToClipboard(text) {
   if (navigator.clipboard?.writeText) {
@@ -17,12 +15,8 @@ function copyToClipboard(text) {
 }
 
 export default function ActionButtons({
-  scheme,
-  schemeId,
   schemeName,
   benefitAmount,
-  category,
-  state,
   applyUrl,
   documents,
   schemeUrl,
@@ -32,32 +26,7 @@ export default function ActionButtons({
   onTrackApplication,
   isTrackPending,
 }) {
-  const { t, i18n } = useTranslation();
-  const [isExportingChecklist, setIsExportingChecklist] = useState(false);
-  const canDownloadChecklist = Boolean(scheme && getChecklistItemCount(scheme));
-
-  async function handleShare() {
-    const shareData = {
-      title: schemeName,
-      text: t("actions.shareSchemeText", { scheme: schemeName }),
-      url: schemeUrl,
-    };
-
-    if (navigator.share) {
-      await navigator.share(shareData);
-      return;
-    }
-
-    await copyToClipboard(`${shareData.text}\n${shareData.url}`);
-  }
-
-  async function handleCopyDocuments() {
-    const content = documents
-      .map((document, index) => `${index + 1}. ${document.en || document.hi}`)
-      .join("\n");
-
-    await copyToClipboard(content || t("actions.noDocuments"));
-  }
+  const { t } = useTranslation();
 
   function handleWhatsappShare() {
     const topDocuments = documents
@@ -79,29 +48,6 @@ export default function ActionButtons({
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
-  async function handleChecklistDownload() {
-    if (!scheme) {
-      return;
-    }
-
-    try {
-      setIsExportingChecklist(true);
-      await generateChecklistPdf(scheme, {
-        lang: i18n.resolvedLanguage,
-        labels: {
-          brandTitle: t("checklist.brandTitle"),
-          generatedInBrowser: t("checklist.generatedInBrowser"),
-          benefitFallback: t("checklist.benefitFallback"),
-          scanToApply: t("checklist.scanToApply"),
-          documentsAndChecks: t("checklist.documentsAndChecks"),
-          officialApplyLink: t("checklist.officialApplyLink"),
-        },
-      });
-    } finally {
-      setIsExportingChecklist(false);
-    }
-  }
-
   return (
     <div className="detail-actions">
       {applyUrl ? (
@@ -117,19 +63,6 @@ export default function ActionButtons({
       <button type="button" className="detail-card__secondary-button" onClick={handleWhatsappShare}>
         {t("actions.shareWhatsapp")}
       </button>
-      <button type="button" className="detail-card__secondary-button" onClick={handleCopyDocuments}>
-        {t("actions.copyDocuments")}
-      </button>
-      {canDownloadChecklist ? (
-        <button
-          type="button"
-          className="detail-card__secondary-button"
-          onClick={handleChecklistDownload}
-          disabled={isExportingChecklist}
-        >
-          {isExportingChecklist ? t("checklist.generating") : t("checklist.download")}
-        </button>
-      ) : null}
       <button
         type="button"
         className="detail-card__secondary-button"
@@ -149,9 +82,6 @@ export default function ActionButtons({
         disabled={isTrackPending}
       >
         {isTrackPending ? t("actions.saving") : t("actions.markApplied")}
-      </button>
-      <button type="button" className="detail-card__secondary-button" onClick={handleShare}>
-        {t("actions.shareScheme")}
       </button>
     </div>
   );
