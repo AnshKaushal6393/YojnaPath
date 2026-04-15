@@ -41,6 +41,7 @@ const hi = {
     pwa: {
       installHint: "तेज एक्सेस, फुल-स्क्रीन अनुभव और ऑफलाइन सपोर्ट के लिए ऐप इंस्टॉल करें।",
       iosHint: "iPhone या iPad पर Safari में साइट खोलें, Share पर टैप करें, फिर Add to Home Screen चुनें।",
+      installedToast: "YojnaPath आपके डिवाइस पर इंस्टॉल हो गया है।",
     },
   },
   home: {

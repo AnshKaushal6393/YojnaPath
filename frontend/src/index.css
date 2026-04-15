@@ -2578,6 +2578,18 @@ select {
   line-height: 1.45;
 }
 
+.install-app__toast {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sp44);
+  padding: var(--sp10) var(--sp14);
+  border-radius: var(--r12);
+  border: 1px solid rgba(29, 158, 117, 0.18);
+  font-size: var(--fs-12);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .install-app-button,
 .install-app-badge {
   display: inline-flex;

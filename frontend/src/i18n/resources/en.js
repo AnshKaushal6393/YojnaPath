@@ -41,6 +41,7 @@ const en = {
     pwa: {
       installHint: "Install the app for faster access, a full-screen experience, and offline support.",
       iosHint: "On iPhone or iPad, open this site in Safari, tap Share, then choose Add to Home Screen.",
+      installedToast: "YojnaPath is installed and ready on your device.",
     },
   },
   home: {
