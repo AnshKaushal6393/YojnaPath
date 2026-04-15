@@ -58,6 +58,57 @@ function createEmptyFormState() {
   };
 }
 
+async function loadImageFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("Could not read the photo for duplicate check."));
+    image.src = dataUrl;
+  });
+}
+
+async function createPhotoFingerprint(photoUrl) {
+  if (!photoUrl) {
+    return "";
+  }
+
+  const image = await loadImageFromDataUrl(photoUrl);
+  const canvas = document.createElement("canvas");
+  canvas.width = 8;
+  canvas.height = 8;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return "";
+  }
+
+  context.drawImage(image, 0, 0, 8, 8);
+  const { data } = context.getImageData(0, 0, 8, 8);
+  const values = [];
+
+  for (let index = 0; index < data.length; index += 4) {
+    values.push((data[index] + data[index + 1] + data[index + 2]) / 3);
+  }
+
+  const average = values.reduce((sum, value) => sum + value, 0) / values.length;
+  return values.map((value) => (value >= average ? "1" : "0")).join("");
+}
+
+function getHammingDistance(left, right) {
+  if (!left || !right || left.length !== right.length) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  let distance = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) {
+      distance += 1;
+    }
+  }
+
+  return distance;
+}
+
 export default function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -78,6 +129,8 @@ export default function ProfilePage() {
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [pendingDeleteMember, setPendingDeleteMember] = useState(null);
+  const [duplicateWarning, setDuplicateWarning] = useState(null);
+  const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
   const [isOpeningMemberCamera, setIsOpeningMemberCamera] = useState(false);
   const [isProcessingMemberPhoto, setIsProcessingMemberPhoto] = useState(false);
   const [memberCameraOpen, setMemberCameraOpen] = useState(false);
@@ -136,7 +189,7 @@ export default function ProfilePage() {
       return;
     }
 
-    setSelectedUserType(savedProfileQuery.data.selectedUserType);
+    setSelectedUserType(savedProfileQuery.data.selectedUserType || "farmer");
     setFormState(savedProfileQuery.data.formState);
     setMemberName(savedProfileQuery.data.profileName || "");
     hasPrefilledProfileRef.current = true;
@@ -227,15 +280,15 @@ export default function ProfilePage() {
 
   const createMemberMutation = useMutation({
     mutationFn: () =>
-      saveProfileToBackend(newMemberUserType, newMemberFormState, lang, {
+      saveProfileToBackend("", createEmptyFormState(), lang, {
         profileName: newMemberName.trim(),
         photoUrl: newMemberPhotoUrl,
       }),
     onSuccess: async (result) => {
       const createdProfileId = result.profile?.id || "";
       const createdProfileName = newMemberName.trim();
-      const createdUserType = newMemberUserType;
-      const createdFormState = { ...newMemberFormState };
+      const createdUserType = result.profile?.occupation || "farmer";
+      const createdFormState = createEmptyFormState();
       const createdPhotoUrl = newMemberPhotoUrl;
 
       saveProfileDraft(
@@ -317,13 +370,8 @@ export default function ProfilePage() {
   }, [formState, memberName, selectedUserType]);
 
   const canSaveNewMember = useMemo(() => {
-    const requiredFields = REQUIRED_FIELDS_BY_USER_TYPE[newMemberUserType] || [];
-    return (
-      newMemberName.trim().length >= 2 &&
-      Boolean(newMemberPhotoUrl) &&
-      requiredFields.every((field) => Boolean(newMemberFormState[field]))
-    );
-  }, [newMemberFormState, newMemberName, newMemberPhotoUrl, newMemberUserType]);
+    return newMemberName.trim().length >= 2 && Boolean(newMemberPhotoUrl);
+  }, [newMemberName, newMemberPhotoUrl]);
 
   const accountOwnerHasProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(name);
@@ -366,6 +414,8 @@ export default function ProfilePage() {
     setNewMemberUserType("farmer");
     setNewMemberFormState(createEmptyFormState());
     setNewMemberPhotoUrl("");
+    setDuplicateWarning(null);
+    setDuplicateConfirmed(false);
     setMemberCameraOpen(false);
     setIsOpeningMemberCamera(false);
     setIsProcessingMemberPhoto(false);
@@ -435,7 +485,7 @@ export default function ProfilePage() {
     hasPrefilledProfileRef.current = false;
     setActiveProfileId(member.id);
     setActiveProfileIdState(member.id);
-    setSelectedUserType(member.selectedUserType);
+    setSelectedUserType(member.selectedUserType || "farmer");
     setFormState(member.formState);
     setMemberName(member.profileName || "");
     setSubmitMessage("");
@@ -449,6 +499,8 @@ export default function ProfilePage() {
   function handleCreateNewMember() {
     setShowCreateMemberModal(true);
     setNewMemberPhotoUrl("");
+    setDuplicateWarning(null);
+    setDuplicateConfirmed(false);
     setPendingDeleteMember(null);
     setSubmitMessage("");
     setSubmitError("");
@@ -458,6 +510,8 @@ export default function ProfilePage() {
     setShowCreateMemberModal(true);
     setNewMemberName(normalizeName(name));
     setNewMemberPhotoUrl(photoUrl || "");
+    setDuplicateWarning(null);
+    setDuplicateConfirmed(false);
     setPendingDeleteMember(null);
     setSubmitMessage("");
     setSubmitError("");
@@ -559,6 +613,8 @@ export default function ProfilePage() {
       });
 
       setNewMemberPhotoUrl(captured);
+      setDuplicateWarning(null);
+      setDuplicateConfirmed(false);
       setMemberCameraOpen(false);
       stopMemberCameraStream();
     } catch (error) {
@@ -580,6 +636,8 @@ export default function ProfilePage() {
       setSubmitError("");
       const processed = await resizeImageBlobToDataUrl(file);
       setNewMemberPhotoUrl(processed);
+      setDuplicateWarning(null);
+      setDuplicateConfirmed(false);
       setMemberCameraOpen(false);
       stopMemberCameraStream();
     } catch (error) {
@@ -591,6 +649,66 @@ export default function ProfilePage() {
     }
   }
 
+  async function findDuplicateMemberCandidate() {
+    const normalizedNewName = normalizeComparisonName(newMemberName);
+    const isCreatingOwnerProfile =
+      Boolean(normalizedNewName) &&
+      normalizedNewName === normalizeComparisonName(name) &&
+      Boolean(photoUrl) &&
+      newMemberPhotoUrl === photoUrl;
+
+    if (isCreatingOwnerProfile && !accountOwnerHasProfile) {
+      return null;
+    }
+
+    const comparisonPool = [
+      ...(photoUrl
+        ? [
+            {
+              label: name || "account owner",
+              name: normalizeComparisonName(name),
+              photoUrl,
+            },
+          ]
+        : []),
+      ...((profileMembersQuery.data || []).map((member) => ({
+        label: member.profileName || "family member",
+        name: normalizeComparisonName(member.profileName),
+        photoUrl: member.photoUrl || "",
+      }))),
+    ];
+
+    const sameNameCandidate = comparisonPool.find(
+      (entry) => normalizedNewName && entry.name && entry.name === normalizedNewName
+    );
+
+    if (sameNameCandidate) {
+      return `${sameNameCandidate.label} already has the same name. Please confirm this is a different person.`;
+    }
+
+    if (!newMemberPhotoUrl) {
+      return null;
+    }
+
+    try {
+      const nextFingerprint = await createPhotoFingerprint(newMemberPhotoUrl);
+      for (const entry of comparisonPool) {
+        if (!entry.photoUrl) {
+          continue;
+        }
+
+        const currentFingerprint = await createPhotoFingerprint(entry.photoUrl);
+        if (getHammingDistance(nextFingerprint, currentFingerprint) <= 6) {
+          return `${entry.label} already has a very similar photo. Please confirm this is a different person before saving.`;
+        }
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  }
+
   async function handleCreateMemberSubmit(event) {
     event.preventDefault();
 
@@ -600,6 +718,14 @@ export default function ProfilePage() {
           ? t("profileMessages.completeMemberFields")
           : "Please add the family member photo before saving."
       );
+      setSubmitMessage("");
+      return;
+    }
+
+    const duplicateMessage = await findDuplicateMemberCandidate();
+    if (duplicateMessage && !duplicateConfirmed) {
+      setDuplicateWarning(duplicateMessage);
+      setSubmitError("");
       setSubmitMessage("");
       return;
     }
@@ -681,6 +807,7 @@ export default function ProfilePage() {
             onUserTypeChange={handleUserTypeChange}
             onFormStateChange={handleFormStateChange}
             isSubmitting={profileMutation.isPending}
+            allowUserTypeChange={!isOwnerProfile || !savedProfileQuery.data?.selectedUserType}
           />
         </form>
 
@@ -736,7 +863,11 @@ export default function ProfilePage() {
                     type="text"
                     className="demo-select"
                     value={newMemberName}
-                    onChange={(event) => setNewMemberName(normalizeName(event.target.value))}
+                    onChange={(event) => {
+                      setNewMemberName(normalizeName(event.target.value));
+                      setDuplicateWarning(null);
+                      setDuplicateConfirmed(false);
+                    }}
                     placeholder={t("profilePage.memberNamePlaceholder")}
                     autoComplete="off"
                   />
@@ -851,31 +982,45 @@ export default function ProfilePage() {
                 </div>
               </section>
 
-              <UserTypeSelector
-                selectedUserType={newMemberUserType}
-                onSelect={setNewMemberUserType}
-              />
+              <section className="profile-card">
+                <div className="section-heading">
+                  <h3 className="type-h2">Create member</h3>
+                  <p className="type-caption">
+                    Save the person first with name and photo. We will ask scheme-matching details
+                    after that.
+                  </p>
+                </div>
 
-              <AdaptiveForm
-                selectedUserType={newMemberUserType}
-                formState={newMemberFormState}
-                onChange={handleNewMemberFormStateChange}
-                isSubmitting={createMemberMutation.isPending}
-                submitLabel={t("profilePage.newMemberTitle")}
-                title={t("profilePage.memberFormTitle")}
-                subtitle={t("profilePage.memberFormSubtitle")}
-                formId="create-member-profile-form"
-              />
+                {duplicateWarning ? (
+                  <div className="onboard-feedback state-info" role="alert">
+                    <span className="type-caption">{duplicateWarning}</span>
+                    <button
+                      type="button"
+                      className="onboard-feedback__action"
+                      onClick={() => setDuplicateConfirmed(true)}
+                    >
+                      Continue anyway
+                    </button>
+                  </div>
+                ) : null}
 
-              <div className="profile-create-modal__actions">
-                <button
-                  type="button"
-                  className="onboard-logout-button"
-                  onClick={resetCreateMemberModal}
-                >
-                  {t("common.buttons.cancel")}
-                </button>
-              </div>
+                <div className="profile-create-modal__actions">
+                  <button
+                    type="submit"
+                    className="demo-submit-button btn-primary onboard-submit"
+                    disabled={createMemberMutation.isPending || !canSaveNewMember}
+                  >
+                    {createMemberMutation.isPending ? t("common.buttons.saving") : t("profilePage.newMemberTitle")}
+                  </button>
+                  <button
+                    type="button"
+                    className="onboard-logout-button"
+                    onClick={resetCreateMemberModal}
+                  >
+                    {t("common.buttons.cancel")}
+                  </button>
+                </div>
+              </section>
             </form>
           </section>
         </div>

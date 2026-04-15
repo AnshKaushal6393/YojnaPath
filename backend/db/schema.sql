@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS profiles (
         'migrant_worker'
       )
     ),
-  state VARCHAR(50) NOT NULL,
+  state VARCHAR(50),
   annual_income INTEGER DEFAULT 0 CHECK (annual_income >= 0),
   district VARCHAR(80),
   age INTEGER CHECK (age >= 0),

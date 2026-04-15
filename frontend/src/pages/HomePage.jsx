@@ -14,7 +14,7 @@ import { hasStoredAppLanguage, setAppLanguage, syncAppLanguage } from "../i18n/l
 import { setActiveProfileId } from "../lib/activeProfile";
 import { getAuthToken } from "../lib/authStorage";
 import { fetchHomeData } from "../lib/homeApi";
-import { fetchProfileMembers, fetchSavedProfile } from "../lib/onboardApi";
+import { fetchProfileMembers, fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import {
   getProfileDraft,
   getProfileDraftStorageMode,
@@ -96,7 +96,7 @@ export default function HomePage() {
     enabled: Boolean(authToken),
   });
 
-  const hasSyncedProfile = Boolean(savedProfileQuery.data);
+  const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
   const hasDeviceDraft = Boolean(localDraft);
   const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
   const urgentSchemes = homeQuery.data?.urgent || [];

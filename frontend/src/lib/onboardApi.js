@@ -27,7 +27,7 @@ const AGE_MAP = {
 
 function mapState(value) {
   if (!value) {
-    return "";
+    return null;
   }
 
   return value === "Central" ? "CENTRAL" : value.toUpperCase();
@@ -71,7 +71,7 @@ function mapProfileToFormState(profile) {
 }
 
 function mapApiProfileToDraft(profile) {
-  if (!profile?.state || !profile?.occupation) {
+  if (!profile?.id) {
     return null;
   }
 
@@ -81,7 +81,7 @@ function mapApiProfileToDraft(profile) {
     profileName: profile.profileName || "",
     relation: profile.relation || "",
     photoUrl: profile.photoUrl || "",
-    selectedUserType: profile.occupation,
+    selectedUserType: profile.occupation || "",
     formState: mapProfileToFormState(profile),
     storageMode: "synced",
   };
@@ -105,10 +105,14 @@ export function buildOnboardDraft(
   };
 }
 
+export function isProfileReadyForMatching(profile) {
+  return Boolean(profile?.state && profile?.selectedUserType);
+}
+
 export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
   return {
     state: mapState(formState.state),
-    occupation: selectedUserType,
+    occupation: selectedUserType || null,
     annualIncome: INCOME_MAP[formState.incomeBand] ?? 0,
     caste: formState.caste || null,
     gender: formState.gender || null,

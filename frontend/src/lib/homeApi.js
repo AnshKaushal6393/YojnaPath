@@ -1,5 +1,5 @@
 import { apiGet } from "./api";
-import { fetchSavedProfile } from "./onboardApi";
+import { fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
 import { fetchResultsData } from "./resultsApi";
 import {
   formatBenefitAmount,
@@ -106,7 +106,7 @@ export async function fetchHomeData() {
     apiGet("/api/schemes/all"),
   ]);
 
-  if (savedProfile) {
+  if (isProfileReadyForMatching(savedProfile)) {
     const personalizedResults = await fetchResultsData();
 
     return {

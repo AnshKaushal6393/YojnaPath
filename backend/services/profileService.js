@@ -40,6 +40,8 @@ async function ensureProfilesSchema() {
             ALTER TABLE profiles
               ALTER COLUMN state TYPE VARCHAR(50);
             ALTER TABLE profiles
+              ALTER COLUMN state DROP NOT NULL;
+            ALTER TABLE profiles
               ALTER COLUMN user_id DROP NOT NULL;
             ALTER TABLE profiles
               ALTER COLUMN user_id SET NOT NULL;

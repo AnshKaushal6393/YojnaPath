@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "./api";
-import { buildProfilePayload, fetchSavedProfile } from "./onboardApi";
+import { buildProfilePayload, fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
 import {
   formatBenefitAmount,
   hasDevanagariText,
@@ -118,7 +118,7 @@ function isRelevantSchemeForUserType(userType, scheme) {
 export async function fetchResultsData() {
   const savedProfile = await fetchSavedProfile();
 
-  if (!savedProfile) {
+  if (!isProfileReadyForMatching(savedProfile)) {
     return {
       profile: null,
       count: 0,

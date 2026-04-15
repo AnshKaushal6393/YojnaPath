@@ -94,12 +94,33 @@ function buildProfilePayload(body) {
   };
 }
 
+function hasEligibilityInputs(profile) {
+  return Boolean(
+    profile.state ||
+      profile.occupation ||
+      profile.annualIncome > 0 ||
+      profile.caste ||
+      profile.gender ||
+      profile.age != null ||
+      profile.landAcres > 0 ||
+      profile.disabilityPct > 0 ||
+      profile.isStudent ||
+      profile.isMigrant ||
+      profile.district
+  );
+}
+
 function validateProfilePayload(profile) {
-  if (!profile.state) {
+  const shouldValidateEligibility = hasEligibilityInputs(profile);
+
+  if (shouldValidateEligibility && !profile.state) {
     return "state is required";
   }
 
-  if (!profile.occupation || !ALLOWED_OCCUPATIONS.includes(profile.occupation)) {
+  if (
+    shouldValidateEligibility &&
+    (!profile.occupation || !ALLOWED_OCCUPATIONS.includes(profile.occupation))
+  ) {
     return "occupation must be one of the supported user types";
   }
 
