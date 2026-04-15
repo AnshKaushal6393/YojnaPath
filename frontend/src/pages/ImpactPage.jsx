@@ -6,6 +6,7 @@ import ChartByUserType from "../components/ChartByUserType";
 import ImpactStats from "../components/ImpactStats";
 import InstallAppButton from "../components/InstallAppButton";
 import { apiGet } from "../lib/api";
+import { isAuthenticated } from "../utils/auth";
 
 function formatUpdatedAt(value) {
   if (!value) {
@@ -31,6 +32,7 @@ function getTopEntry(values) {
 
 export default function ImpactPage() {
   const { t } = useTranslation();
+  const homeTarget = isAuthenticated() ? "/" : "/login";
   const impactQuery = useQuery({
     queryKey: ["impact-public"],
     queryFn: fetchImpactData,
@@ -55,7 +57,7 @@ export default function ImpactPage() {
             </div>
           </div>
           <div className="impact-hero__actions">
-            <Link to="/" className="detail-card__secondary-button">
+            <Link to={homeTarget} className="detail-card__secondary-button">
               {t("impact.goHome")}
             </Link>
             <InstallAppButton

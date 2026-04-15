@@ -448,6 +448,7 @@ export default function ProfilePage() {
 
   function handleCreateNewMember() {
     setShowCreateMemberModal(true);
+    setNewMemberPhotoUrl("");
     setPendingDeleteMember(null);
     setSubmitMessage("");
     setSubmitError("");
@@ -456,6 +457,7 @@ export default function ProfilePage() {
   function handleCreateOwnerProfile() {
     setShowCreateMemberModal(true);
     setNewMemberName(normalizeName(name));
+    setNewMemberPhotoUrl(photoUrl || "");
     setPendingDeleteMember(null);
     setSubmitMessage("");
     setSubmitError("");
