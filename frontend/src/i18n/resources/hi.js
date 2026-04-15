@@ -52,8 +52,8 @@ const hi = {
       onDevice: "{{name}} इस डिवाइस पर",
     },
     links: {
-      impact: "ऐप का उपयोग देखें",
-      kiosk: "सहायता मोड",
+      impact: "प्रभाव देखें",
+      kiosk: "CSC कार्यकर्ताओं के लिए",
     },
     offline: {
       banner: "ऑफलाइन - {{date}} को सेव हुए नतीजे दिख रहे हैं। नए नतीजों के लिए इंटरनेट चालू करें।",
@@ -376,6 +376,7 @@ const hi = {
     subtitle: "क्या तैयार है यह देखें और बाद के लिए सरल PDF डाउनलोड करें।",
     download: "चेकलिस्ट डाउनलोड करें",
     generating: "PDF बन रही है...",
+    error: "अभी चेकलिस्ट डाउनलोड नहीं हो सकी।",
     brandTitle: "YojnaPath चेकलिस्ट",
     generatedInBrowser: "आपके ब्राउज़र में बनाया गया",
     benefitFallback: "लाभ उपलब्ध है",

@@ -52,8 +52,8 @@ const en = {
       onDevice: "{{name}} on device",
     },
     links: {
-      impact: "See app usage",
-      kiosk: "Assisted mode",
+      impact: "See impact",
+      kiosk: "For CSC workers",
     },
     offline: {
       banner:
@@ -381,6 +381,7 @@ const en = {
     subtitle: "Track what is ready now and download a simple checklist for later.",
     download: "Download checklist",
     generating: "Generating PDF...",
+    error: "Could not download the checklist right now.",
     brandTitle: "YojnaPath checklist",
     generatedInBrowser: "Generated in your browser",
     benefitFallback: "Benefit available",

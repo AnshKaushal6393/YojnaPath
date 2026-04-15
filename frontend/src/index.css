@@ -1985,6 +1985,17 @@ select {
   background-color: var(--brand);
 }
 
+.scheme-card__actions {
+  margin-top: var(--sp8);
+  display: flex;
+  align-items: center;
+}
+
+.scheme-card__actions .detail-card__secondary-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .scheme-card.status-border-near-miss .scheme-card__match-fill {
   background-color: var(--warning);
 }

@@ -1,5 +1,9 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoryMeta } from "../lib/categoryMeta";
+import { generateChecklistPdf } from "../lib/checklistPdf";
+import { fetchSchemeDetail } from "../lib/schemeDetailApi";
 
 export default function SchemeCard({
   schemeId,
@@ -15,7 +19,9 @@ export default function SchemeCard({
   matchScorePercent,
   staggerIndex = 0,
 }) {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [isDownloadingChecklist, setIsDownloadingChecklist] = useState(false);
 
   function toSentenceCase(value) {
     return String(value ?? "")
@@ -73,6 +79,31 @@ export default function SchemeCard({
     }
   }
 
+  async function handleChecklistDownload(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      setIsDownloadingChecklist(true);
+      const scheme = await fetchSchemeDetail(schemeId);
+      await generateChecklistPdf(scheme, {
+        lang: i18n.resolvedLanguage,
+        labels: {
+          brandTitle: t("checklist.brandTitle"),
+          generatedInBrowser: t("checklist.generatedInBrowser"),
+          benefitFallback: t("checklist.benefitFallback"),
+          scanToApply: t("checklist.scanToApply"),
+          documentsAndChecks: t("checklist.documentsAndChecks"),
+          officialApplyLink: t("checklist.officialApplyLink"),
+        },
+      });
+    } catch (error) {
+      window.alert(error?.message || t("checklist.error"));
+    } finally {
+      setIsDownloadingChecklist(false);
+    }
+  }
+
   return (
     <article
       className={`scheme-card ${statusClass}`.trim()}
@@ -123,6 +154,16 @@ export default function SchemeCard({
             </div>
           </div>
         ) : null}
+        <div className="scheme-card__actions" onClick={(event) => event.stopPropagation()}>
+          <button
+            type="button"
+            className="detail-card__secondary-button"
+            onClick={handleChecklistDownload}
+            disabled={isDownloadingChecklist}
+          >
+            {isDownloadingChecklist ? t("checklist.generating") : t("checklist.download")}
+          </button>
+        </div>
         <span className="scheme-card__expand-row" aria-hidden="true">
           <span className="scheme-card__expand-label">View full details</span>
           <span className="card-expand-icon">{"\u2197"}</span>
