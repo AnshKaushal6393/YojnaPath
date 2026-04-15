@@ -18,6 +18,7 @@ import {
   saveProfileToBackend,
 } from "../lib/onboardApi";
 import { clearProfileDraft, saveProfileDraft } from "../lib/profileDraft";
+import { resizeImageBlobToDataUrl } from "../lib/photoCapture";
 import { completeRegistration, fetchCurrentUser } from "../lib/registrationApi";
 import { clearStoredPhone, clearToken } from "../utils/auth";
 import AdaptiveForm from "../components/AdaptiveForm";
@@ -69,6 +70,7 @@ export default function ProfilePage() {
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberUserType, setNewMemberUserType] = useState("farmer");
   const [newMemberFormState, setNewMemberFormState] = useState(createEmptyFormState);
+  const [newMemberPhotoUrl, setNewMemberPhotoUrl] = useState("");
   const [lang, setLang] = useState("hi");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -76,9 +78,15 @@ export default function ProfilePage() {
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [pendingDeleteMember, setPendingDeleteMember] = useState(null);
+  const [isOpeningMemberCamera, setIsOpeningMemberCamera] = useState(false);
+  const [isProcessingMemberPhoto, setIsProcessingMemberPhoto] = useState(false);
+  const [memberCameraOpen, setMemberCameraOpen] = useState(false);
   const hasTouchedProfileRef = useRef(false);
   const hasPrefilledProfileRef = useRef(false);
   const hasPrefilledAccountRef = useRef(false);
+  const memberVideoRef = useRef(null);
+  const memberFileInputRef = useRef(null);
+  const memberStreamRef = useRef(null);
 
   const currentUserQuery = useQuery({
     queryKey: ["current-user"],
@@ -141,10 +149,29 @@ export default function ProfilePage() {
           id: savedProfileQuery.data.id,
           profileName: savedProfileQuery.data.profileName,
           relation: savedProfileQuery.data.relation,
+          photoUrl: savedProfileQuery.data.photoUrl,
         }
       )
     );
   }, [savedProfileQuery.data]);
+
+  useEffect(() => {
+    if (!memberCameraOpen || !memberVideoRef.current || !memberStreamRef.current) {
+      return;
+    }
+
+    memberVideoRef.current.srcObject = memberStreamRef.current;
+    memberVideoRef.current.play().catch(() => {});
+  }, [memberCameraOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (memberStreamRef.current) {
+        memberStreamRef.current.getTracks().forEach((track) => track.stop());
+        memberStreamRef.current = null;
+      }
+    };
+  }, []);
 
   const profileMutation = useMutation({
     mutationFn: () =>
@@ -202,17 +229,20 @@ export default function ProfilePage() {
     mutationFn: () =>
       saveProfileToBackend(newMemberUserType, newMemberFormState, lang, {
         profileName: newMemberName.trim(),
+        photoUrl: newMemberPhotoUrl,
       }),
     onSuccess: async (result) => {
       const createdProfileId = result.profile?.id || "";
       const createdProfileName = newMemberName.trim();
       const createdUserType = newMemberUserType;
       const createdFormState = { ...newMemberFormState };
+      const createdPhotoUrl = newMemberPhotoUrl;
 
       saveProfileDraft(
         buildOnboardDraft(createdUserType, createdFormState, "synced", {
           id: createdProfileId,
           profileName: createdProfileName,
+          photoUrl: createdPhotoUrl,
         })
       );
       if (createdProfileId) {
@@ -290,9 +320,10 @@ export default function ProfilePage() {
     const requiredFields = REQUIRED_FIELDS_BY_USER_TYPE[newMemberUserType] || [];
     return (
       newMemberName.trim().length >= 2 &&
+      Boolean(newMemberPhotoUrl) &&
       requiredFields.every((field) => Boolean(newMemberFormState[field]))
     );
-  }, [newMemberFormState, newMemberName, newMemberUserType]);
+  }, [newMemberFormState, newMemberName, newMemberPhotoUrl, newMemberUserType]);
 
   const accountOwnerHasProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(name);
@@ -334,6 +365,14 @@ export default function ProfilePage() {
     setNewMemberName("");
     setNewMemberUserType("farmer");
     setNewMemberFormState(createEmptyFormState());
+    setNewMemberPhotoUrl("");
+    setMemberCameraOpen(false);
+    setIsOpeningMemberCamera(false);
+    setIsProcessingMemberPhoto(false);
+    if (memberStreamRef.current) {
+      memberStreamRef.current.getTracks().forEach((track) => track.stop());
+      memberStreamRef.current = null;
+    }
   }
 
   function handleFormStateChange(updater) {
@@ -446,11 +485,119 @@ export default function ProfilePage() {
     );
   }
 
+  function stopMemberCameraStream() {
+    if (memberStreamRef.current) {
+      memberStreamRef.current.getTracks().forEach((track) => track.stop());
+      memberStreamRef.current = null;
+    }
+  }
+
+  async function handleOpenMemberCamera() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setSubmitError("Camera is not available on this device. Upload a photo instead.");
+      setSubmitMessage("");
+      return;
+    }
+
+    try {
+      setIsOpeningMemberCamera(true);
+      setSubmitError("");
+      stopMemberCameraStream();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      memberStreamRef.current = stream;
+      setMemberCameraOpen(true);
+    } catch (error) {
+      setSubmitError(error.message || "Could not open the camera right now.");
+      setSubmitMessage("");
+    } finally {
+      setIsOpeningMemberCamera(false);
+    }
+  }
+
+  async function handleCaptureMemberPhoto() {
+    if (!memberVideoRef.current) {
+      return;
+    }
+
+    try {
+      setIsProcessingMemberPhoto(true);
+      setSubmitError("");
+      const video = memberVideoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 720;
+      canvas.height = video.videoHeight || 720;
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        throw new Error("Could not open the camera right now.");
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const captured = await new Promise((resolve, reject) => {
+        canvas.toBlob(
+          async (blob) => {
+            if (!blob) {
+              reject(new Error("Could not prepare the photo. Please try again."));
+              return;
+            }
+
+            try {
+              resolve(await resizeImageBlobToDataUrl(blob));
+            } catch (error) {
+              reject(error);
+            }
+          },
+          "image/jpeg",
+          0.8
+        );
+      });
+
+      setNewMemberPhotoUrl(captured);
+      setMemberCameraOpen(false);
+      stopMemberCameraStream();
+    } catch (error) {
+      setSubmitError(error.message || "Could not prepare the photo. Please try again.");
+      setSubmitMessage("");
+    } finally {
+      setIsProcessingMemberPhoto(false);
+    }
+  }
+
+  async function handleMemberPhotoFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      setIsProcessingMemberPhoto(true);
+      setSubmitError("");
+      const processed = await resizeImageBlobToDataUrl(file);
+      setNewMemberPhotoUrl(processed);
+      setMemberCameraOpen(false);
+      stopMemberCameraStream();
+    } catch (error) {
+      setSubmitError(error.message || "Could not prepare the photo. Please try again.");
+      setSubmitMessage("");
+    } finally {
+      setIsProcessingMemberPhoto(false);
+      event.target.value = "";
+    }
+  }
+
   async function handleCreateMemberSubmit(event) {
     event.preventDefault();
 
     if (!canSaveNewMember) {
-      setSubmitError(t("profileMessages.completeMemberFields"));
+      setSubmitError(
+        newMemberPhotoUrl
+          ? t("profileMessages.completeMemberFields")
+          : "Please add the family member photo before saving."
+      );
       setSubmitMessage("");
       return;
     }
