@@ -1,5 +1,6 @@
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
 import { useTranslation } from "react-i18next";
+import InstallAppButton from "./InstallAppButton";
 
 export default function HomeHero({
   language,
@@ -20,21 +21,27 @@ export default function HomeHero({
 
       <div className="home-hero__topbar">
         <p className="type-display">{t("common.appName")}</p>
-        <div className="language-toggle" aria-label={t("profile.languageTitle")}>
-          <button
-            type="button"
-            className={`lt-btn tap-target ${language === "en" ? "on" : ""}`}
-            onClick={() => onLanguageChange("en")}
-          >
-            {t("common.language.shortEn")}
-          </button>
-          <button
-            type="button"
-            className={`lt-btn tap-target ${language === "hi" ? "on" : ""}`}
-            onClick={() => onLanguageChange("hi")}
-          >
-            {t("common.language.shortHi")}
-          </button>
+        <div className="home-hero__controls">
+          <div className="language-toggle" aria-label={t("profile.languageTitle")}>
+            <button
+              type="button"
+              className={`lt-btn tap-target ${language === "en" ? "on" : ""}`}
+              onClick={() => onLanguageChange("en")}
+            >
+              {t("common.language.shortEn")}
+            </button>
+            <button
+              type="button"
+              className={`lt-btn tap-target ${language === "hi" ? "on" : ""}`}
+              onClick={() => onLanguageChange("hi")}
+            >
+              {t("common.language.shortHi")}
+            </button>
+          </div>
+          <InstallAppButton
+            buttonClassName="install-app-button install-app-button--hero"
+            hintClassName="install-app__hint--hero"
+          />
         </div>
       </div>
 

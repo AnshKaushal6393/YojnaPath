@@ -23,6 +23,9 @@ const en = {
     buttons: {
       cancel: "Cancel",
       delete: "Delete",
+      downloadApp: "Download app",
+      howToInstall: "How to install",
+      appInstalled: "App installed",
       saving: "Saving...",
       save: "Save",
       viewScheme: "View scheme",
@@ -34,6 +37,10 @@ const en = {
       downloadCalendarFile: "Download calendar file",
       saveReminderDate: "Save reminder date",
       backToSchemes: "Back to schemes",
+    },
+    pwa: {
+      installHint: "Install the app for faster access, a full-screen experience, and offline support.",
+      iosHint: "On iPhone or iPad, open this site in Safari, tap Share, then choose Add to Home Screen.",
     },
   },
   home: {

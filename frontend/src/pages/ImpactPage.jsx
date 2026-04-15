@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ChartByState from "../components/ChartByState";
 import ChartByUserType from "../components/ChartByUserType";
 import ImpactStats from "../components/ImpactStats";
+import InstallAppButton from "../components/InstallAppButton";
 import { apiGet } from "../lib/api";
 
 function formatUpdatedAt(value) {
@@ -57,6 +58,10 @@ export default function ImpactPage() {
             <Link to="/" className="detail-card__secondary-button">
               {t("impact.goHome")}
             </Link>
+            <InstallAppButton
+              buttonClassName="install-app-button install-app-button--surface"
+              hintClassName="install-app__hint--surface"
+            />
           </div>
           <div className="impact-story-grid">
             <article className="impact-story-card">

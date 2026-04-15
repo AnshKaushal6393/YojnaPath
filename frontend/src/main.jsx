@@ -6,6 +6,7 @@ import { registerSW } from "virtual:pwa-register";
 import "./i18n";
 import App from "./App";
 import "./index.css";
+import { setDeferredInstallPrompt } from "./lib/pwaInstall";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +28,11 @@ const queryClient = new QueryClient({
 
 registerSW({
   immediate: true,
+});
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  setDeferredInstallPrompt(event);
 });
 
 ReactDOM.createRoot(document.getElementById("root")).render(

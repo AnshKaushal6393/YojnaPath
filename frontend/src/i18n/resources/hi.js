@@ -23,6 +23,9 @@ const hi = {
     buttons: {
       cancel: "रद्द करें",
       delete: "डिलीट करें",
+      downloadApp: "ऐप डाउनलोड करें",
+      howToInstall: "इंस्टॉल कैसे करें",
+      appInstalled: "ऐप इंस्टॉल है",
       saving: "सेव हो रहा है...",
       save: "सेव करें",
       viewScheme: "योजना देखें",
@@ -34,6 +37,10 @@ const hi = {
       downloadCalendarFile: "कैलेंडर फ़ाइल डाउनलोड करें",
       saveReminderDate: "रिमाइंडर तारीख सेव करें",
       backToSchemes: "योजनाओं पर वापस जाएँ",
+    },
+    pwa: {
+      installHint: "तेज एक्सेस, फुल-स्क्रीन अनुभव और ऑफलाइन सपोर्ट के लिए ऐप इंस्टॉल करें।",
+      iosHint: "iPhone या iPad पर Safari में साइट खोलें, Share पर टैप करें, फिर Add to Home Screen चुनें।",
     },
   },
   home: {

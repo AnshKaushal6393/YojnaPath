@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import InstallAppButton from "../components/InstallAppButton";
 import { apiPost } from "../utils/api";
 import { setStoredPhone } from "../utils/auth";
 
@@ -53,6 +54,10 @@ export default function Login() {
               {t("auth.login.title")}
             </h1>
             <p className="text-sm leading-6 text-slate-500">{t("auth.login.subtitle")}</p>
+            <InstallAppButton
+              buttonClassName="install-app-button install-app-button--surface"
+              hintClassName="install-app__hint--surface"
+            />
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>

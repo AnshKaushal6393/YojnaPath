@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import EmptyState from "../components/EmptyState";
+import InstallAppButton from "../components/InstallAppButton";
 import KioskForm from "../components/KioskForm";
 import KioskPdfExport from "../components/KioskPdfExport";
 import KioskResults from "../components/KioskResults";
@@ -57,6 +58,10 @@ export default function KioskPage() {
             <Link to="/" className="detail-card__secondary-button">
               {t("kiosk.backHome")}
             </Link>
+            <InstallAppButton
+              buttonClassName="install-app-button install-app-button--surface"
+              hintClassName="install-app__hint--surface"
+            />
             <button
               type="button"
               className="onboard-logout-button"
