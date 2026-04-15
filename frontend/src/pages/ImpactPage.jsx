@@ -24,6 +24,10 @@ async function fetchImpactData() {
   return apiGet("/api/impact");
 }
 
+function getTopEntry(values) {
+  return Object.entries(values || {}).sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))[0] || null;
+}
+
 export default function ImpactPage() {
   const { t } = useTranslation();
   const impactQuery = useQuery({
@@ -32,6 +36,8 @@ export default function ImpactPage() {
   });
 
   const stats = impactQuery.data;
+  const topUserType = getTopEntry(stats?.byUserType);
+  const topState = getTopEntry(stats?.byState);
 
   return (
     <main className="app-shell">
@@ -46,6 +52,29 @@ export default function ImpactPage() {
             <Link to="/" className="detail-card__secondary-button">
               {t("impact.goHome")}
             </Link>
+          </div>
+          <div className="impact-story-grid">
+            <article className="impact-story-card">
+              <p className="type-label">{t("impact.snapshotLabel")}</p>
+              <p className="type-caption">{t("impact.snapshotBody")}</p>
+            </article>
+            <article className="impact-story-card">
+              <p className="type-label">{t("impact.privacyLabel")}</p>
+              <p className="type-caption">{t("impact.privacyBody")}</p>
+            </article>
+            <article className="impact-story-card">
+              <p className="type-label">{t("impact.reachLabel")}</p>
+              <p className="type-caption">
+                {topUserType
+                  ? t("impact.topUserType", { type: String(topUserType[0]) })
+                  : t("impact.topUserTypeFallback")}
+              </p>
+              <p className="type-caption">
+                {topState
+                  ? t("impact.topState", { state: String(topState[0]) })
+                  : t("impact.topStateFallback")}
+              </p>
+            </article>
           </div>
         </section>
 
@@ -71,6 +100,7 @@ export default function ImpactPage() {
               <p className="type-caption">
                 {t("impact.lastUpdated", { date: formatUpdatedAt(stats.lastUpdated) })}
               </p>
+              <p className="type-caption">{t("impact.publicNote")}</p>
             </section>
 
             <div className="impact-chart-grid">

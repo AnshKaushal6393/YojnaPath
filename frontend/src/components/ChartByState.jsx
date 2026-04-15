@@ -1,16 +1,19 @@
+import { useTranslation } from "react-i18next";
+
 function toEntries(values) {
   return Object.entries(values || {}).sort((a, b) => b[1] - a[1]).slice(0, 8);
 }
 
 export default function ChartByState({ values }) {
+  const { t } = useTranslation();
   const entries = toEntries(values);
   const maxValue = Math.max(...entries.map(([, count]) => Number(count || 0)), 1);
 
   return (
     <section className="impact-chart-card">
       <div className="section-heading">
-        <h2 className="type-h2">By state</h2>
-        <p className="type-caption">Where the strongest public usage is coming from.</p>
+        <h2 className="type-h2">{t("impact.charts.stateTitle")}</h2>
+        <p className="type-caption">{t("impact.charts.stateBody")}</p>
       </div>
 
       {entries.length ? (
@@ -31,7 +34,7 @@ export default function ChartByState({ values }) {
           ))}
         </div>
       ) : (
-        <p className="type-caption">No state-level usage data available yet.</p>
+        <p className="type-caption">{t("impact.charts.stateEmpty")}</p>
       )}
     </section>
   );

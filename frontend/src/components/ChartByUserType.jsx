@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 function formatLabel(value) {
   return String(value || "")
     .split(/[_\s]+/)
@@ -11,14 +13,15 @@ function toEntries(values) {
 }
 
 export default function ChartByUserType({ values }) {
+  const { t } = useTranslation();
   const entries = toEntries(values);
   const maxValue = Math.max(...entries.map(([, count]) => Number(count || 0)), 1);
 
   return (
     <section className="impact-chart-card">
       <div className="section-heading">
-        <h2 className="type-h2">By user type</h2>
-        <p className="type-caption">Who is using the platform most right now.</p>
+        <h2 className="type-h2">{t("impact.charts.userTypeTitle")}</h2>
+        <p className="type-caption">{t("impact.charts.userTypeBody")}</p>
       </div>
 
       {entries.length ? (
@@ -39,7 +42,7 @@ export default function ChartByUserType({ values }) {
           ))}
         </div>
       ) : (
-        <p className="type-caption">No profile-type data available yet.</p>
+        <p className="type-caption">{t("impact.charts.userTypeEmpty")}</p>
       )}
     </section>
   );

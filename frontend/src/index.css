@@ -884,14 +884,30 @@ select {
 
 .impact-hero {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: column;
   gap: var(--sp16);
+  background: linear-gradient(135deg, rgba(225, 245, 238, 0.9), rgba(255, 255, 255, 0.98));
 }
 
 .impact-hero__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp10);
+}
+
+.impact-story-grid {
+  display: grid;
+  gap: var(--sp12);
+}
+
+.impact-story-card {
+  padding: var(--sp16);
+  border: 1px solid rgba(15, 110, 86, 0.12);
+  border-radius: var(--r14);
+  background: rgba(255, 255, 255, 0.82);
+  display: grid;
+  gap: var(--sp6);
 }
 
 .impact-stats-grid {
@@ -917,7 +933,11 @@ select {
   width: 56px;
   height: 56px;
   border-radius: var(--r12);
-  font-size: 28px;
+  padding: 0 var(--sp8);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   line-height: 1;
   flex: 0 0 auto;
   background-color: rgba(225, 245, 238, 0.9);
@@ -957,6 +977,8 @@ select {
 .impact-panel--meta {
   padding-top: var(--sp14);
   padding-bottom: var(--sp14);
+  display: grid;
+  gap: var(--sp4);
 }
 
 .impact-chart-grid {
@@ -2350,6 +2372,45 @@ select {
   gap: var(--sp10);
 }
 
+.detail-actions__menu {
+  position: relative;
+}
+
+.detail-actions__dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 210px;
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r14);
+  background-color: var(--surface);
+  box-shadow: 0 18px 40px rgba(15, 110, 86, 0.14);
+  z-index: 3;
+}
+
+.detail-actions__dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--r10);
+  background-color: transparent;
+  color: var(--text-1);
+  text-align: left;
+  cursor: pointer;
+}
+
+.detail-actions__dropdown-item:hover,
+.detail-actions__dropdown-item:focus-visible {
+  background-color: var(--surface-2);
+  outline: none;
+}
+
 .detail-card__apply {
   display: inline-flex;
   align-items: center;
@@ -3044,6 +3105,11 @@ select {
 
   .impact-chart-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .impact-story-grid {
+    width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .results-header {
