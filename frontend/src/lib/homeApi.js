@@ -98,16 +98,16 @@ function buildCategoryHighlights(schemes, limit = 6) {
     }));
 }
 
-export async function fetchHomeData() {
+export async function fetchHomeData(profileId) {
   const [health, impact, savedProfile, schemes] = await Promise.all([
     apiGet("/api/health"),
     apiGet("/api/impact"),
-    fetchSavedProfile(),
+    fetchSavedProfile(profileId),
     apiGet("/api/schemes/all"),
   ]);
 
   if (isProfileReadyForMatching(savedProfile)) {
-    const personalizedResults = await fetchResultsData();
+    const personalizedResults = await fetchResultsData(profileId);
 
     return {
       health,

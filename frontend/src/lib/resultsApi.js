@@ -116,8 +116,8 @@ function isRelevantSchemeForUserType(userType, scheme) {
   return allowedCategories.includes(scheme.category);
 }
 
-export async function fetchResultsData() {
-  const savedProfile = await fetchSavedProfile();
+export async function fetchResultsData(profileId) {
+  const savedProfile = await fetchSavedProfile(profileId);
   const draftProfile = getProfileDraft();
   const activeProfile = isProfileReadyForMatching(savedProfile)
     ? savedProfile

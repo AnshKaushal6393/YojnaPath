@@ -8,6 +8,7 @@ import NearMissCard from "../components/NearMissCard";
 import ResultsHeader from "../components/ResultsHeader";
 import SchemeCard from "../components/SchemeCard";
 import UrgencyBanner from "../components/UrgencyBanner";
+import { getActiveProfileId } from "../lib/activeProfile";
 import { fetchResultsData } from "../lib/resultsApi";
 
 const RESULTS_PER_PAGE = 12;
@@ -53,6 +54,7 @@ function buildFilterItems(activeFilter, schemes) {
 }
 
 export default function ResultsPage() {
+  const activeProfileId = getActiveProfileId();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategoryFilter = searchParams.get("category") || "all";
   const [activeFilter, setActiveFilter] = useState(initialCategoryFilter);
@@ -60,8 +62,8 @@ export default function ResultsPage() {
   const [showAllNearMisses, setShowAllNearMisses] = useState(false);
 
   const resultsQuery = useQuery({
-    queryKey: ["results-data"],
-    queryFn: fetchResultsData,
+    queryKey: ["results-data", activeProfileId],
+    queryFn: () => fetchResultsData(activeProfileId),
   });
 
   const filterItems = useMemo(

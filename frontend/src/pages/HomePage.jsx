@@ -11,7 +11,7 @@ import RecentMatches from "../components/RecentMatches";
 import UrgencyBanner from "../components/UrgencyBanner";
 import UserTypeGrid from "../components/UserTypeGrid";
 import { hasStoredAppLanguage, setAppLanguage, syncAppLanguage } from "../i18n/language";
-import { setActiveProfileId } from "../lib/activeProfile";
+import { getActiveProfileId, setActiveProfileId } from "../lib/activeProfile";
 import { getAuthToken } from "../lib/authStorage";
 import { fetchHomeData } from "../lib/homeApi";
 import { fetchProfileMembers, fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
@@ -66,6 +66,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const authToken = getAuthToken();
+  const activeProfileId = getActiveProfileId();
   const localDraft = getProfileDraft();
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
   const [hasProfile, setHasProfile] = useState(() => isProfileReadyForMatching(getProfileDraft()));
@@ -76,13 +77,13 @@ export default function HomePage() {
   const draftStorageMode = getProfileDraftStorageMode();
 
   const homeQuery = useQuery({
-    queryKey: ["home-data"],
-    queryFn: fetchHomeData,
+    queryKey: ["home-data", activeProfileId],
+    queryFn: () => fetchHomeData(activeProfileId),
   });
 
   const savedProfileQuery = useQuery({
-    queryKey: ["home-saved-profile"],
-    queryFn: fetchSavedProfile,
+    queryKey: ["home-saved-profile", activeProfileId],
+    queryFn: () => fetchSavedProfile(activeProfileId),
     enabled: Boolean(authToken),
   });
 
