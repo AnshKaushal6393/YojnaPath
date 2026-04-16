@@ -66,6 +66,7 @@ export default function HomePage() {
   const queryClient = useQueryClient();
   const authToken = getAuthToken();
   const [activeProfileId, setActiveProfileIdState] = useState(() => getActiveProfileId());
+  const [visualActiveProfileId, setVisualActiveProfileId] = useState(() => getActiveProfileId());
   const localDraft = getProfileDraft(activeProfileId);
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
   const [hasProfile, setHasProfile] = useState(() =>
@@ -107,10 +108,17 @@ export default function HomePage() {
     }
   }, [activeProfileId, profileMembersQuery.data]);
 
+  useEffect(() => {
+    if (displayedProfileId && displayedProfileId !== visualActiveProfileId) {
+      setVisualActiveProfileId(displayedProfileId);
+    }
+  }, [displayedProfileId, visualActiveProfileId]);
+
   const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
   const hasDeviceDraft = isProfileReadyForMatching(localDraft);
   const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
   const hasReadyProfile = hasProfile && shouldShowSavedProfile;
+  const displayedProfileId = savedProfileQuery.data?.id || localDraft?.id || activeProfileId;
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes, t);
   const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
@@ -209,6 +217,7 @@ export default function HomePage() {
     setSwitchNotice("");
     setActiveProfileId(member.id);
     setActiveProfileIdState(member.id);
+    setVisualActiveProfileId(member.id);
     queryClient.cancelQueries({ queryKey: ["home-data"] });
     queryClient.cancelQueries({ queryKey: ["home-saved-profile"] });
     queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
@@ -285,7 +294,7 @@ export default function HomePage() {
         {hasReadyProfile && (profileMembersQuery.data?.length || 0) > 1 ? (
           <FamilyProfilesPanel
             members={profileMembersQuery.data || []}
-            activeProfileId={activeProfileId}
+            activeProfileId={visualActiveProfileId}
             onSelect={handleProfileSwitch}
           onCreateNew={() => navigate("/profile")}
           onCreateOwnerProfile={() => navigate("/profile")}
