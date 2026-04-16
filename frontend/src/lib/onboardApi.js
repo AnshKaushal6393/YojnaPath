@@ -106,7 +106,8 @@ export function buildOnboardDraft(
 }
 
 export function isProfileReadyForMatching(profile) {
-  return Boolean(profile?.state && profile?.selectedUserType);
+  const profileState = profile?.formState?.state || profile?.state || "";
+  return Boolean(profileState && profile?.selectedUserType);
 }
 
 export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
