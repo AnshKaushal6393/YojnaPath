@@ -64,8 +64,8 @@ function mapProfileToFormState(profile) {
     gender: profile?.gender || "",
     caste: profile?.caste || "",
     ageBand: profile?.age != null ? pickClosestBand(profile.age, AGE_MAP) : "",
-    incomeBand: pickClosestBand(profile?.annualIncome ?? 0, INCOME_MAP),
-    landBand: pickClosestBand(profile?.landAcres ?? 0, LAND_MAP),
+    incomeBand: profile?.annualIncome != null ? pickClosestBand(profile.annualIncome, INCOME_MAP) : "",
+    landBand: profile?.landAcres != null ? pickClosestBand(profile.landAcres, LAND_MAP) : "",
     notes: "",
   };
 }

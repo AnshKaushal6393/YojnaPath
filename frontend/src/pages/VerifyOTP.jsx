@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import OTPInput from "../components/OTPInput";
-import { fetchSavedProfile } from "../lib/onboardApi";
+import { fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import { apiPost } from "../utils/api";
 import { getStoredPhone, setStoredPhone, setToken } from "../utils/auth";
 
@@ -64,7 +64,9 @@ export default function VerifyOTP() {
       }
 
       const savedProfile = await fetchSavedProfile();
-      navigate(savedProfile ? "/results" : "/onboard", { replace: true });
+      navigate(isProfileReadyForMatching(savedProfile) ? "/results" : "/onboard", {
+        replace: true,
+      });
     } catch (verifyError) {
       setError(verifyError.message || t("auth.verify.verifyError"));
     } finally {

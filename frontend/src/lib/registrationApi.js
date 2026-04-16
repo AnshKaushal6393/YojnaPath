@@ -1,6 +1,6 @@
 import { apiGet, apiPost } from "./api";
 import { getAuthToken } from "./authStorage";
-import { fetchSavedProfile } from "./onboardApi";
+import { fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
 
 function getTokenOrThrow() {
   const token = getAuthToken();
@@ -34,5 +34,5 @@ export async function completeRegistration({ name, lang, photoUrl }) {
 
 export async function getPostRegistrationDestination() {
   const savedProfile = await fetchSavedProfile();
-  return savedProfile ? "/results" : "/onboard";
+  return isProfileReadyForMatching(savedProfile) ? "/results" : "/onboard";
 }
