@@ -285,7 +285,7 @@ export default function HomePage() {
         {hasReadyProfile && (profileMembersQuery.data?.length || 0) > 1 ? (
           <FamilyProfilesPanel
             members={profileMembersQuery.data || []}
-            activeProfileId={savedProfileQuery.data?.id || ""}
+            activeProfileId={activeProfileId}
             onSelect={handleProfileSwitch}
           onCreateNew={() => navigate("/profile")}
           onCreateOwnerProfile={() => navigate("/profile")}
