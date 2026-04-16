@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getStoredAppLanguage, setAppLanguage } from "../i18n/language";
 import LanguageToggle from "../components/LanguageToggle";
-import { resizeImageBlobToDataUrl } from "../lib/photoCapture";
+import { blobToDataUrl, resizeImageBlobToSquareBlob } from "../lib/photoCapture";
+import { uploadProfilePhoto } from "../lib/photoUploadApi";
 import {
   completeRegistration,
   fetchCurrentUser,
@@ -25,6 +26,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUser, setIsCheckingUser] = useState(true);
   const [photoUrl, setPhotoUrl] = useState("");
+  const [photoBlob, setPhotoBlob] = useState(null);
   const [isOpeningCamera, setIsOpeningCamera] = useState(false);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -88,6 +90,7 @@ export default function Register() {
 
         if (user?.photoUrl) {
           setPhotoUrl(user.photoUrl);
+          setPhotoBlob(null);
         }
 
         if (user?.name) {
@@ -115,8 +118,9 @@ export default function Register() {
     };
   }, [navigate]);
 
-  async function handleUsePhoto(nextPhotoUrl) {
-    setPhotoUrl(nextPhotoUrl);
+  async function handleUsePhoto(nextPhotoBlob) {
+    setPhotoBlob(nextPhotoBlob);
+    setPhotoUrl(await blobToDataUrl(nextPhotoBlob));
     setCameraOpen(false);
     stopCameraStream();
   }
@@ -191,7 +195,7 @@ export default function Register() {
             }
 
             try {
-              resolve(await resizeImageBlobToDataUrl(blob));
+              resolve(await resizeImageBlobToSquareBlob(blob));
             } catch (processingError) {
               reject(processingError);
             }
@@ -223,8 +227,9 @@ export default function Register() {
     try {
       setIsProcessingPhoto(true);
       setError("");
-      const processed = await resizeImageBlobToDataUrl(file);
-      setPhotoUrl(processed);
+      const processed = await resizeImageBlobToSquareBlob(file);
+      setPhotoBlob(processed);
+      setPhotoUrl(await blobToDataUrl(processed));
       setCameraOpen(false);
       stopCameraStream();
     } catch (fileError) {
@@ -242,6 +247,7 @@ export default function Register() {
 
   function handleRemovePhoto() {
     setPhotoUrl("");
+    setPhotoBlob(null);
     setError("");
   }
 
@@ -265,10 +271,18 @@ export default function Register() {
     try {
       setIsLoading(true);
       setError("");
+      const uploadedPhotoUrl = photoBlob
+        ? await uploadProfilePhoto(photoBlob, {
+            folder: "yojnapath/profiles",
+            publicId: `user_${Date.now()}`,
+            filename: "registration-photo.jpg",
+          })
+        : photoUrl;
       await completeRegistration({
         name: normalizeName(name).trim(),
         lang,
-        photoUrl,
+        photoUrl: uploadedPhotoUrl,
+        photoType: "upload",
       });
       await setAppLanguage(lang);
       const nextPath = await getPostRegistrationDestination();

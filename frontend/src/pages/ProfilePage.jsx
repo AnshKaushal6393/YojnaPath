@@ -19,7 +19,8 @@ import {
   saveProfileToBackend,
 } from "../lib/onboardApi";
 import { clearProfileDraft, saveProfileDraft } from "../lib/profileDraft";
-import { resizeImageBlobToDataUrl } from "../lib/photoCapture";
+import { blobToDataUrl, resizeImageBlobToSquareBlob } from "../lib/photoCapture";
+import { uploadProfilePhoto } from "../lib/photoUploadApi";
 import { completeRegistration, fetchCurrentUser } from "../lib/registrationApi";
 import { clearStoredPhone, clearToken } from "../utils/auth";
 import AdaptiveForm from "../components/AdaptiveForm";
@@ -116,6 +117,7 @@ export default function ProfilePage() {
   const [newMemberUserType, setNewMemberUserType] = useState("farmer");
   const [newMemberFormState, setNewMemberFormState] = useState(createEmptyFormState);
   const [newMemberPhotoUrl, setNewMemberPhotoUrl] = useState("");
+  const [newMemberPhotoBlob, setNewMemberPhotoBlob] = useState(null);
   const [lang, setLang] = useState("hi");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -275,11 +277,20 @@ export default function ProfilePage() {
   });
 
   const createMemberMutation = useMutation({
-    mutationFn: () =>
-      saveProfileToBackend("", createEmptyFormState(), lang, {
+    mutationFn: async () => {
+      const uploadedPhotoUrl = newMemberPhotoBlob
+        ? await uploadProfilePhoto(newMemberPhotoBlob, {
+            folder: "yojnapath/family-members",
+            publicId: `family_${Date.now()}`,
+            filename: "family-member-photo.jpg",
+          })
+        : newMemberPhotoUrl;
+
+      return saveProfileToBackend("", createEmptyFormState(), lang, {
         profileName: newMemberName.trim(),
-        photoUrl: newMemberPhotoUrl,
-      }),
+        photoUrl: uploadedPhotoUrl,
+      });
+    },
     onSuccess: async (result) => {
       const createdProfileId = result.profile?.id || "";
       const createdProfileName = newMemberName.trim();
@@ -395,6 +406,7 @@ export default function ProfilePage() {
     setNewMemberUserType("farmer");
     setNewMemberFormState(createEmptyFormState());
     setNewMemberPhotoUrl("");
+    setNewMemberPhotoBlob(null);
     setDuplicateWarning(null);
     setDuplicateConfirmed(false);
     setMemberCameraOpen(false);
@@ -493,6 +505,7 @@ export default function ProfilePage() {
     setShowCreateMemberModal(true);
     setNewMemberName(normalizeName(name));
     setNewMemberPhotoUrl(photoUrl || "");
+    setNewMemberPhotoBlob(null);
     setDuplicateWarning(null);
     setDuplicateConfirmed(false);
     setPendingDeleteMember(null);
@@ -585,7 +598,7 @@ export default function ProfilePage() {
             }
 
             try {
-              resolve(await resizeImageBlobToDataUrl(blob));
+              resolve(await resizeImageBlobToSquareBlob(blob));
             } catch (error) {
               reject(error);
             }
@@ -595,7 +608,8 @@ export default function ProfilePage() {
         );
       });
 
-      setNewMemberPhotoUrl(captured);
+      setNewMemberPhotoBlob(captured);
+      setNewMemberPhotoUrl(await blobToDataUrl(captured));
       setDuplicateWarning(null);
       setDuplicateConfirmed(false);
       setMemberCameraOpen(false);
@@ -617,8 +631,9 @@ export default function ProfilePage() {
     try {
       setIsProcessingMemberPhoto(true);
       setSubmitError("");
-      const processed = await resizeImageBlobToDataUrl(file);
-      setNewMemberPhotoUrl(processed);
+      const processed = await resizeImageBlobToSquareBlob(file);
+      setNewMemberPhotoBlob(processed);
+      setNewMemberPhotoUrl(await blobToDataUrl(processed));
       setDuplicateWarning(null);
       setDuplicateConfirmed(false);
       setMemberCameraOpen(false);
@@ -894,7 +909,10 @@ export default function ProfilePage() {
                         <button
                           type="button"
                           className="onboard-logout-button"
-                          onClick={() => setNewMemberPhotoUrl("")}
+                          onClick={() => {
+                            setNewMemberPhotoUrl("");
+                            setNewMemberPhotoBlob(null);
+                          }}
                           disabled={isProcessingMemberPhoto}
                         >
                           Remove photo

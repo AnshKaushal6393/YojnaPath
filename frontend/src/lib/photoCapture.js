@@ -17,7 +17,7 @@ async function loadImageFromBlob(blob) {
   });
 }
 
-export async function resizeImageBlobToDataUrl(blob) {
+export async function resizeImageBlobToSquareBlob(blob) {
   const image = await loadImageFromBlob(blob);
   const canvas = document.createElement("canvas");
   canvas.width = OUTPUT_IMAGE_SIZE;
@@ -51,14 +51,24 @@ export async function resizeImageBlobToDataUrl(blob) {
           reject(new Error("Could not prepare the photo"));
           return;
         }
-
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(String(reader.result || ""));
-        reader.onerror = () => reject(new Error("Could not read the photo"));
-        reader.readAsDataURL(nextBlob);
+        resolve(nextBlob);
       },
       "image/jpeg",
       PHOTO_QUALITY
     );
   });
+}
+
+export async function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read the photo"));
+    reader.readAsDataURL(blob);
+  });
+}
+
+export async function resizeImageBlobToDataUrl(blob) {
+  const resizedBlob = await resizeImageBlobToSquareBlob(blob);
+  return blobToDataUrl(resizedBlob);
 }

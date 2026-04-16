@@ -12,6 +12,12 @@ async function ensureUserColumns() {
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)`);
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT`);
       await pool.query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_type VARCHAR(12) NOT NULL DEFAULT 'none'`
+      );
+      await pool.query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_done BOOLEAN NOT NULL DEFAULT FALSE`
+      );
+      await pool.query(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_completed_at TIMESTAMP`
       );
     })().catch((error) => {
@@ -33,7 +39,7 @@ async function findOrCreateUserByPhone(phone, lang = "hi") {
       ON CONFLICT (phone) DO UPDATE SET
         lang = COALESCE(EXCLUDED.lang, users.lang),
         last_login = NOW()
-      RETURNING id, phone, name, photo_url, lang, registration_completed_at
+      RETURNING id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
     `,
     [phone, lang]
   );
@@ -46,7 +52,7 @@ async function getUserById(userId) {
   const pool = getPool();
   const result = await pool.query(
     `
-      SELECT id, phone, name, photo_url, lang, registration_completed_at
+      SELECT id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
       FROM users
       WHERE id = $1
       LIMIT 1
@@ -57,12 +63,14 @@ async function getUserById(userId) {
   return result.rows[0] || null;
 }
 
-async function completeUserRegistration(userId, { name, lang, photoUrl }) {
+async function completeUserRegistration(userId, { name, lang, photoUrl, photoType = "upload" }) {
   await ensureUserColumns();
   const pool = getPool();
   const normalizedName = String(name || "").trim().replace(/\s+/g, " ");
   const normalizedLang = lang === "en" ? "en" : "hi";
   const normalizedPhotoUrl = photoUrl ? String(photoUrl).trim() : null;
+  const normalizedPhotoType =
+    photoType === "camera" || photoType === "generated" ? photoType : "upload";
 
   const result = await pool.query(
     `
@@ -71,12 +79,14 @@ async function completeUserRegistration(userId, { name, lang, photoUrl }) {
         name = $2,
         photo_url = COALESCE($3, photo_url),
         lang = $4,
+        photo_type = CASE WHEN $3 IS NOT NULL THEN $5 ELSE photo_type END,
+        onboarding_done = TRUE,
         registration_completed_at = COALESCE(registration_completed_at, NOW()),
         last_login = NOW()
       WHERE id = $1
-      RETURNING id, phone, name, photo_url, lang, registration_completed_at
+      RETURNING id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
     `,
-    [userId, normalizedName, normalizedPhotoUrl, normalizedLang]
+    [userId, normalizedName, normalizedPhotoUrl, normalizedLang, normalizedPhotoType]
   );
 
   return result.rows[0] || null;

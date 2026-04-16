@@ -81,6 +81,17 @@ export function apiPost(path, body, options = {}) {
   });
 }
 
+export function apiPostForm(path, formData, options = {}) {
+  return apiRequest(path, {
+    ...options,
+    method: "POST",
+    body: formData,
+    headers: {
+      ...(options.headers || {}),
+    },
+  });
+}
+
 export function apiDelete(path, options = {}) {
   return apiRequest(path, {
     ...options,

@@ -4,6 +4,10 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   phone VARCHAR(10) UNIQUE NOT NULL,
   name VARCHAR(120),
+  photo_url TEXT,
+  photo_type VARCHAR(12) NOT NULL DEFAULT 'none'
+    CHECK (photo_type IN ('camera', 'upload', 'generated', 'none')),
+  onboarding_done BOOLEAN NOT NULL DEFAULT FALSE,
   lang VARCHAR(2) NOT NULL DEFAULT 'hi'
     CHECK (lang IN ('hi', 'en')),
   registration_completed_at TIMESTAMP,

@@ -29,12 +29,16 @@ function validateName(name) {
 }
 
 function validatePhotoUrl(photoUrl) {
-  const value = String(photoUrl).trim();
-  if (!value.startsWith("data:image/")) {
+  const value = String(photoUrl ?? "").trim();
+  if (!value) {
     return false;
   }
 
-  return value.length <= 2_000_000;
+  if (value.startsWith("data:image/")) {
+    return value.length <= 2_000_000;
+  }
+
+  return /^https:\/\/res\.cloudinary\.com\/.+/i.test(value);
 }
 
 function serializeUser(user) {
@@ -47,6 +51,8 @@ function serializeUser(user) {
     phone: user.phone,
     name: user.name || null,
     photoUrl: user.photo_url || null,
+    photoType: user.photo_type || "none",
+    onboardingDone: Boolean(user.onboarding_done),
     lang: user.lang,
     needsRegistration: !user.name,
   };
@@ -170,6 +176,7 @@ async function register(req, res) {
   const name = String(req.body?.name ?? "").trim().replace(/\s+/g, " ");
   const lang = req.body?.lang === "en" ? "en" : "hi";
   const photoUrl = req.body?.photoUrl ? String(req.body.photoUrl).trim() : "";
+  const photoType = req.body?.photoType === "camera" ? "camera" : "upload";
 
   const existingUser = await getUserById(req.user.id);
 
@@ -189,7 +196,7 @@ async function register(req, res) {
     return res.status(400).json({ message: "Photo must be a valid image under 2 MB" });
   }
 
-  const user = await completeUserRegistration(req.user.id, { name, lang, photoUrl });
+  const user = await completeUserRegistration(req.user.id, { name, lang, photoUrl, photoType });
 
   return res.json({
     user: serializeUser(user),

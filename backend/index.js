@@ -13,6 +13,7 @@ const profileRoutes = require("./routes/profile");
 const publicRoutes = require("./routes/public");
 const savedRoutes = require("./routes/saved");
 const schemesRoutes = require("./routes/schemes");
+const uploadRoutes = require("./routes/upload");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -75,6 +76,7 @@ app.use("/api/kiosk", kioskRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/schemes", schemesRoutes);
+app.use("/api/upload", uploadRoutes);
 
 const port = Number(process.env.PORT || 4000);
 

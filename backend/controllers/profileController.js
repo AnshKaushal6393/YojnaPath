@@ -61,11 +61,11 @@ function validatePhotoUrl(photoUrl) {
     return true;
   }
 
-  if (!value.startsWith("data:image/")) {
-    return false;
+  if (value.startsWith("data:image/")) {
+    return value.length <= 2_000_000;
   }
 
-  return value.length <= 2_000_000;
+  return /^https:\/\/res\.cloudinary\.com\/.+/i.test(value);
 }
 
 function buildProfilePayload(body) {

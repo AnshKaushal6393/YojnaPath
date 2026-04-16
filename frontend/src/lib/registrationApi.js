@@ -17,7 +17,7 @@ export async function fetchCurrentUser() {
   return payload.user || null;
 }
 
-export async function completeRegistration({ name, lang, photoUrl }) {
+export async function completeRegistration({ name, lang, photoUrl, photoType }) {
   const token = getTokenOrThrow();
   const payload = await apiPost(
     "/api/auth/register",
@@ -25,6 +25,7 @@ export async function completeRegistration({ name, lang, photoUrl }) {
       name,
       lang,
       photoUrl: photoUrl || undefined,
+      photoType: photoType || undefined,
     },
     { token }
   );
