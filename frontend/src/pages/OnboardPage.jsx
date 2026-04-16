@@ -60,6 +60,15 @@ function normalizeComparisonName(value) {
     .toLowerCase();
 }
 
+function buildOwnerDraft(selectedUserType, formState, storageMode = "draft_only", extras = {}) {
+  return buildOnboardDraft(selectedUserType || DEFAULT_USER_TYPE, formState, storageMode, {
+    id: extras.id || "",
+    profileName: extras.profileName || "",
+    relation: extras.relation || "",
+    photoUrl: extras.photoUrl || "",
+  });
+}
+
 export default function OnboardPage() {
   const navigate = useNavigate();
   const authToken = getAuthToken();
@@ -110,11 +119,11 @@ export default function OnboardPage() {
     setAccountName(currentUserName);
     setAccountLang(currentUserQuery.data?.lang || "hi");
 
-    if (!ownerProfile && !hasTouchedFormRef.current && !memberName.trim()) {
+    if (!ownerProfile && !hasTouchedFormRef.current) {
       setMemberName(currentUserName);
       saveProfileDraft(
-        buildOnboardDraft(selectedUserType || DEFAULT_USER_TYPE, formState, "draft_only", {
-          id: initialDraft.id,
+        buildOwnerDraft(selectedUserType, formState, "draft_only", {
+          id: "",
           profileName: currentUserName,
         })
       );
@@ -123,7 +132,6 @@ export default function OnboardPage() {
     currentUserQuery.data?.lang,
     currentUserQuery.data?.name,
     formState,
-    initialDraft.id,
     memberName,
     ownerProfile,
     selectedUserType,
@@ -139,8 +147,8 @@ export default function OnboardPage() {
     setFormState(ownerProfile.formState || initialDraft.formState);
     hasPrefilledOwnerProfileRef.current = true;
     saveProfileDraft(
-      buildOnboardDraft(
-        ownerProfile.selectedUserType || DEFAULT_USER_TYPE,
+      buildOwnerDraft(
+        ownerProfile.selectedUserType,
         ownerProfile.formState || initialDraft.formState,
         ownerProfile.storageMode,
         {
@@ -156,13 +164,13 @@ export default function OnboardPage() {
   const saveProfileMutation = useMutation({
     mutationFn: () =>
       saveProfileToBackend(selectedUserType, formState, accountLang || "hi", {
-        profileId: ownerProfile?.id || initialDraft.id || null,
+        profileId: ownerProfile?.id || null,
         profileName: memberName.trim(),
       }),
     onError: (error) => {
       saveProfileDraft(
-        buildOnboardDraft(selectedUserType, formState, "draft_only", {
-          id: ownerProfile?.id || initialDraft.id || "",
+        buildOwnerDraft(selectedUserType, formState, "draft_only", {
+          id: ownerProfile?.id || "",
           profileName: memberName,
         })
       );
@@ -175,9 +183,10 @@ export default function OnboardPage() {
     setFormState((current) => {
       const nextValue = typeof updater === "function" ? updater(current) : updater;
       hasTouchedFormRef.current = true;
+      setSubmitError("");
       saveProfileDraft(
-        buildOnboardDraft(selectedUserType, nextValue, "draft_only", {
-          id: ownerProfile?.id || initialDraft.id || "",
+        buildOwnerDraft(selectedUserType, nextValue, "draft_only", {
+          id: ownerProfile?.id || "",
           profileName: memberName,
         })
       );
@@ -187,10 +196,11 @@ export default function OnboardPage() {
 
   function handleUserTypeChange(nextType) {
     hasTouchedFormRef.current = true;
+    setSubmitError("");
     setSelectedUserType(nextType || DEFAULT_USER_TYPE);
     saveProfileDraft(
-      buildOnboardDraft(nextType || DEFAULT_USER_TYPE, formState, "draft_only", {
-        id: ownerProfile?.id || initialDraft.id || "",
+      buildOwnerDraft(nextType || DEFAULT_USER_TYPE, formState, "draft_only", {
+        id: ownerProfile?.id || "",
         profileName: memberName,
       })
     );
@@ -241,8 +251,8 @@ export default function OnboardPage() {
     try {
       const result = await saveProfileMutation.mutateAsync();
       saveProfileDraft(
-        buildOnboardDraft(selectedUserType, formState, result.mode, {
-          id: result.profile?.id || ownerProfile?.id || initialDraft.id || "",
+        buildOwnerDraft(selectedUserType, formState, result.mode, {
+          id: result.profile?.id || ownerProfile?.id || "",
           profileName: memberName,
           relation: result.profile?.relation || ownerProfile?.relation || "",
           photoUrl: result.profile?.photoUrl || ownerProfile?.photoUrl || "",
@@ -297,10 +307,11 @@ export default function OnboardPage() {
               onChange={(event) => {
                 const nextName = event.target.value;
                 hasTouchedFormRef.current = true;
+                setSubmitError("");
                 setMemberName(nextName);
                 saveProfileDraft(
-                  buildOnboardDraft(selectedUserType, formState, "draft_only", {
-                    id: ownerProfile?.id || initialDraft.id || "",
+                  buildOwnerDraft(selectedUserType, formState, "draft_only", {
+                    id: ownerProfile?.id || "",
                     profileName: nextName,
                   })
                 );
