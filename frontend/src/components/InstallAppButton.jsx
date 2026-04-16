@@ -21,18 +21,13 @@ export default function InstallAppButton({ buttonClassName = "", hintClassName =
   }, [isInstalled]);
 
   if (isInstalled) {
-    return (
+    return showToast ? (
       <div className="install-app">
-        <span className={`install-app-badge ${buttonClassName}`.trim()}>
-          {t("common.buttons.appInstalled")}
-        </span>
-        {showToast ? (
-          <div className="install-app__toast state-success" role="status" aria-live="polite">
-            {t("common.pwa.installedToast")}
-          </div>
-        ) : null}
+        <div className="install-app__toast state-success" role="status" aria-live="polite">
+          {t("common.pwa.installedToast")}
+        </div>
       </div>
-    );
+    ) : null;
   }
 
   if (!canInstall && !showIosInstructions && !installSupport.showUnsupportedHint) {

@@ -88,6 +88,9 @@ export default function ResultsPage() {
   }, [resultsQuery.data?.nearMisses, showAllNearMisses]);
 
   const totalPages = Math.max(1, Math.ceil(visibleSchemes.length / RESULTS_PER_PAGE));
+  const activeProfileName = resultsQuery.data?.profile?.profileName || "";
+  const activeProfilePhotoUrl = resultsQuery.data?.profile?.photoUrl || "";
+  const isRefreshingResults = resultsQuery.isFetching && !resultsQuery.isLoading;
 
   const paginatedSchemes = useMemo(() => {
     const startIndex = (currentPage - 1) * RESULTS_PER_PAGE;
@@ -130,6 +133,29 @@ export default function ResultsPage() {
           nearMissCount={resultsQuery.data?.nearMissCount || 0}
           isLoading={resultsQuery.isLoading}
         />
+
+        {activeProfileName ? (
+          <div
+            className={`onboard-feedback ${isRefreshingResults ? "state-info" : "state-success"}`}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-3">
+              {activeProfilePhotoUrl ? (
+                <img
+                  src={activeProfilePhotoUrl}
+                  alt={activeProfileName}
+                  className="h-10 w-10 rounded-full border border-white/60 object-cover"
+                />
+              ) : null}
+              <span className="type-caption">
+                {isRefreshingResults
+                  ? `Refreshing matched schemes for ${activeProfileName}...`
+                  : `These scheme results are for ${activeProfileName}.`}
+              </span>
+            </div>
+          </div>
+        ) : null}
 
         {resultsQuery.data?.urgent?.length ? (
           <UrgencyBanner

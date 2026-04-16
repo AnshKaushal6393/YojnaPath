@@ -42,6 +42,7 @@ export default function FamilyProfilesPanel({
 
   function renderMemberCard(member, options = {}) {
     const isPrimary = Boolean(options.isPrimary);
+    const isActive = member.id === activeProfileId;
     const displayName = isPrimary ? t("profilePanel.myProfile") : member.profileName || t("profilePanel.familyMember");
     const secondaryText = isPrimary
       ? accountOwnerName || member.profileName || t("profile.account.accountOwnerFallback")
@@ -51,7 +52,7 @@ export default function FamilyProfilesPanel({
     return (
       <div
         key={member.id}
-        className={`family-profile-chip ${member.id === activeProfileId ? "family-profile-chip--active" : ""} ${
+        className={`family-profile-chip ${isActive ? "family-profile-chip--active" : ""} ${
           isPrimary ? "family-profile-chip--primary" : ""
         }`.trim()}
       >
@@ -59,14 +60,27 @@ export default function FamilyProfilesPanel({
           type="button"
           className="family-profile-chip__main"
           onClick={() => onSelect(member)}
+          aria-pressed={isActive}
         >
           <div className="family-profile-chip__heading">
             <span className="type-label">{displayName}</span>
             {isPrimary ? (
               <span className="family-profile-chip__badge">{t("profilePanel.loggedInMember")}</span>
             ) : null}
+            {isActive ? (
+              <span className="family-profile-chip__badge">
+                {t("profilePanel.activeProfile", { defaultValue: "Active now" })}
+              </span>
+            ) : null}
           </div>
           <span className="type-caption">{secondaryText}</span>
+          {isActive ? (
+            <span className="type-caption">
+              {t("profilePanel.activeProfileBody", {
+                defaultValue: "Home and scheme results are currently using this profile.",
+              })}
+            </span>
+          ) : null}
           {isPrimary ? (
             <span className="type-caption">{getUserTypeLabel(member.selectedUserType)}</span>
           ) : null}

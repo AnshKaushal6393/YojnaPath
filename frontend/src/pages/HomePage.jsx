@@ -70,6 +70,8 @@ export default function HomePage() {
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
   const [hasProfile, setHasProfile] = useState(() => hasProfileDraft());
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
+  const [pendingSwitchName, setPendingSwitchName] = useState("");
+  const [switchNotice, setSwitchNotice] = useState("");
   const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
   const draftStorageMode = getProfileDraftStorageMode();
 
@@ -102,6 +104,8 @@ export default function HomePage() {
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes, t);
   const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
+  const activeProfilePhotoUrl = savedProfileQuery.data?.photoUrl || "";
+  const isSwitchingProfile = Boolean(pendingSwitchName) || savedProfileQuery.isFetching || homeQuery.isFetching;
 
   const accountOwnerHasProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
@@ -159,6 +163,21 @@ export default function HomePage() {
     });
   }, [currentUserQuery.data?.lang, savedProfileQuery.data?.formState?.state]);
 
+  useEffect(() => {
+    if (!pendingSwitchName) {
+      return;
+    }
+
+    if (savedProfileQuery.data?.profileName !== pendingSwitchName) {
+      return;
+    }
+
+    setPendingSwitchName("");
+    setSwitchNotice(`Now viewing schemes for ${pendingSwitchName}.`);
+    const timeoutId = window.setTimeout(() => setSwitchNotice(""), 2600);
+    return () => window.clearTimeout(timeoutId);
+  }, [pendingSwitchName, savedProfileQuery.data?.profileName]);
+
   function handleCategorySelect(categoryKey) {
     if (hasProfile && shouldShowSavedProfile) {
       navigate(`/results?category=${encodeURIComponent(categoryKey)}`);
@@ -173,6 +192,8 @@ export default function HomePage() {
       return;
     }
 
+    setPendingSwitchName(member.profileName || "this profile");
+    setSwitchNotice("");
     setActiveProfileId(member.id);
     queryClient.cancelQueries({ queryKey: ["home-data"] });
     queryClient.cancelQueries({ queryKey: ["home-saved-profile"] });
@@ -259,6 +280,35 @@ export default function HomePage() {
           accountOwnerProfileId={accountOwnerProfileId}
         />
       ) : null}
+
+        {hasProfile && shouldShowSavedProfile && activeProfileName ? (
+          <div
+            className={`onboard-feedback ${isSwitchingProfile ? "state-info" : "state-success"}`}
+            role="status"
+            aria-live="polite"
+          >
+            <div className="flex items-center gap-3">
+              {activeProfilePhotoUrl ? (
+                <img
+                  src={activeProfilePhotoUrl}
+                  alt={activeProfileName}
+                  className="h-10 w-10 rounded-full border border-white/60 object-cover"
+                />
+              ) : null}
+              <span className="type-caption">
+                {isSwitchingProfile
+                  ? `Switching to ${pendingSwitchName || activeProfileName}. Updating scheme results...`
+                  : `Showing scheme results for ${activeProfileName}.`}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        {switchNotice ? (
+          <div className="onboard-feedback state-success" role="status" aria-live="polite">
+            <span className="type-caption">{switchNotice}</span>
+          </div>
+        ) : null}
 
         <CategoryHighlights
           items={homeQuery.data?.categoryHighlights || []}
