@@ -68,7 +68,7 @@ export default function HomePage() {
   const authToken = getAuthToken();
   const localDraft = getProfileDraft();
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
-  const [hasProfile, setHasProfile] = useState(() => hasProfileDraft());
+  const [hasProfile, setHasProfile] = useState(() => isProfileReadyForMatching(getProfileDraft()));
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const [pendingSwitchName, setPendingSwitchName] = useState("");
   const [switchNotice, setSwitchNotice] = useState("");
@@ -99,8 +99,9 @@ export default function HomePage() {
   });
 
   const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
-  const hasDeviceDraft = Boolean(localDraft);
+  const hasDeviceDraft = isProfileReadyForMatching(localDraft);
   const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
+  const hasReadyProfile = hasProfile && shouldShowSavedProfile;
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes, t);
   const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
@@ -144,7 +145,10 @@ export default function HomePage() {
   useEffect(() => {
     if (shouldShowSavedProfile) {
       setHasProfile(true);
+      return;
     }
+
+    setHasProfile(false);
   }, [shouldShowSavedProfile]);
 
   useEffect(() => {
@@ -179,7 +183,7 @@ export default function HomePage() {
   }, [pendingSwitchName, savedProfileQuery.data?.profileName]);
 
   function handleCategorySelect(categoryKey) {
-    if (hasProfile && shouldShowSavedProfile) {
+    if (hasReadyProfile) {
       navigate(`/results?category=${encodeURIComponent(categoryKey)}`);
       return;
     }
@@ -216,7 +220,7 @@ export default function HomePage() {
         <HomeHero
           language={language}
           onLanguageChange={handleLanguageChange}
-          hasProfile={hasProfile && shouldShowSavedProfile}
+          hasProfile={hasReadyProfile}
           onProfileModeChange={setHasProfile}
           savedProfileLabel={savedProfileLabel}
           schemeCount={
@@ -268,7 +272,7 @@ export default function HomePage() {
           </div>
         ) : null}
 
-        {hasProfile && (profileMembersQuery.data?.length || 0) > 1 ? (
+        {hasReadyProfile && (profileMembersQuery.data?.length || 0) > 1 ? (
           <FamilyProfilesPanel
             members={profileMembersQuery.data || []}
             activeProfileId={savedProfileQuery.data?.id || ""}
@@ -281,7 +285,7 @@ export default function HomePage() {
         />
       ) : null}
 
-        {hasProfile && shouldShowSavedProfile && activeProfileName ? (
+        {hasReadyProfile && activeProfileName ? (
           <div
             className={`onboard-feedback ${isSwitchingProfile ? "state-info" : "state-success"}`}
             role="status"
@@ -315,7 +319,7 @@ export default function HomePage() {
           onSelect={handleCategorySelect}
         />
 
-        {hasProfile ? (
+        {hasReadyProfile ? (
           <LastMatchSummary
             impact={homeQuery.data?.impact}
             health={homeQuery.data?.health}
@@ -327,7 +331,7 @@ export default function HomePage() {
           <UserTypeGrid />
         )}
 
-        {hasProfile && shouldShowSavedProfile && urgencyText ? (
+        {hasReadyProfile && urgencyText ? (
           <UrgencyBanner text={urgencyText} />
         ) : null}
 

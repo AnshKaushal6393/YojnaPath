@@ -1,5 +1,6 @@
 import { apiGet, apiPost } from "./api";
 import { buildProfilePayload, fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
+import { getProfileDraft } from "./profileDraft";
 import {
   formatBenefitAmount,
   hasDevanagariText,
@@ -117,8 +118,14 @@ function isRelevantSchemeForUserType(userType, scheme) {
 
 export async function fetchResultsData() {
   const savedProfile = await fetchSavedProfile();
+  const draftProfile = getProfileDraft();
+  const activeProfile = isProfileReadyForMatching(savedProfile)
+    ? savedProfile
+    : isProfileReadyForMatching(draftProfile)
+      ? draftProfile
+      : null;
 
-  if (!isProfileReadyForMatching(savedProfile)) {
+  if (!activeProfile) {
     return {
       profile: null,
       count: 0,
@@ -129,7 +136,7 @@ export async function fetchResultsData() {
     };
   }
 
-  const payload = buildProfilePayload(savedProfile.selectedUserType, savedProfile.formState);
+  const payload = buildProfilePayload(activeProfile.selectedUserType, activeProfile.formState);
   const [matches, urgent] = await Promise.all([
     apiPost("/api/schemes/match", {
       ...payload,
@@ -153,15 +160,15 @@ export async function fetchResultsData() {
   const matchedSchemes = (matches.schemes || [])
     .filter((scheme) => isSchemeVisibleNow(scheme))
     .map((scheme) => mapSchemeToCard(scheme, "matched"))
-    .filter((scheme) => isRelevantSchemeForUserType(savedProfile.selectedUserType, scheme));
+    .filter((scheme) => isRelevantSchemeForUserType(activeProfile.selectedUserType, scheme));
 
   const nearMissSchemes = (matches.nearMisses || [])
     .filter((scheme) => isSchemeVisibleNow(scheme))
     .map(mapNearMissCard)
-    .filter((scheme) => isRelevantSchemeForUserType(savedProfile.selectedUserType, scheme));
+    .filter((scheme) => isRelevantSchemeForUserType(activeProfile.selectedUserType, scheme));
 
   return {
-    profile: savedProfile,
+    profile: activeProfile,
     count: matchedSchemes.length,
     schemes: matchedSchemes,
     nearMissCount: nearMissSchemes.length,
