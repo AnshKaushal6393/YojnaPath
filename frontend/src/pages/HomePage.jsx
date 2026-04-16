@@ -18,7 +18,6 @@ import { fetchProfileMembers, fetchSavedProfile, isProfileReadyForMatching } fro
 import {
   getProfileDraft,
   getProfileDraftStorageMode,
-  hasProfileDraft,
 } from "../lib/profileDraft";
 import { fetchCurrentUser } from "../lib/registrationApi";
 
@@ -67,14 +66,16 @@ export default function HomePage() {
   const queryClient = useQueryClient();
   const authToken = getAuthToken();
   const activeProfileId = getActiveProfileId();
-  const localDraft = getProfileDraft();
+  const localDraft = getProfileDraft(activeProfileId);
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
-  const [hasProfile, setHasProfile] = useState(() => isProfileReadyForMatching(getProfileDraft()));
+  const [hasProfile, setHasProfile] = useState(() =>
+    isProfileReadyForMatching(getProfileDraft(activeProfileId))
+  );
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const [pendingSwitchName, setPendingSwitchName] = useState("");
   const [switchNotice, setSwitchNotice] = useState("");
   const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
-  const draftStorageMode = getProfileDraftStorageMode();
+  const draftStorageMode = getProfileDraftStorageMode(activeProfileId);
 
   const homeQuery = useQuery({
     queryKey: ["home-data", activeProfileId],

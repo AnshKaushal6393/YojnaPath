@@ -204,7 +204,8 @@ export default function ProfilePage() {
           relation: savedProfileQuery.data.relation,
           photoUrl: savedProfileQuery.data.photoUrl,
         }
-      )
+      ),
+      savedProfileQuery.data.id
     );
   }, [savedProfileQuery.data]);
 
@@ -237,7 +238,8 @@ export default function ProfilePage() {
         buildOnboardDraft(selectedUserType, formState, "synced", {
           id: result.profile?.id,
           profileName: memberName,
-        })
+        }),
+        result.profile?.id || activeProfileId
       );
       if (result.profile?.id) {
         setActiveProfileId(result.profile.id);
@@ -296,7 +298,8 @@ export default function ProfilePage() {
           id: createdProfileId,
           profileName: createdProfileName,
           photoUrl: createdPhotoUrl,
-        })
+        }),
+        createdProfileId
       );
       if (createdProfileId) {
         hasTouchedProfileRef.current = false;
@@ -345,6 +348,7 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-data"] });
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
+      clearProfileDraft(pendingDeleteMember?.id || "");
       setPendingDeleteMember(null);
       setSubmitMessage(t("profileMessages.memberDeleted"));
       setSubmitError("");
@@ -433,7 +437,8 @@ export default function ProfilePage() {
         buildOnboardDraft(selectedUserType, nextValue, "draft_only", {
           id: activeProfileId,
           profileName: memberName,
-        })
+        }),
+        activeProfileId
       );
       return nextValue;
     });
@@ -446,7 +451,8 @@ export default function ProfilePage() {
       buildOnboardDraft(nextType, formState, "draft_only", {
         id: activeProfileId,
         profileName: memberName,
-      })
+      }),
+      activeProfileId
     );
   }
 
@@ -787,7 +793,8 @@ export default function ProfilePage() {
                   buildOnboardDraft(selectedUserType, formState, "draft_only", {
                     id: activeProfileId,
                     profileName: nextName,
-                  })
+                  }),
+                  activeProfileId
                 );
               }}
               placeholder={

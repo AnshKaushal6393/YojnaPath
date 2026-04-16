@@ -16,6 +16,7 @@ import { fetchCurrentUser } from "../lib/registrationApi";
 import {
   clearProfileDraft,
   getProfileDraft,
+  OWNER_PROFILE_DRAFT_ID,
   saveProfileDraft,
 } from "../lib/profileDraft";
 import { clearStoredPhone, clearToken } from "../utils/auth";
@@ -35,7 +36,7 @@ const REQUIRED_FIELDS_BY_USER_TYPE = {
 };
 
 function getInitialDraft() {
-  const draft = getProfileDraft();
+  const draft = getProfileDraft(OWNER_PROFILE_DRAFT_ID);
 
   return {
     id: draft?.id || "",
@@ -125,7 +126,8 @@ export default function OnboardPage() {
         buildOwnerDraft(selectedUserType, formState, "draft_only", {
           id: "",
           profileName: currentUserName,
-        })
+        }),
+        OWNER_PROFILE_DRAFT_ID
       );
     }
   }, [
@@ -157,7 +159,8 @@ export default function OnboardPage() {
           relation: ownerProfile.relation,
           photoUrl: ownerProfile.photoUrl,
         }
-      )
+      ),
+      OWNER_PROFILE_DRAFT_ID
     );
   }, [currentUserQuery.data?.name, initialDraft.formState, ownerProfile]);
 
@@ -172,7 +175,8 @@ export default function OnboardPage() {
         buildOwnerDraft(selectedUserType, formState, "draft_only", {
           id: ownerProfile?.id || "",
           profileName: memberName,
-        })
+        }),
+        OWNER_PROFILE_DRAFT_ID
       );
       setSubmitError(error.message || "Could not save profile right now.");
       setSubmitMessage("Your draft is safe on this device.");
@@ -188,7 +192,8 @@ export default function OnboardPage() {
         buildOwnerDraft(selectedUserType, nextValue, "draft_only", {
           id: ownerProfile?.id || "",
           profileName: memberName,
-        })
+        }),
+        OWNER_PROFILE_DRAFT_ID
       );
       return nextValue;
     });
@@ -202,7 +207,8 @@ export default function OnboardPage() {
       buildOwnerDraft(nextType || DEFAULT_USER_TYPE, formState, "draft_only", {
         id: ownerProfile?.id || "",
         profileName: memberName,
-      })
+      }),
+      OWNER_PROFILE_DRAFT_ID
     );
   }
 
@@ -256,7 +262,8 @@ export default function OnboardPage() {
           profileName: memberName,
           relation: result.profile?.relation || ownerProfile?.relation || "",
           photoUrl: result.profile?.photoUrl || ownerProfile?.photoUrl || "",
-        })
+        }),
+        OWNER_PROFILE_DRAFT_ID
       );
       navigate("/results", { replace: true });
     } catch {
@@ -313,7 +320,8 @@ export default function OnboardPage() {
                   buildOwnerDraft(selectedUserType, formState, "draft_only", {
                     id: ownerProfile?.id || "",
                     profileName: nextName,
-                  })
+                  }),
+                  OWNER_PROFILE_DRAFT_ID
                 );
               }}
               placeholder="Enter your name"

@@ -118,7 +118,7 @@ function isRelevantSchemeForUserType(userType, scheme) {
 
 export async function fetchResultsData(profileId) {
   const savedProfile = await fetchSavedProfile(profileId);
-  const draftProfile = getProfileDraft();
+  const draftProfile = getProfileDraft(profileId);
   const activeProfile = isProfileReadyForMatching(savedProfile)
     ? savedProfile
     : isProfileReadyForMatching(draftProfile)
