@@ -30,15 +30,14 @@ export default function FamilyProfilesPanel({
   accountOwnerProfileId = "",
 }) {
   const { t } = useTranslation();
-  const accountOwnerMember =
+  const ownerMember =
     members.find((member) => member.id === accountOwnerProfileId) ||
     members.find(
       (member) =>
         normalizeComparisonName(member.profileName) ===
         normalizeComparisonName(accountOwnerName)
     ) || null;
-  const primaryMember = members.find((member) => member.isPrimary) || accountOwnerMember || null;
-  const familyMembers = members.filter((member) => member.id !== primaryMember?.id);
+  const familyMembers = members.filter((member) => member.id !== ownerMember?.id);
 
   function renderMemberCard(member, options = {}) {
     const isPrimary = Boolean(options.isPrimary);
@@ -135,9 +134,9 @@ export default function FamilyProfilesPanel({
         <p className="type-caption">{t("profilePanel.subtitle")}</p>
       </div>
 
-      {primaryMember ? (
+      {ownerMember ? (
         <div className="family-profiles-primary">
-          {renderMemberCard(primaryMember, { isPrimary: true })}
+          {renderMemberCard(ownerMember, { isPrimary: true })}
         </div>
       ) : !accountOwnerHasProfile ? (
         <div className="family-profiles-primary">

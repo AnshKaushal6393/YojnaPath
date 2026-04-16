@@ -130,6 +130,13 @@ function mapProfileRow(row) {
   };
 }
 
+function normalizeComparisonName(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 async function getProfileByUserId(userId, profileId = null) {
   await ensureProfilesSchema();
   const pool = getPool();
@@ -221,6 +228,9 @@ async function upsertProfile(userId, profileId, profile) {
     );
     const userInfo = userInfoResult.rows[0] || {};
     const resolvedProfileName = profile.profileName || userInfo.name || "Family member";
+    const isOwnerProfile =
+      normalizeComparisonName(resolvedProfileName) &&
+      normalizeComparisonName(resolvedProfileName) === normalizeComparisonName(userInfo.name);
 
     const existingCountResult = await client.query(
       `
@@ -256,7 +266,7 @@ async function upsertProfile(userId, profileId, profile) {
             is_student = $14,
             is_migrant = $15,
             district = $16,
-            updated_at = NOW()
+          updated_at = NOW()
           WHERE user_id = $1 AND id = $2
           RETURNING
             id,
@@ -344,7 +354,7 @@ async function upsertProfile(userId, profileId, profile) {
           userId,
           resolvedProfileName,
           profile.relation,
-          existingCount === 0,
+          existingCount === 0 || isOwnerProfile,
           profile.photoUrl,
           profile.state,
           profile.occupation,
@@ -363,6 +373,47 @@ async function upsertProfile(userId, profileId, profile) {
 
     if (!result.rows.length) {
       throw new Error("Profile not found");
+    }
+
+    if (isOwnerProfile) {
+      await client.query(
+        `
+          UPDATE profiles
+          SET is_primary = CASE WHEN id = $2 THEN TRUE ELSE FALSE END,
+              updated_at = NOW()
+          WHERE user_id = $1
+        `,
+        [userId, result.rows[0].id]
+      );
+
+      const refreshedResult = await client.query(
+        `
+          SELECT
+            p.id,
+            p.user_id,
+            p.profile_name,
+            p.relation,
+            p.photo_url,
+            p.is_primary,
+            p.state,
+            p.occupation,
+            p.annual_income,
+            p.caste,
+            p.gender,
+            p.age,
+            p.land_acres,
+            p.disability_pct,
+            p.is_student,
+            p.is_migrant,
+            p.district
+          FROM profiles p
+          WHERE p.user_id = $1 AND p.id = $2
+          LIMIT 1
+        `,
+        [userId, result.rows[0].id]
+      );
+
+      result = refreshedResult;
     }
 
     let lang = null;

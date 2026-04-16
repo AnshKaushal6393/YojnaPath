@@ -101,6 +101,18 @@ export default function HomePage() {
     enabled: Boolean(authToken),
   });
 
+  const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
+  const hasDeviceDraft = isProfileReadyForMatching(localDraft);
+  const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
+  const hasReadyProfile = hasProfile && shouldShowSavedProfile;
+  const displayedProfileId = savedProfileQuery.data?.id || localDraft?.id || activeProfileId;
+  const urgentSchemes = homeQuery.data?.urgent || [];
+  const urgencyText = buildUrgencyText(urgentSchemes, t);
+  const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
+  const activeProfilePhotoUrl = savedProfileQuery.data?.photoUrl || "";
+  const isSwitchingProfile =
+    Boolean(pendingSwitchName) || savedProfileQuery.isFetching || homeQuery.isFetching;
+
   useEffect(() => {
     const storedProfileId = getActiveProfileId();
     if (storedProfileId !== activeProfileId) {
@@ -113,17 +125,6 @@ export default function HomePage() {
       setVisualActiveProfileId(displayedProfileId);
     }
   }, [displayedProfileId, visualActiveProfileId]);
-
-  const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
-  const hasDeviceDraft = isProfileReadyForMatching(localDraft);
-  const shouldShowSavedProfile = hasSyncedProfile || hasDeviceDraft;
-  const hasReadyProfile = hasProfile && shouldShowSavedProfile;
-  const displayedProfileId = savedProfileQuery.data?.id || localDraft?.id || activeProfileId;
-  const urgentSchemes = homeQuery.data?.urgent || [];
-  const urgencyText = buildUrgencyText(urgentSchemes, t);
-  const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
-  const activeProfilePhotoUrl = savedProfileQuery.data?.photoUrl || "";
-  const isSwitchingProfile = Boolean(pendingSwitchName) || savedProfileQuery.isFetching || homeQuery.isFetching;
 
   const accountOwnerHasProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
