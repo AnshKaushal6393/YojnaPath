@@ -100,6 +100,12 @@ export default function AdaptiveForm({
                 </option>
               ))}
             </select>
+            <p className="type-caption">
+              {t("adaptiveForm.stateHelp", {
+                defaultValue:
+                  "Selecting your state still includes Central government schemes available across India.",
+              })}
+            </p>
           </div>
         ) : null}
 

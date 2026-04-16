@@ -14,6 +14,8 @@ function normalizeName(value) {
   return value.replace(/\s+/g, " ").trimStart().slice(0, 120);
 }
 
+const CAPTURE_PHOTO_QUALITY = 0.8;
+
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -195,7 +197,7 @@ export default function Register() {
             }
           },
           "image/jpeg",
-          PHOTO_QUALITY
+          CAPTURE_PHOTO_QUALITY
         );
       });
 
