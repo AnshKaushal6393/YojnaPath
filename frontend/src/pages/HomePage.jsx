@@ -65,7 +65,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const authToken = getAuthToken();
-  const activeProfileId = getActiveProfileId();
+  const [activeProfileId, setActiveProfileIdState] = useState(() => getActiveProfileId());
   const localDraft = getProfileDraft(activeProfileId);
   const [language, setLanguage] = useState(i18n.resolvedLanguage || "en");
   const [hasProfile, setHasProfile] = useState(() =>
@@ -99,6 +99,13 @@ export default function HomePage() {
     queryFn: fetchProfileMembers,
     enabled: Boolean(authToken),
   });
+
+  useEffect(() => {
+    const storedProfileId = getActiveProfileId();
+    if (storedProfileId !== activeProfileId) {
+      setActiveProfileIdState(storedProfileId);
+    }
+  }, [activeProfileId, profileMembersQuery.data]);
 
   const hasSyncedProfile = isProfileReadyForMatching(savedProfileQuery.data);
   const hasDeviceDraft = isProfileReadyForMatching(localDraft);
@@ -201,6 +208,7 @@ export default function HomePage() {
     setPendingSwitchName(member.profileName || "this profile");
     setSwitchNotice("");
     setActiveProfileId(member.id);
+    setActiveProfileIdState(member.id);
     queryClient.cancelQueries({ queryKey: ["home-data"] });
     queryClient.cancelQueries({ queryKey: ["home-saved-profile"] });
     queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
