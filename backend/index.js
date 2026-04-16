@@ -21,13 +21,21 @@ function parseAllowedOrigins(rawValue) {
   return String(rawValue || "")
     .split(",")
     .map((value) => value.trim())
+    .map((value) => value.replace(/\/+$/, ""))
     .filter(Boolean);
 }
 
-const allowedOrigins = parseAllowedOrigins(process.env.CORS_ORIGIN);
+const allowedOrigins = [
+  ...new Set(
+    [
+      ...parseAllowedOrigins(process.env.CORS_ORIGIN),
+      ...parseAllowedOrigins(process.env.FRONTEND_URL),
+    ].filter(Boolean)
+  ),
+];
 
 app.use((req, res, next) => {
-  const requestOrigin = req.headers.origin;
+  const requestOrigin = String(req.headers.origin || "").replace(/\/+$/, "");
 
   if (!requestOrigin) {
     next();
