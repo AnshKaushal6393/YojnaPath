@@ -10,6 +10,7 @@ import ProfileForm from "../components/ProfileForm";
 import UserTypeSelector from "../components/UserTypeSelector";
 import { clearActiveProfileId, getActiveProfileId, setActiveProfileId } from "../lib/activeProfile";
 import { clearAuthToken } from "../lib/authStorage";
+import { findOwnerProfile, normalizeComparisonName } from "../lib/profileOwnership";
 import {
   buildOnboardDraft,
   deleteProfileMember,
@@ -37,13 +38,6 @@ const REQUIRED_FIELDS_BY_USER_TYPE = {
 
 function normalizeName(value) {
   return value.replace(/\s+/g, " ").trimStart().slice(0, 120);
-}
-
-function normalizeComparisonName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
 }
 
 function createEmptyFormState() {
@@ -377,29 +371,12 @@ export default function ProfilePage() {
     return newMemberName.trim().length >= 2 && Boolean(newMemberPhotoUrl);
   }, [newMemberName, newMemberPhotoUrl]);
 
-  const accountOwnerHasProfile = useMemo(() => {
-    const ownerName = normalizeComparisonName(name);
-    if (!ownerName) {
-      return false;
-    }
-
-    return (profileMembersQuery.data || []).some(
-      (member) => normalizeComparisonName(member.profileName) === ownerName
-    );
-  }, [name, profileMembersQuery.data]);
-
-  const accountOwnerProfileId = useMemo(() => {
-    const ownerName = normalizeComparisonName(name);
-    if (!ownerName) {
-      return "";
-    }
-
-    return (
-      (profileMembersQuery.data || []).find(
-        (member) => normalizeComparisonName(member.profileName) === ownerName
-      )?.id || ""
-    );
-  }, [name, profileMembersQuery.data]);
+  const ownerProfile = useMemo(
+    () => findOwnerProfile(profileMembersQuery.data || [], name),
+    [name, profileMembersQuery.data]
+  );
+  const accountOwnerHasProfile = Boolean(ownerProfile);
+  const accountOwnerProfileId = ownerProfile?.id || "";
 
   const isOwnerProfile = useMemo(() => {
     const ownerName = normalizeComparisonName(name);

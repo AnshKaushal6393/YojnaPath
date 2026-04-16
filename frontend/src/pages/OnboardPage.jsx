@@ -7,6 +7,7 @@ import OnboardingSteps from "../components/OnboardingSteps";
 import UserTypeSelector from "../components/UserTypeSelector";
 import { clearActiveProfileId } from "../lib/activeProfile";
 import { clearAuthToken, getAuthToken } from "../lib/authStorage";
+import { findOwnerProfile } from "../lib/profileOwnership";
 import {
   buildOnboardDraft,
   fetchProfileMembers,
@@ -54,13 +55,6 @@ function getInitialDraft() {
   };
 }
 
-function normalizeComparisonName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
-}
-
 function buildOwnerDraft(selectedUserType, formState, storageMode = "draft_only", extras = {}) {
   return buildOnboardDraft(selectedUserType || DEFAULT_USER_TYPE, formState, storageMode, {
     id: extras.id || "",
@@ -98,18 +92,10 @@ export default function OnboardPage() {
     enabled: Boolean(authToken),
   });
 
-  const ownerProfile = useMemo(() => {
-    const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
-    if (!ownerName) {
-      return null;
-    }
-
-    return (
-      (profileMembersQuery.data || []).find(
-        (member) => normalizeComparisonName(member.profileName) === ownerName
-      ) || null
-    );
-  }, [currentUserQuery.data?.name, profileMembersQuery.data]);
+  const ownerProfile = useMemo(
+    () => findOwnerProfile(profileMembersQuery.data || [], currentUserQuery.data?.name || ""),
+    [currentUserQuery.data?.name, profileMembersQuery.data]
+  );
 
   useEffect(() => {
     const currentUserName = currentUserQuery.data?.name || "";

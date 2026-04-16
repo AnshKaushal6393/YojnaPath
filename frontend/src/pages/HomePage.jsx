@@ -13,6 +13,7 @@ import UserTypeGrid from "../components/UserTypeGrid";
 import { hasStoredAppLanguage, setAppLanguage, syncAppLanguage } from "../i18n/language";
 import { getActiveProfileId, setActiveProfileId } from "../lib/activeProfile";
 import { getAuthToken } from "../lib/authStorage";
+import { findOwnerProfile } from "../lib/profileOwnership";
 import { fetchHomeData } from "../lib/homeApi";
 import { fetchProfileMembers, fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import {
@@ -20,13 +21,6 @@ import {
   getProfileDraftStorageMode,
 } from "../lib/profileDraft";
 import { fetchCurrentUser } from "../lib/registrationApi";
-
-function normalizeComparisonName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
-}
 
 function formatCachedDate(date) {
   return new Intl.DateTimeFormat("en-IN", {
@@ -126,29 +120,12 @@ export default function HomePage() {
     }
   }, [displayedProfileId, visualActiveProfileId]);
 
-  const accountOwnerHasProfile = useMemo(() => {
-    const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
-    if (!ownerName) {
-      return false;
-    }
-
-    return (profileMembersQuery.data || []).some(
-      (member) => normalizeComparisonName(member.profileName) === ownerName
-    );
-  }, [currentUserQuery.data?.name, profileMembersQuery.data]);
-
-  const accountOwnerProfileId = useMemo(() => {
-    const ownerName = normalizeComparisonName(currentUserQuery.data?.name);
-    if (!ownerName) {
-      return "";
-    }
-
-    return (
-      (profileMembersQuery.data || []).find(
-        (member) => normalizeComparisonName(member.profileName) === ownerName
-      )?.id || ""
-    );
-  }, [currentUserQuery.data?.name, profileMembersQuery.data]);
+  const ownerProfile = useMemo(
+    () => findOwnerProfile(profileMembersQuery.data || [], currentUserQuery.data?.name || ""),
+    [currentUserQuery.data?.name, profileMembersQuery.data]
+  );
+  const accountOwnerHasProfile = Boolean(ownerProfile);
+  const accountOwnerProfileId = ownerProfile?.id || "";
 
   const savedProfileLabel = hasSyncedProfile
     ? activeProfileName

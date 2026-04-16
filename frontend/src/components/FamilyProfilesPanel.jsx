@@ -1,17 +1,11 @@
 import { useTranslation } from "react-i18next";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
+import { findOwnerProfile } from "../lib/profileOwnership";
 
 function getUserTypeLabel(userType) {
   return (
     USER_TYPE_OPTIONS.find((option) => option.key === userType)?.label || userType || "Profile"
   );
-}
-
-function normalizeComparisonName(value) {
-  return String(value || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
 }
 
 export default function FamilyProfilesPanel({
@@ -32,11 +26,7 @@ export default function FamilyProfilesPanel({
   const { t } = useTranslation();
   const ownerMember =
     members.find((member) => member.id === accountOwnerProfileId) ||
-    members.find(
-      (member) =>
-        normalizeComparisonName(member.profileName) ===
-        normalizeComparisonName(accountOwnerName)
-    ) || null;
+    findOwnerProfile(members, accountOwnerName);
   const familyMembers = members.filter((member) => member.id !== ownerMember?.id);
 
   function renderMemberCard(member, options = {}) {
