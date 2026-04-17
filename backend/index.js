@@ -28,14 +28,43 @@ function parseAllowedOrigins(rawValue) {
     .filter(Boolean);
 }
 
-const allowedOrigins = [
-  ...new Set(
-    [
-      ...parseAllowedOrigins(process.env.CORS_ORIGIN),
-      ...parseAllowedOrigins(process.env.FRONTEND_URL),
-    ].filter(Boolean)
-  ),
-];
+function buildAllowedOriginMatchers() {
+  const configuredOrigins = [
+    ...parseAllowedOrigins(process.env.CORS_ORIGIN),
+    ...parseAllowedOrigins(process.env.FRONTEND_URL),
+  ];
+  const defaultOrigins = ["http://localhost:5173", "http://localhost:4173"];
+  const exactOrigins = new Set([...configuredOrigins, ...defaultOrigins].filter(Boolean));
+  const vercelPatterns = [];
+
+  for (const origin of exactOrigins) {
+    try {
+      const { hostname } = new URL(origin);
+
+      if (hostname.endsWith(".vercel.app")) {
+        const escapedHostname = hostname.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        vercelPatterns.push(new RegExp(`^https://${escapedHostname}$`));
+
+        const projectName = hostname.replace(/-git-[^.]+\.vercel\.app$/i, "").replace(/\.vercel\.app$/i, "");
+        if (projectName) {
+          const escapedProjectName = projectName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          vercelPatterns.push(new RegExp(`^https://${escapedProjectName}(?:-[^.]+)?\\.vercel\\.app$`, "i"));
+        }
+      }
+    } catch {
+      // Ignore malformed configured origins and continue with the valid entries.
+    }
+  }
+
+  return { exactOrigins, vercelPatterns };
+}
+
+const { exactOrigins: allowedOrigins, vercelPatterns: allowedOriginPatterns } =
+  buildAllowedOriginMatchers();
+
+function isAllowedOrigin(origin) {
+  return allowedOrigins.has(origin) || allowedOriginPatterns.some((pattern) => pattern.test(origin));
+}
 
 app.use((req, res, next) => {
   const requestOrigin = String(req.headers.origin || "").replace(/\/+$/, "");
@@ -45,7 +74,7 @@ app.use((req, res, next) => {
     return;
   }
 
-  if (!allowedOrigins.length || allowedOrigins.includes(requestOrigin)) {
+  if (!allowedOrigins.size || isAllowedOrigin(requestOrigin)) {
     res.setHeader("Access-Control-Allow-Origin", requestOrigin);
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Credentials", "true");

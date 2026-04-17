@@ -3,6 +3,7 @@ require("../config/env");
 const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 
 let funnelSchemaPromise;
+let hasLoggedFunnelError = false;
 
 async function ensureFunnelSchema() {
   if (!funnelSchemaPromise) {
@@ -38,48 +39,56 @@ async function recordFunnelStage({
     return;
   }
 
-  await ensureFunnelSchema();
-  const pool = getPool();
+  try {
+    await ensureFunnelSchema();
+    const pool = getPool();
 
-  if (oncePerUser && userId) {
+    if (oncePerUser && userId) {
+      await pool.query(
+        `
+          INSERT INTO user_funnel_events (user_id, phone, stage)
+          SELECT $1, $2, $3
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM user_funnel_events
+            WHERE user_id = $1 AND stage = $3
+          )
+        `,
+        [userId, phone, stage]
+      );
+      return;
+    }
+
+    if (oncePerPhone && phone) {
+      await pool.query(
+        `
+          INSERT INTO user_funnel_events (user_id, phone, stage)
+          SELECT $1, $2, $3
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM user_funnel_events
+            WHERE phone = $2 AND stage = $3
+          )
+        `,
+        [userId, phone, stage]
+      );
+      return;
+    }
+
     await pool.query(
       `
         INSERT INTO user_funnel_events (user_id, phone, stage)
-        SELECT $1, $2, $3
-        WHERE NOT EXISTS (
-          SELECT 1
-          FROM user_funnel_events
-          WHERE user_id = $1 AND stage = $3
-        )
+        VALUES ($1, $2, $3)
       `,
       [userId, phone, stage]
     );
-    return;
+  } catch (error) {
+    if (!hasLoggedFunnelError) {
+      hasLoggedFunnelError = true;
+      console.warn(`[funnel] ${error.message}`);
+      console.warn("[funnel] Analytics storage is unavailable. Continuing without funnel tracking.");
+    }
   }
-
-  if (oncePerPhone && phone) {
-    await pool.query(
-      `
-        INSERT INTO user_funnel_events (user_id, phone, stage)
-        SELECT $1, $2, $3
-        WHERE NOT EXISTS (
-          SELECT 1
-          FROM user_funnel_events
-          WHERE phone = $2 AND stage = $3
-        )
-      `,
-      [userId, phone, stage]
-    );
-    return;
-  }
-
-  await pool.query(
-    `
-      INSERT INTO user_funnel_events (user_id, phone, stage)
-      VALUES ($1, $2, $3)
-    `,
-    [userId, phone, stage]
-  );
 }
 
 module.exports = {
