@@ -1,11 +1,29 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { fetchAdminStats, fetchCurrentAdmin } from "../lib/adminApi";
+import {
+  fetchAdminActivity,
+  fetchAdminDashboard,
+  fetchAdminFunnel,
+  fetchAdminStats,
+} from "../lib/adminApi";
 import { clearAdminToken } from "../lib/adminAuthStorage";
 
 function formatNumber(value) {
   return new Intl.NumberFormat("en-IN").format(Number(value || 0));
+}
+
+function formatDateTime(value) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function formatPercent(value) {
@@ -35,13 +53,22 @@ function getPhotoBreakdown(stats) {
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
-  const adminQuery = useQuery({
-    queryKey: ["current-admin"],
-    queryFn: fetchCurrentAdmin,
+  const dashboardQuery = useQuery({
+    queryKey: ["admin-dashboard"],
+    queryFn: fetchAdminDashboard,
   });
   const statsQuery = useQuery({
     queryKey: ["admin-stats"],
     queryFn: fetchAdminStats,
+  });
+  const activityQuery = useQuery({
+    queryKey: ["admin-activity"],
+    queryFn: fetchAdminActivity,
+    refetchInterval: 30000,
+  });
+  const funnelQuery = useQuery({
+    queryKey: ["admin-funnel"],
+    queryFn: fetchAdminFunnel,
   });
 
   function handleLogout() {
@@ -49,8 +76,12 @@ export default function AdminDashboardPage() {
     navigate("/admin/login", { replace: true });
   }
 
-  const admin = adminQuery.data;
+  const admin = dashboardQuery.data?.admin;
+  const overview = dashboardQuery.data?.overview;
   const stats = statsQuery.data;
+  const activity = activityQuery.data?.events || [];
+  const funnelStages = funnelQuery.data?.stages || [];
+  const funnelMaxCount = funnelQuery.data?.maxCount || 0;
   const photoCompletion = getPhotoCompletion(stats);
   const photoBreakdown = getPhotoBreakdown(stats);
   const avgMatchesPerUser =
@@ -90,16 +121,28 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (
-      (adminQuery.isSuccess && adminQuery.data === null) ||
-      (statsQuery.isSuccess && statsQuery.data === null)
+      (dashboardQuery.isSuccess && dashboardQuery.data === null) ||
+      (statsQuery.isSuccess && statsQuery.data === null) ||
+      (activityQuery.isSuccess && activityQuery.data === null) ||
+      (funnelQuery.isSuccess && funnelQuery.data === null)
     ) {
       navigate("/admin/login", { replace: true });
     }
-  }, [adminQuery.data, adminQuery.isSuccess, navigate, statsQuery.data, statsQuery.isSuccess]);
+  }, [
+    activityQuery.data,
+    activityQuery.isSuccess,
+    dashboardQuery.data,
+    dashboardQuery.isSuccess,
+    funnelQuery.data,
+    funnelQuery.isSuccess,
+    navigate,
+    statsQuery.data,
+    statsQuery.isSuccess,
+  ]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_48%,_#111827_100%)] px-4 py-8 text-slate-50">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
@@ -109,6 +152,12 @@ export default function AdminDashboardPage() {
             <p className="mt-2 text-sm text-slate-300">
               {admin?.email ? `Signed in as ${admin.email}` : "Loading admin session..."}
             </p>
+            {overview ? (
+              <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
+                Refreshed {formatDateTime(overview.generatedAt)} • Mongo{" "}
+                {overview.mongoConnected ? "connected" : "offline"}
+              </p>
+            ) : null}
           </div>
 
           <button
@@ -120,15 +169,19 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        {statsQuery.isLoading ? (
+        {dashboardQuery.isLoading || statsQuery.isLoading ? (
           <section className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
             Loading dashboard stats...
           </section>
         ) : null}
 
-        {statsQuery.error ? (
+        {dashboardQuery.error || statsQuery.error || activityQuery.error || funnelQuery.error ? (
           <section className="rounded-[28px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
-            {statsQuery.error.message || "Could not load admin stats right now."}
+            {dashboardQuery.error?.message ||
+              statsQuery.error?.message ||
+              activityQuery.error?.message ||
+              funnelQuery.error?.message ||
+              "Could not load admin dashboard right now."}
           </section>
         ) : null}
 
@@ -144,11 +197,16 @@ export default function AdminDashboardPage() {
                     {card.label}
                   </p>
                   <p className={`mt-4 text-4xl font-bold ${card.accent}`}>{card.value}</p>
+                  {card.label === "Total users" && overview ? (
+                    <p className="mt-2 text-xs text-slate-400">
+                      Profiles: {formatNumber(overview.counts?.profiles)}
+                    </p>
+                  ) : null}
                 </article>
               ))}
             </section>
 
-            <section className="mt-6 grid gap-4 lg:grid-cols-[1.35fr_0.95fr]">
+            <section className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
               <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
                   Today
@@ -169,8 +227,8 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
                 <p className="mt-5 text-sm leading-6 text-slate-300">
-                  `/api/admin/stats` is now powering this page directly. Activity and funnel panels
-                  can be layered in next without changing the login flow.
+                  This screen now pulls from `/api/admin/dashboard`, `/api/admin/stats`,
+                  `/api/admin/activity`, and `/api/admin/funnel`.
                 </p>
               </article>
 
@@ -194,6 +252,97 @@ export default function AdminDashboardPage() {
                   ) : (
                     <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
                       No photo stats yet.
+                    </div>
+                  )}
+                </div>
+              </article>
+            </section>
+
+            <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  Registration Funnel
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-white">User progression</h2>
+                <div className="mt-6 space-y-4">
+                  {funnelStages.length ? (
+                    funnelStages.map((stage) => {
+                      const width = funnelMaxCount
+                        ? Math.max((Number(stage.count || 0) / funnelMaxCount) * 100, 8)
+                        : 0;
+
+                      return (
+                        <div key={stage.key} className="space-y-2">
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-sm text-slate-300">{stage.label}</span>
+                            <span className="text-sm font-semibold text-white">
+                              {formatNumber(stage.count)}
+                            </span>
+                          </div>
+                          <div className="h-3 rounded-full bg-slate-900/70">
+                            <div
+                              className="h-3 rounded-full bg-gradient-to-r from-amber-400 to-emerald-400"
+                              style={{ width: `${width}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
+                      No funnel data yet.
+                    </div>
+                  )}
+                </div>
+              </article>
+
+              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
+                  Activity Feed
+                </p>
+                <h2 className="mt-3 text-2xl font-semibold text-white">Latest match events</h2>
+                <div className="mt-6 space-y-3">
+                  {activity.length ? (
+                    activity.slice(0, 8).map((event) => (
+                      <div
+                        key={event.id}
+                        className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-semibold capitalize text-white">
+                              {event.sessionType} match
+                            </p>
+                            <p className="mt-1 text-sm text-slate-300">
+                              {event.occupation || "Unknown occupation"}
+                              {event.state ? ` • ${event.state}` : ""}
+                            </p>
+                          </div>
+                          <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                            {formatDateTime(event.createdAt)}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Matches: {formatNumber(event.matchCount)}
+                          </span>
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Near misses: {formatNumber(event.nearMissCount)}
+                          </span>
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Scheme refs: {formatNumber(event.schemeIds?.length)}
+                          </span>
+                          {event.lang ? (
+                            <span className="rounded-full bg-white/5 px-3 py-1">
+                              Lang: {event.lang}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
+                      No match activity yet.
                     </div>
                   )}
                 </div>
