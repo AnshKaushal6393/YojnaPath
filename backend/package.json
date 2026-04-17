@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node index.js",
+    "create:admin": "node scripts/createAdmin.js",
     "seed:schemes": "node seeds/seedSchemes.js",
     "scrape:myscheme": "node seeds/scrapers/myschemeScraper.js",
     "test": "jest --runInBand"
