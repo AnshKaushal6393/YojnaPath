@@ -1,6 +1,7 @@
 require("../config/env");
 
 const { isMongoReady } = require("../config/mongo");
+const { ensureFunnelSchema } = require("./funnelService");
 const { getPool, ensureDatabaseSchema } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
 
@@ -120,14 +121,24 @@ async function getAdminStats() {
     photoStatsPromise,
   ]);
 
+  const totalUsers = users.rows[0]?.count || 0;
+  const totalMatches = matches.rows[0]?.count || 0;
+  const photoRows = photoStats.rows || [];
+  const totalPhotoRows = photoRows.reduce((sum, row) => sum + Number(row.count || 0), 0);
+  const completedPhotoRows = photoRows
+    .filter((row) => row.photo_type && row.photo_type !== "none")
+    .reduce((sum, row) => sum + Number(row.count || 0), 0);
+
   return {
-    totalUsers: users.rows[0]?.count || 0,
-    totalMatches: matches.rows[0]?.count || 0,
+    totalUsers,
+    totalMatches,
     totalNearMisses: matches.rows[0]?.near_miss_sum || 0,
     activeSchemes,
     activeToday: today.rows[0]?.count || 0,
+    avgMatchesPerUser: totalUsers > 0 ? totalMatches / totalUsers : 0,
+    photoCompletionPct: totalPhotoRows > 0 ? (completedPhotoRows / totalPhotoRows) * 100 : 0,
     topSchemeToday: topScheme.rows[0]?.scheme_id || "N/A",
-    photoStats: photoStats.rows,
+    photoStats: photoRows,
   };
 }
 
@@ -178,6 +189,7 @@ async function getAdminActivity(limit = 50) {
 
 async function getAdminFunnel() {
   await ensureDatabaseSchema();
+  await ensureFunnelSchema();
 
   const pool = getPool();
   const userSummaryPromise = pool.query(`
@@ -205,34 +217,66 @@ async function getAdminFunnel() {
 
       throw error;
     });
+  const eventSummaryPromise = pool
+    .query(`
+      SELECT
+        COUNT(DISTINCT phone) FILTER (WHERE stage = 'phone_entered')::INT AS phone_entered,
+        COUNT(DISTINCT COALESCE(user_id::TEXT, phone)) FILTER (WHERE stage = 'otp_verified')::INT AS otp_verified,
+        COUNT(DISTINCT COALESCE(user_id::TEXT, phone)) FILTER (WHERE stage = 'photo_taken')::INT AS photo_taken,
+        COUNT(DISTINCT COALESCE(user_id::TEXT, phone)) FILTER (WHERE stage = 'profile_filled')::INT AS profile_filled,
+        COUNT(DISTINCT COALESCE(user_id::TEXT, phone)) FILTER (WHERE stage = 'first_match_run')::INT AS first_match_run
+      FROM user_funnel_events
+    `)
+    .catch((error) => {
+      if (isMissingRelationError(error)) {
+        return {
+          rows: [
+            {
+              phone_entered: 0,
+              otp_verified: 0,
+              photo_taken: 0,
+              profile_filled: 0,
+              first_match_run: 0,
+            },
+          ],
+        };
+      }
 
-  const [userSummary, firstMatch] = await Promise.all([userSummaryPromise, firstMatchPromise]);
+      throw error;
+    });
+
+  const [userSummary, firstMatch, eventSummary] = await Promise.all([
+    userSummaryPromise,
+    firstMatchPromise,
+    eventSummaryPromise,
+  ]);
   const summary = userSummary.rows[0] || {};
+  const events = eventSummary.rows[0] || {};
   const stages = [
     {
       key: "phoneEntered",
       label: "Phone entered",
-      count: summary.phone_entered || 0,
+      count: Math.max(events.phone_entered || 0, summary.phone_entered || 0),
     },
     {
       key: "otpVerified",
       label: "OTP verified",
-      count: summary.otp_verified || 0,
+      count: Math.max(events.otp_verified || 0, summary.otp_verified || 0),
     },
     {
       key: "photoTaken",
       label: "Photo taken",
-      count: summary.photo_taken || 0,
+      count: Math.max(events.photo_taken || 0, summary.photo_taken || 0),
     },
     {
       key: "profileFilled",
       label: "Profile filled",
-      count: summary.profile_filled || 0,
+      count: Math.max(events.profile_filled || 0, summary.profile_filled || 0),
     },
     {
       key: "firstMatchRun",
       label: "First match run",
-      count: firstMatch.rows[0]?.first_match_run || 0,
+      count: Math.max(events.first_match_run || 0, firstMatch.rows[0]?.first_match_run || 0),
     },
   ];
 

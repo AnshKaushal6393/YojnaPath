@@ -79,6 +79,8 @@ describe("adminController", () => {
       totalNearMisses: 13,
       activeSchemes: 120,
       activeToday: 6,
+      avgMatchesPerUser: 2.08,
+      photoCompletionPct: 41.67,
       topSchemeToday: "PM_KISAN_001",
       photoStats: [
         { photo_type: "camera", count: 10 },
@@ -98,6 +100,8 @@ describe("adminController", () => {
       totalNearMisses: 13,
       activeSchemes: 120,
       activeToday: 6,
+      avgMatchesPerUser: 2.08,
+      photoCompletionPct: 41.67,
       topSchemeToday: "PM_KISAN_001",
       photoStats: [
         { photo_type: "camera", count: 10 },

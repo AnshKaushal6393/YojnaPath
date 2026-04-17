@@ -5,6 +5,7 @@ const Redis = require("ioredis");
 const { isMongoReady } = require("../config/mongo");
 const { IMPACT_CACHE_TTL_SECONDS } = require("../config/constants");
 const { ensureDatabaseSchema, getPool } = require("../config/postgres");
+const { recordFunnelStage } = require("./funnelService");
 const { Scheme } = require("../models/Scheme");
 
 class MemoryAnalyticsStore {
@@ -207,6 +208,14 @@ async function recordMatchAnalytics(matchLog = null) {
         matchLog.lang || null,
       ]
     );
+
+    if (matchLog.userId) {
+      await recordFunnelStage({
+        stage: "first_match_run",
+        userId: matchLog.userId,
+        oncePerUser: true,
+      });
+    }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn(`[analytics] Failed to persist match log: ${error.message}`);

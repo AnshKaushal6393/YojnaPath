@@ -3,6 +3,8 @@ const multer = require("multer");
 
 const { configureCloudinary } = require("../config/cloudinary");
 const { requireAuth } = require("../middleware/auth");
+const { recordFunnelStage } = require("../services/funnelService");
+const { getUserById } = require("../services/userService");
 
 const router = express.Router();
 
@@ -45,6 +47,14 @@ router.post("/photo", requireAuth, upload.single("photo"), async (req, res) => {
           }
         )
         .end(req.file.buffer);
+    });
+
+    const user = await getUserById(req.user.id);
+    await recordFunnelStage({
+      stage: "photo_taken",
+      userId: req.user.id,
+      phone: user?.phone || null,
+      oncePerUser: true,
     });
 
     return res.json({

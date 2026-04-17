@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const { JWT_EXPIRES_IN } = require("../config/constants");
 const { getRequiredEnv } = require("../config/env");
+const { recordFunnelStage } = require("../services/funnelService");
 const { getOtpStore } = require("../services/otpStore");
 const {
   completeUserRegistration,
@@ -86,6 +87,12 @@ async function login(req, res) {
     return res.status(400).json({ message: "Valid 10-digit phone is required" });
   }
 
+  await recordFunnelStage({
+    stage: "phone_entered",
+    phone,
+    oncePerPhone: true,
+  });
+
   if (await otpStore.isRateLimited(phone)) {
     return res.status(429).json({ message: "Rate limit exceeded. Try again later." });
   }
@@ -116,6 +123,12 @@ async function verify(req, res) {
   const useDemoOtp = isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
   if (useDemoOtp && otp === getDemoOtpCode()) {
     const user = await findOrCreateUserByPhone(phone, lang);
+    await recordFunnelStage({
+      stage: "otp_verified",
+      userId: user.id,
+      phone,
+      oncePerUser: true,
+    });
     const jwtSecret = getRequiredEnv("JWT_SECRET");
     const token = jwt.sign(
       {
@@ -142,6 +155,12 @@ async function verify(req, res) {
   await otpStore.clearOtp(phone);
 
   const user = await findOrCreateUserByPhone(phone, lang);
+  await recordFunnelStage({
+    stage: "otp_verified",
+    userId: user.id,
+    phone,
+    oncePerUser: true,
+  });
   const jwtSecret = getRequiredEnv("JWT_SECRET");
   const token = jwt.sign(
     {
@@ -197,6 +216,12 @@ async function register(req, res) {
   }
 
   const user = await completeUserRegistration(req.user.id, { name, lang, photoUrl, photoType });
+  await recordFunnelStage({
+    stage: "profile_filled",
+    userId: req.user.id,
+    phone: existingUser.phone,
+    oncePerUser: true,
+  });
 
   return res.json({
     user: serializeUser(user),

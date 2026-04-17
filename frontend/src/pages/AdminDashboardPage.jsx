@@ -83,10 +83,15 @@ export default function AdminDashboardPage() {
   const funnelStages = funnelQuery.data?.stages || [];
   const funnelMaxCount = funnelQuery.data?.maxCount || 0;
   const criticalError = dashboardQuery.error || statsQuery.error;
-  const photoCompletion = getPhotoCompletion(stats);
+  const photoCompletion =
+    stats?.photoCompletionPct != null ? Number(stats.photoCompletionPct) : getPhotoCompletion(stats);
   const photoBreakdown = getPhotoBreakdown(stats);
   const avgMatchesPerUser =
-    stats?.totalUsers > 0 ? Number(stats.totalMatches || 0) / Number(stats.totalUsers || 1) : 0;
+    stats?.avgMatchesPerUser != null
+      ? Number(stats.avgMatchesPerUser)
+      : stats?.totalUsers > 0
+        ? Number(stats.totalMatches || 0) / Number(stats.totalUsers || 1)
+        : 0;
   const metricCards = [
     {
       label: "Total users",

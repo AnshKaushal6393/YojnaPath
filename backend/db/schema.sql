@@ -128,3 +128,11 @@ CREATE TABLE IF NOT EXISTS kiosk_codes (
   sessions INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS user_funnel_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  phone VARCHAR(10),
+  stage VARCHAR(30) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
