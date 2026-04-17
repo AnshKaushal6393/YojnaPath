@@ -1,6 +1,9 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminShell from "./pages/AdminShell";
+import AdminUserDetailPage from "./pages/AdminUserDetailPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 import HomePage from "./pages/HomePage";
 import ImpactPage from "./pages/ImpactPage";
 import KioskPage from "./pages/KioskPage";
@@ -41,7 +44,11 @@ export default function App() {
       </Route>
 
       <Route element={<AdminProtectedRoute />}>
-        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin" element={<AdminShell />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users/:userId" element={<AdminUserDetailPage />} />
+        </Route>
       </Route>
 
       <Route element={<PublicAuthRoute />}>
