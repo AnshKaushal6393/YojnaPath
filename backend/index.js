@@ -5,6 +5,7 @@ const { connectMongo } = require("./config/mongo");
 const { ensureDatabaseSchema } = require("./config/postgres");
 const { startDeadlineTrackerScheduler } = require("./services/deadlineTrackerService");
 
+const adminAuthRoutes = require("./routes/adminAuth");
 const authRoutes = require("./routes/auth");
 const applicationsRoutes = require("./routes/applications");
 const kioskRoutes = require("./routes/kiosk");
@@ -70,6 +71,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api", publicRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationsRoutes);
 app.use("/api/kiosk", kioskRoutes);

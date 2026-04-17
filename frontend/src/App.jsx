@@ -1,4 +1,6 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import HomePage from "./pages/HomePage";
 import ImpactPage from "./pages/ImpactPage";
 import KioskPage from "./pages/KioskPage";
@@ -12,6 +14,7 @@ import SavedPage from "./pages/SavedPage";
 import SchemeDetailPage from "./pages/SchemeDetailPage";
 import TrackerPage from "./pages/TrackerPage";
 import VerifyOTP from "./pages/VerifyOTP";
+import { isAdminAuthenticated } from "./lib/adminAuthStorage";
 import { isAuthenticated } from "./utils/auth";
 
 function ProtectedRoute() {
@@ -22,9 +25,25 @@ function PublicAuthRoute() {
   return isAuthenticated() ? <Navigate to="/" replace /> : <Outlet />;
 }
 
+function AdminProtectedRoute() {
+  return isAdminAuthenticated() ? <Outlet /> : <Navigate to="/admin/login" replace />;
+}
+
+function AdminPublicRoute() {
+  return isAdminAuthenticated() ? <Navigate to="/admin" replace /> : <Outlet />;
+}
+
 export default function App() {
   return (
     <Routes>
+      <Route element={<AdminPublicRoute />}>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
+      </Route>
+
+      <Route element={<AdminProtectedRoute />}>
+        <Route path="/admin" element={<AdminDashboardPage />} />
+      </Route>
+
       <Route element={<PublicAuthRoute />}>
         <Route path="/login" element={<Login />} />
         <Route path="/verify" element={<VerifyOTP />} />
