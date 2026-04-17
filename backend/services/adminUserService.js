@@ -109,6 +109,14 @@ function mapProfileRow(row) {
   };
 }
 
+function getPreferredPhotoUrl(user, profiles = []) {
+  return (
+    user?.photo_url ||
+    profiles.find((profile) => profile.photoUrl)?.photoUrl ||
+    null
+  );
+}
+
 async function listAdminUsers(options = {}) {
   await ensureDatabaseSchema();
 
@@ -376,7 +384,7 @@ async function getAdminUserById(userId) {
     id: user.id,
     phone: user.phone,
     name: user.name || primaryProfile?.profileName || "Unknown",
-    photoUrl: user.photo_url || null,
+    photoUrl: getPreferredPhotoUrl(user, profiles),
     photoType: user.photo_type || "none",
     onboardingDone: Boolean(user.onboarding_done),
     lang: user.lang || "hi",
