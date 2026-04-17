@@ -10,15 +10,14 @@ export async function loginAdmin(email, password) {
   return payload?.admin || null;
 }
 
-export async function fetchCurrentAdmin() {
+async function withAdminSession(request) {
   const token = getAdminToken();
   if (!token) {
     return null;
   }
 
   try {
-    const payload = await apiGet("/api/admin/auth/me", { token });
-    return payload?.admin || null;
+    return await request(token);
   } catch (error) {
     if (error?.status === 401) {
       clearAdminToken();
@@ -27,4 +26,35 @@ export async function fetchCurrentAdmin() {
 
     throw error;
   }
+}
+
+export async function fetchCurrentAdmin() {
+  return withAdminSession(async (token) => {
+    const payload = await apiGet("/api/admin/auth/me", { token });
+    return payload?.admin || null;
+  });
+}
+
+export async function fetchAdminStats() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/stats", { token });
+  });
+}
+
+export async function fetchAdminDashboard() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/dashboard", { token });
+  });
+}
+
+export async function fetchAdminActivity() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/activity", { token });
+  });
+}
+
+export async function fetchAdminFunnel() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/funnel", { token });
+  });
 }

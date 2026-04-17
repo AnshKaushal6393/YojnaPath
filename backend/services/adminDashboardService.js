@@ -131,7 +131,120 @@ async function getAdminStats() {
   };
 }
 
+async function getAdminActivity(limit = 50) {
+  await ensureDatabaseSchema();
+
+  const pool = getPool();
+
+  try {
+    const result = await pool.query(
+      `
+        SELECT
+          id,
+          session_type,
+          state,
+          occupation,
+          match_count,
+          near_miss_count,
+          scheme_ids,
+          lang,
+          created_at
+        FROM match_logs
+        ORDER BY created_at DESC
+        LIMIT $1
+      `,
+      [limit]
+    );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      sessionType: row.session_type || "web",
+      state: row.state || null,
+      occupation: row.occupation || null,
+      matchCount: Number(row.match_count || 0),
+      nearMissCount: Number(row.near_miss_count || 0),
+      schemeIds: Array.isArray(row.scheme_ids) ? row.scheme_ids : [],
+      lang: row.lang || null,
+      createdAt: row.created_at,
+    }));
+  } catch (error) {
+    if (isMissingRelationError(error)) {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function getAdminFunnel() {
+  await ensureDatabaseSchema();
+
+  const pool = getPool();
+  const userSummaryPromise = pool.query(`
+    SELECT
+      COUNT(*)::INT AS phone_entered,
+      COUNT(*)::INT AS otp_verified,
+      COUNT(*) FILTER (
+        WHERE photo_type IS NOT NULL AND photo_type <> 'none'
+      )::INT AS photo_taken,
+      COUNT(*) FILTER (
+        WHERE onboarding_done = TRUE OR registration_completed_at IS NOT NULL
+      )::INT AS profile_filled
+    FROM users
+  `);
+  const firstMatchPromise = pool
+    .query(`
+      SELECT COUNT(DISTINCT user_id)::INT AS first_match_run
+      FROM match_logs
+      WHERE user_id IS NOT NULL
+    `)
+    .catch((error) => {
+      if (isMissingRelationError(error)) {
+        return { rows: [{ first_match_run: 0 }] };
+      }
+
+      throw error;
+    });
+
+  const [userSummary, firstMatch] = await Promise.all([userSummaryPromise, firstMatchPromise]);
+  const summary = userSummary.rows[0] || {};
+  const stages = [
+    {
+      key: "phoneEntered",
+      label: "Phone entered",
+      count: summary.phone_entered || 0,
+    },
+    {
+      key: "otpVerified",
+      label: "OTP verified",
+      count: summary.otp_verified || 0,
+    },
+    {
+      key: "photoTaken",
+      label: "Photo taken",
+      count: summary.photo_taken || 0,
+    },
+    {
+      key: "profileFilled",
+      label: "Profile filled",
+      count: summary.profile_filled || 0,
+    },
+    {
+      key: "firstMatchRun",
+      label: "First match run",
+      count: firstMatch.rows[0]?.first_match_run || 0,
+    },
+  ];
+
+  return {
+    stages,
+    maxCount: Math.max(...stages.map((stage) => stage.count), 0),
+  };
+}
+
 module.exports = {
+  getAdminActivity,
+  getAdminFunnel,
   getAdminOverview,
   getAdminStats,
 };

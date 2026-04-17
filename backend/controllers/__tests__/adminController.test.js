@@ -1,10 +1,17 @@
 jest.mock("../../services/adminDashboardService", () => ({
+  getAdminActivity: jest.fn(),
+  getAdminFunnel: jest.fn(),
   getAdminOverview: jest.fn(),
   getAdminStats: jest.fn(),
 }));
 
-const { getAdminOverview, getAdminStats } = require("../../services/adminDashboardService");
-const { getDashboard, getStats } = require("../adminController");
+const {
+  getAdminActivity,
+  getAdminFunnel,
+  getAdminOverview,
+  getAdminStats,
+} = require("../../services/adminDashboardService");
+const { getActivity, getDashboard, getFunnel, getStats } = require("../adminController");
 
 function createResponse() {
   return {
@@ -95,6 +102,64 @@ describe("adminController", () => {
       photoStats: [
         { photo_type: "camera", count: 10 },
         { photo_type: "none", count: 14 },
+      ],
+    });
+  });
+
+  test("getActivity returns recent activity events", async () => {
+    getAdminActivity.mockResolvedValue([
+      {
+        id: "evt-1",
+        sessionType: "web",
+        state: "UP",
+        occupation: "farmer",
+        matchCount: 3,
+        nearMissCount: 1,
+        schemeIds: ["PM_KISAN_001"],
+        lang: "hi",
+        createdAt: "2026-04-17T19:00:00.000Z",
+      },
+    ]);
+    const res = createResponse();
+
+    await getActivity({}, res);
+
+    expect(getAdminActivity).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      events: [
+        {
+          id: "evt-1",
+          sessionType: "web",
+          state: "UP",
+          occupation: "farmer",
+          matchCount: 3,
+          nearMissCount: 1,
+          schemeIds: ["PM_KISAN_001"],
+          lang: "hi",
+          createdAt: "2026-04-17T19:00:00.000Z",
+        },
+      ],
+    });
+  });
+
+  test("getFunnel returns funnel stages", async () => {
+    getAdminFunnel.mockResolvedValue({
+      maxCount: 100,
+      stages: [
+        { key: "phoneEntered", label: "Phone entered", count: 100 },
+        { key: "otpVerified", label: "OTP verified", count: 96 },
+      ],
+    });
+    const res = createResponse();
+
+    await getFunnel({}, res);
+
+    expect(getAdminFunnel).toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      maxCount: 100,
+      stages: [
+        { key: "phoneEntered", label: "Phone entered", count: 100 },
+        { key: "otpVerified", label: "OTP verified", count: 96 },
       ],
     });
   });
