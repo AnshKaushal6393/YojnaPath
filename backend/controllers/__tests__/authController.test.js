@@ -2,6 +2,10 @@ jest.mock("../../services/otpStore", () => ({
   getOtpStore: jest.fn(),
 }));
 
+jest.mock("../../services/funnelService", () => ({
+  recordFunnelStage: jest.fn(),
+}));
+
 jest.mock("../../services/userService", () => ({
   findOrCreateUserByPhone: jest.fn(),
 }));
