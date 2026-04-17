@@ -1,5 +1,5 @@
 import { apiGet } from "./api";
-import { fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
+import { buildProfilePayload, fetchSavedProfile, isProfileReadyForMatching } from "./onboardApi";
 import { fetchResultsData } from "./resultsApi";
 import {
   formatBenefitAmount,
@@ -98,6 +98,21 @@ function buildCategoryHighlights(schemes, limit = 6) {
     }));
 }
 
+function buildTopSchemesQuery(profile) {
+  const payload = buildProfilePayload(profile.selectedUserType, profile.formState);
+  const params = new URLSearchParams();
+
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === "") {
+      return;
+    }
+
+    params.set(key, String(value));
+  });
+
+  return params.toString();
+}
+
 export async function fetchHomeData(profileId) {
   const [health, impact, savedProfile, schemes] = await Promise.all([
     apiGet("/api/health"),
@@ -107,13 +122,21 @@ export async function fetchHomeData(profileId) {
   ]);
 
   if (isProfileReadyForMatching(savedProfile)) {
-    const personalizedResults = await fetchResultsData(profileId);
+    const query = buildTopSchemesQuery(savedProfile);
+    const [topSchemes, personalizedResults] = await Promise.all([
+      apiGet(`/api/schemes/top/${encodeURIComponent(savedProfile.selectedUserType)}?${query}`),
+      fetchResultsData(profileId),
+    ]);
 
     return {
       health,
       impact,
       categoryHighlights: buildCategoryHighlights(schemes),
-      recentMatches: (personalizedResults.schemes || []).slice(0, 6),
+      recentMatches:
+        (topSchemes?.schemes || [])
+          .filter((scheme) => isSchemeVisibleNow(scheme))
+          .map(mapSchemeDetailToCard)
+          .slice(0, 6) || [],
       urgent: (personalizedResults.urgent || []).slice(0, 3),
     };
   }
