@@ -1,11 +1,16 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
+  deleteAdminUser,
+  downloadAdminUsersExport,
   fetchAdminActivity,
   fetchAdminDashboard,
   fetchAdminFunnel,
   fetchAdminStats,
+  fetchAdminUser,
+  fetchAdminUserMatches,
+  fetchAdminUsers,
 } from "../lib/adminApi";
 import { clearAdminToken } from "../lib/adminAuthStorage";
 
@@ -23,6 +28,18 @@ function formatDateTime(value) {
     month: "short",
     hour: "numeric",
     minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "Unknown";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   }).format(new Date(value));
 }
 
@@ -51,8 +68,24 @@ function getPhotoBreakdown(stats) {
   }));
 }
 
+function createEmptyFilters() {
+  return {
+    page: 1,
+    limit: 8,
+    state: "",
+    userType: "",
+    search: "",
+    hasPhoto: "",
+  };
+}
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [filters, setFilters] = useState(createEmptyFilters);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+
   const dashboardQuery = useQuery({
     queryKey: ["admin-dashboard"],
     queryFn: fetchAdminDashboard,
@@ -70,10 +103,84 @@ export default function AdminDashboardPage() {
     queryKey: ["admin-funnel"],
     queryFn: fetchAdminFunnel,
   });
+  const usersQuery = useQuery({
+    queryKey: ["admin-users", filters],
+    queryFn: () => fetchAdminUsers(filters),
+  });
+  const selectedUserQuery = useQuery({
+    queryKey: ["admin-user", selectedUserId],
+    queryFn: () => fetchAdminUser(selectedUserId),
+    enabled: Boolean(selectedUserId),
+  });
+  const selectedUserMatchesQuery = useQuery({
+    queryKey: ["admin-user-matches", selectedUserId],
+    queryFn: () => fetchAdminUserMatches(selectedUserId),
+    enabled: Boolean(selectedUserId),
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: deleteAdminUser,
+    onSuccess: (_, deletedUserId) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-activity"] });
+      queryClient.removeQueries({ queryKey: ["admin-user", deletedUserId] });
+      queryClient.removeQueries({ queryKey: ["admin-user-matches", deletedUserId] });
+      setSelectedUserId((currentId) => (currentId === deletedUserId ? "" : currentId));
+    },
+  });
 
   function handleLogout() {
     clearAdminToken();
     navigate("/admin/login", { replace: true });
+  }
+
+  function handleFilterChange(key, value) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+      page: key === "page" ? value : 1,
+    }));
+  }
+
+  async function handleExport() {
+    setIsExporting(true);
+
+    try {
+      const blob = await downloadAdminUsersExport();
+      if (!blob) {
+        navigate("/admin/login", { replace: true });
+        return;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "admin-users-export.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  function handleDeleteUser() {
+    if (!selectedUserId || deleteUserMutation.isPending) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      "Delete this user permanently? This removes the profile, match history, saved schemes, and uploaded photo."
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    deleteUserMutation.mutate(selectedUserId);
   }
 
   const admin = dashboardQuery.data?.admin;
@@ -82,7 +189,12 @@ export default function AdminDashboardPage() {
   const activity = activityQuery.data?.events || [];
   const funnelStages = funnelQuery.data?.stages || [];
   const funnelMaxCount = funnelQuery.data?.maxCount || 0;
-  const criticalError = dashboardQuery.error || statsQuery.error;
+  const usersPayload = usersQuery.data;
+  const users = usersPayload?.users || [];
+  const selectedUser = selectedUserQuery.data;
+  const selectedUserMatches = selectedUserMatchesQuery.data?.matches || [];
+  const criticalError =
+    dashboardQuery.error || statsQuery.error || usersQuery.error || deleteUserMutation.error;
   const photoCompletion =
     stats?.photoCompletionPct != null ? Number(stats.photoCompletionPct) : getPhotoCompletion(stats);
   const photoBreakdown = getPhotoBreakdown(stats);
@@ -124,13 +236,16 @@ export default function AdminDashboardPage() {
       accent: "text-sky-300",
     },
   ];
+  const totalUserPages = usersPayload?.totalPages || 0;
 
   useEffect(() => {
     if (
       (dashboardQuery.isSuccess && dashboardQuery.data === null) ||
       (statsQuery.isSuccess && statsQuery.data === null) ||
       (activityQuery.isSuccess && activityQuery.data === null) ||
-      (funnelQuery.isSuccess && funnelQuery.data === null)
+      (funnelQuery.isSuccess && funnelQuery.data === null) ||
+      (usersQuery.isSuccess && usersQuery.data === null) ||
+      (selectedUserId && selectedUserQuery.isSuccess && selectedUserQuery.data === null)
     ) {
       navigate("/admin/login", { replace: true });
     }
@@ -142,14 +257,25 @@ export default function AdminDashboardPage() {
     funnelQuery.data,
     funnelQuery.isSuccess,
     navigate,
+    selectedUserId,
+    selectedUserQuery.data,
+    selectedUserQuery.isSuccess,
     statsQuery.data,
     statsQuery.isSuccess,
+    usersQuery.data,
+    usersQuery.isSuccess,
   ]);
+
+  useEffect(() => {
+    if (!selectedUserId && users.length) {
+      setSelectedUserId(users[0].id);
+    }
+  }, [selectedUserId, users]);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_48%,_#111827_100%)] px-4 py-8 text-slate-50">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-center justify-between gap-4">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
               YojnaPath Admin
@@ -167,13 +293,23 @@ export default function AdminDashboardPage() {
             ) : null}
           </div>
 
-          <button
-            type="button"
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20"
+              onClick={handleExport}
+              disabled={isExporting}
+            >
+              {isExporting ? "Exporting..." : "Export users CSV"}
+            </button>
+            <button
+              type="button"
+              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              onClick={handleLogout}
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {dashboardQuery.isLoading || statsQuery.isLoading ? (
@@ -231,7 +367,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <p className="mt-5 text-sm leading-6 text-slate-300">
                   This screen now pulls from `/api/admin/dashboard`, `/api/admin/stats`,
-                  `/api/admin/activity`, and `/api/admin/funnel`.
+                  `/api/admin/activity`, `/api/admin/funnel`, and the new admin user routes.
                 </p>
               </article>
 
@@ -350,6 +486,345 @@ export default function AdminDashboardPage() {
                     </div>
                   )}
                 </div>
+              </article>
+            </section>
+
+            <section className="mt-6 grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
+                      User Routes
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">Admin user explorer</h2>
+                    <p className="mt-2 text-sm text-slate-300">
+                      Filter all users, inspect registrations, and jump into match history.
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-300">
+                    Showing {formatNumber(usersPayload?.total || 0)} users
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                  <input
+                    type="search"
+                    value={filters.search}
+                    onChange={(event) => handleFilterChange("search", event.target.value)}
+                    placeholder="Search by name, phone, district"
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50"
+                  />
+                  <input
+                    type="text"
+                    value={filters.state}
+                    onChange={(event) => handleFilterChange("state", event.target.value.toUpperCase())}
+                    placeholder="State code"
+                    maxLength={10}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50"
+                  />
+                  <select
+                    value={filters.userType}
+                    onChange={(event) => handleFilterChange("userType", event.target.value)}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400/50"
+                  >
+                    <option value="">All user types</option>
+                    <option value="farmer">farmer</option>
+                    <option value="business">business</option>
+                    <option value="women">women</option>
+                    <option value="student">student</option>
+                    <option value="worker">worker</option>
+                    <option value="health">health</option>
+                    <option value="housing">housing</option>
+                    <option value="senior">senior</option>
+                    <option value="disability">disability</option>
+                    <option value="shopkeeper">shopkeeper</option>
+                    <option value="artisan">artisan</option>
+                    <option value="daily_wage">daily_wage</option>
+                    <option value="retired">retired</option>
+                    <option value="disabled">disabled</option>
+                    <option value="migrant_worker">migrant_worker</option>
+                  </select>
+                  <select
+                    value={filters.hasPhoto}
+                    onChange={(event) => handleFilterChange("hasPhoto", event.target.value)}
+                    className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-400/50"
+                  >
+                    <option value="">All photos</option>
+                    <option value="true">Has photo</option>
+                    <option value="false">No photo</option>
+                  </select>
+                  <button
+                    type="button"
+                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    onClick={() => setFilters(createEmptyFilters())}
+                  >
+                    Reset filters
+                  </button>
+                </div>
+
+                <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10">
+                  <div className="grid grid-cols-[1.35fr_0.8fr_0.9fr_0.7fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                    <span>User</span>
+                    <span>State / Type</span>
+                    <span>Match count</span>
+                    <span>Photo</span>
+                  </div>
+                  <div className="divide-y divide-white/6 bg-slate-950/60">
+                    {usersQuery.isLoading ? (
+                      <div className="px-4 py-6 text-sm text-slate-400">Loading users...</div>
+                    ) : null}
+                    {!usersQuery.isLoading && users.length === 0 ? (
+                      <div className="px-4 py-6 text-sm text-slate-400">
+                        No users match the current filters.
+                      </div>
+                    ) : null}
+                    {users.map((user) => {
+                      const isActive = user.id === selectedUserId;
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => setSelectedUserId(user.id)}
+                          className={`grid w-full grid-cols-[1.35fr_0.8fr_0.9fr_0.7fr] gap-3 px-4 py-4 text-left transition ${
+                            isActive ? "bg-emerald-400/10" : "hover:bg-white/5"
+                          }`}
+                        >
+                          <span>
+                            <span className="block text-sm font-semibold text-white">
+                              {user.name || "Unknown"}
+                            </span>
+                            <span className="mt-1 block text-xs text-slate-400">{user.phone}</span>
+                          </span>
+                          <span className="text-sm text-slate-300">
+                            {user.primaryProfile?.state || "NA"} /{" "}
+                            {user.primaryProfile?.occupation || "unknown"}
+                          </span>
+                          <span className="text-sm text-slate-300">
+                            {formatNumber(user.stats?.totalMatches)}
+                          </span>
+                          <span className="text-sm text-slate-300">
+                            {user.photoUrl ? "Yes" : "No"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-slate-400">
+                    Page {formatNumber(filters.page)} of {formatNumber(totalUserPages || 1)}
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleFilterChange("page", Math.max(filters.page - 1, 1))}
+                      disabled={filters.page <= 1}
+                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleFilterChange(
+                          "page",
+                          totalUserPages ? Math.min(filters.page + 1, totalUserPages) : filters.page + 1
+                        )
+                      }
+                      disabled={Boolean(totalUserPages) && filters.page >= totalUserPages}
+                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </article>
+
+              <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
+                      User Detail
+                    </p>
+                    <h2 className="mt-3 text-2xl font-semibold text-white">Selected account</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleDeleteUser}
+                    disabled={!selectedUserId || deleteUserMutation.isPending}
+                    className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {deleteUserMutation.isPending ? "Deleting..." : "Delete user"}
+                  </button>
+                </div>
+
+                {!selectedUserId ? (
+                  <div className="mt-6 rounded-[18px] bg-slate-900/70 px-4 py-4 text-sm text-slate-400">
+                    Pick a user from the list to view details.
+                  </div>
+                ) : null}
+
+                {selectedUserQuery.isLoading ? (
+                  <div className="mt-6 rounded-[18px] bg-slate-900/70 px-4 py-4 text-sm text-slate-400">
+                    Loading selected user...
+                  </div>
+                ) : null}
+
+                {selectedUser ? (
+                  <>
+                    <div className="mt-6 rounded-[24px] bg-slate-900/70 p-5">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h3 className="text-xl font-semibold text-white">{selectedUser.name}</h3>
+                          <p className="mt-1 text-sm text-slate-300">{selectedUser.phone}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
+                            Created {formatDate(selectedUser.createdAt)}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-xs text-slate-300">
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Lang: {selectedUser.lang || "hi"}
+                          </span>
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Photo: {selectedUser.registration?.hasPhoto ? "yes" : "no"}
+                          </span>
+                          <span className="rounded-full bg-white/5 px-3 py-1">
+                            Profiles: {formatNumber(selectedUser.registration?.totalProfiles)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-[18px] bg-slate-950/80 p-4">
+                          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                            Registration
+                          </p>
+                          <p className="mt-3 text-sm text-slate-200">
+                            Completed:{" "}
+                            {selectedUser.registration?.registrationCompletedAt
+                              ? formatDateTime(selectedUser.registration.registrationCompletedAt)
+                              : "Pending"}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-300">
+                            Last login: {formatDateTime(selectedUser.lastLogin)}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-300">
+                            Onboarding: {selectedUser.registration?.onboardingDone ? "done" : "pending"}
+                          </p>
+                        </div>
+                        <div className="rounded-[18px] bg-slate-950/80 p-4">
+                          <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                            Primary profile
+                          </p>
+                          <p className="mt-3 text-sm text-slate-200">
+                            {selectedUser.primaryProfile?.profileName || "Unavailable"}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-300">
+                            {selectedUser.primaryProfile?.state || "NA"} /{" "}
+                            {selectedUser.primaryProfile?.occupation || "unknown"}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-300">
+                            District: {selectedUser.primaryProfile?.district || "NA"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-[18px] bg-slate-900/70 p-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                          Match runs
+                        </p>
+                        <p className="mt-3 text-2xl font-semibold text-cyan-300">
+                          {formatNumber(selectedUser.matchSummary?.matchRuns)}
+                        </p>
+                      </div>
+                      <div className="rounded-[18px] bg-slate-900/70 p-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                          Schemes matched
+                        </p>
+                        <p className="mt-3 text-2xl font-semibold text-emerald-300">
+                          {formatNumber(selectedUser.matchSummary?.totalMatches)}
+                        </p>
+                      </div>
+                      <div className="rounded-[18px] bg-slate-900/70 p-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                          Saved schemes
+                        </p>
+                        <p className="mt-3 text-2xl font-semibold text-amber-300">
+                          {formatNumber(selectedUser.savedSchemes?.length)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-4">
+                      <div className="rounded-[20px] bg-slate-900/70 p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm font-semibold text-white">Recent matches</p>
+                          <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                            {selectedUserMatchesQuery.isFetching ? "Refreshing" : "Latest log"}
+                          </span>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {selectedUserMatches.length ? (
+                            selectedUserMatches.slice(0, 6).map((match) => (
+                              <div
+                                key={match.id}
+                                className="rounded-[16px] border border-white/8 bg-slate-950/70 px-4 py-3"
+                              >
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className="text-sm font-semibold text-white">
+                                    {match.occupation || "unknown"} {match.state ? `| ${match.state}` : ""}
+                                  </span>
+                                  <span className="text-xs text-slate-400">
+                                    {formatDateTime(match.date)}
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-300">
+                                  <span className="rounded-full bg-white/5 px-3 py-1">
+                                    Matches: {formatNumber(match.matchCount)}
+                                  </span>
+                                  <span className="rounded-full bg-white/5 px-3 py-1">
+                                    Near misses: {formatNumber(match.nearMissCount)}
+                                  </span>
+                                  <span className="rounded-full bg-white/5 px-3 py-1">
+                                    Schemes: {formatNumber(match.schemeIds?.length)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-[16px] bg-slate-950/70 px-4 py-3 text-sm text-slate-400">
+                              No match history for this user yet.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-[20px] bg-slate-900/70 p-4">
+                        <p className="text-sm font-semibold text-white">Saved schemes</p>
+                        <div className="mt-4 space-y-2">
+                          {selectedUser.savedSchemes?.length ? (
+                            selectedUser.savedSchemes.slice(0, 6).map((scheme) => (
+                              <div
+                                key={`${scheme.schemeId}-${scheme.savedAt}`}
+                                className="flex items-center justify-between rounded-[16px] bg-slate-950/70 px-4 py-3 text-sm"
+                              >
+                                <span className="text-slate-200">{scheme.schemeId}</span>
+                                <span className="text-slate-500">{formatDateTime(scheme.savedAt)}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-[16px] bg-slate-950/70 px-4 py-3 text-sm text-slate-400">
+                              No saved schemes.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
               </article>
             </section>
           </>

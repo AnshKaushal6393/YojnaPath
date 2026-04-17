@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from "./api";
+import { apiDelete, apiGet, apiPost } from "./api";
 import { clearAdminToken, getAdminToken, setAdminToken } from "./adminAuthStorage";
 
 export async function loginAdmin(email, password) {
@@ -57,4 +57,69 @@ export async function fetchAdminFunnel() {
   return withAdminSession(async (token) => {
     return apiGet("/api/admin/funnel", { token });
   });
+}
+
+function buildQueryString(params = {}) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value == null || value === "") {
+      return;
+    }
+
+    searchParams.set(key, String(value));
+  });
+
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
+}
+
+export async function fetchAdminUsers(params = {}) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/users${buildQueryString(params)}`, { token });
+  });
+}
+
+export async function fetchAdminUser(userId) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/users/${userId}`, { token });
+  });
+}
+
+export async function fetchAdminUserMatches(userId) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/users/${userId}/matches`, { token });
+  });
+}
+
+export async function deleteAdminUser(userId) {
+  return withAdminSession(async (token) => {
+    return apiDelete(`/api/admin/users/${userId}`, { token });
+  });
+}
+
+export async function downloadAdminUsersExport() {
+  const token = getAdminToken();
+  if (!token) {
+    clearAdminToken();
+    return null;
+  }
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
+  const response = await fetch(`${apiBaseUrl}/api/admin/users/export`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Export failed: ${response.status}`);
+  }
+
+  return response.blob();
 }
