@@ -148,6 +148,10 @@ const hi = {
     annualIncome: "वार्षिक आय / Annual income",
     familyIncome: "पारिवारिक आय / Family income",
     selectIncomeBand: "आय समूह चुनें",
+    annualIncomeHelp: "साल भर की आय के सबसे नजदीक रेंज चुनें।",
+    familyIncomeHelp: "पूरे परिवार या घर की कुल सालाना आय लें।",
+    womenIncomeHelp:
+      "अगर महिला की अलग से कोई आय नहीं है, तो 'कोई व्यक्तिगत आय नहीं / आश्रित' चुनें और घर की आय की रेंज लें।",
     landSize: "जमीन / Land size",
     selectLandSize: "जमीन का आकार चुनें",
     notesLabel: "कुछ और बताना है? / Anything else we should know?",

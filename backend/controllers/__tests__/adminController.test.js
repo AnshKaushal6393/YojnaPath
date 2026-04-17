@@ -5,18 +5,45 @@ jest.mock("../../services/adminDashboardService", () => ({
   getAdminStats: jest.fn(),
 }));
 
+jest.mock("../../services/adminUserService", () => ({
+  deleteAdminUserById: jest.fn(),
+  exportAdminUsersCsv: jest.fn(),
+  getAdminUserById: jest.fn(),
+  getAdminUserMatches: jest.fn(),
+  listAdminUsers: jest.fn(),
+}));
+
 const {
   getAdminActivity,
   getAdminFunnel,
   getAdminOverview,
   getAdminStats,
 } = require("../../services/adminDashboardService");
-const { getActivity, getDashboard, getFunnel, getStats } = require("../adminController");
+const {
+  deleteAdminUserById,
+  exportAdminUsersCsv,
+  getAdminUserById,
+  getAdminUserMatches,
+  listAdminUsers,
+} = require("../../services/adminUserService");
+const {
+  deleteUserById,
+  exportUsers,
+  getActivity,
+  getDashboard,
+  getFunnel,
+  getStats,
+  getUserById,
+  getUserMatches,
+  getUsers,
+} = require("../adminController");
 
 function createResponse() {
   return {
     status: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
+    send: jest.fn().mockReturnThis(),
+    setHeader: jest.fn().mockReturnThis(),
   };
 }
 
@@ -166,5 +193,121 @@ describe("adminController", () => {
         { key: "otpVerified", label: "OTP verified", count: 96 },
       ],
     });
+  });
+
+  test("getUsers forwards filters and returns paginated users", async () => {
+    listAdminUsers.mockResolvedValue({
+      page: 2,
+      limit: 25,
+      total: 1,
+      totalPages: 1,
+      users: [{ id: "user-1", name: "Ram" }],
+    });
+    const req = {
+      query: {
+        page: "2",
+        limit: "25",
+        state: "UP",
+        userType: "farmer",
+        search: "ram",
+        hasPhoto: "true",
+      },
+    };
+    const res = createResponse();
+
+    await getUsers(req, res);
+
+    expect(listAdminUsers).toHaveBeenCalledWith({
+      page: "2",
+      limit: "25",
+      state: "UP",
+      userType: "farmer",
+      search: "ram",
+      hasPhoto: "true",
+    });
+    expect(res.json).toHaveBeenCalledWith({
+      page: 2,
+      limit: 25,
+      total: 1,
+      totalPages: 1,
+      users: [{ id: "user-1", name: "Ram" }],
+    });
+  });
+
+  test("getUserById returns 404 when user does not exist", async () => {
+    getAdminUserById.mockResolvedValue(null);
+    const req = { params: { id: "missing-user" } };
+    const res = createResponse();
+
+    await getUserById(req, res);
+
+    expect(getAdminUserById).toHaveBeenCalledWith("missing-user");
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: "User not found" });
+  });
+
+  test("getUserMatches returns matches for an existing user", async () => {
+    getAdminUserById.mockResolvedValue({ id: "user-1" });
+    getAdminUserMatches.mockResolvedValue([
+      {
+        id: "match-1",
+        matchCount: 5,
+        nearMissCount: 2,
+      },
+    ]);
+    const req = { params: { id: "user-1" } };
+    const res = createResponse();
+
+    await getUserMatches(req, res);
+
+    expect(getAdminUserById).toHaveBeenCalledWith("user-1");
+    expect(getAdminUserMatches).toHaveBeenCalledWith("user-1");
+    expect(res.json).toHaveBeenCalledWith({
+      userId: "user-1",
+      matches: [
+        {
+          id: "match-1",
+          matchCount: 5,
+          nearMissCount: 2,
+        },
+      ],
+    });
+  });
+
+  test("deleteUserById returns deleted user details", async () => {
+    deleteAdminUserById.mockResolvedValue({
+      id: "user-1",
+      deleted: true,
+    });
+    const req = { params: { id: "user-1" } };
+    const res = createResponse();
+
+    await deleteUserById(req, res);
+
+    expect(deleteAdminUserById).toHaveBeenCalledWith("user-1");
+    expect(res.json).toHaveBeenCalledWith({
+      message: "User deleted successfully",
+      user: {
+        id: "user-1",
+        deleted: true,
+      },
+    });
+  });
+
+  test("exportUsers sends CSV as downloadable response", async () => {
+    exportAdminUsersCsv.mockResolvedValue("user_id,name\n1,Ram");
+    const res = createResponse();
+
+    await exportUsers({}, res);
+
+    expect(exportAdminUsersCsv).toHaveBeenCalled();
+    expect(res.setHeader).toHaveBeenNthCalledWith(1, "Content-Type", "text/csv; charset=utf-8");
+    expect(res.setHeader).toHaveBeenNthCalledWith(
+      2,
+      "Content-Disposition",
+      'attachment; filename="admin-users-export.csv"'
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith("user_id,name\n1,Ram");
   });
 });

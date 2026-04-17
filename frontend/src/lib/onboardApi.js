@@ -3,11 +3,12 @@ import { getActiveProfileId, setActiveProfileId } from "./activeProfile";
 import { getAuthToken } from "./authStorage";
 
 const INCOME_MAP = {
-  under_50000: 40000,
-  "50000_120000": 85000,
-  "120000_200000": 160000,
-  "200000_500000": 350000,
-  above_500000: 600000,
+  no_income: 0,
+  under_100000: 75000,
+  "100000_300000": 200000,
+  "300000_500000": 400000,
+  "500000_800000": 650000,
+  above_800000: 900000,
 };
 
 const LAND_MAP = {

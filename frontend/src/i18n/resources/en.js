@@ -150,6 +150,10 @@ const en = {
     annualIncome: "Annual income / वार्षिक आय",
     familyIncome: "Family income / पारिवारिक आय",
     selectIncomeBand: "Select income band",
+    annualIncomeHelp: "Choose the closest yearly income range.",
+    familyIncomeHelp: "Use the total family or household income for the year.",
+    womenIncomeHelp:
+      "If she does not earn personally, choose 'No personal income / dependent' and use the household income range.",
     landSize: "Land size / जमीन",
     selectLandSize: "Select land size",
     notesLabel: "Anything else we should know? / कुछ और बताना है?",

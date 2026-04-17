@@ -1,28 +1,33 @@
 export const INCOME_BANDS = [
   {
-    value: "under_50000",
-    labelEn: "Under Rs. 50,000",
-    labelHi: "\u20b9 50,000 \u0938\u0947 \u0915\u092e",
+    value: "no_income",
+    labelEn: "No personal income / dependent",
+    labelHi: "\u0915\u094b\u0908 \u0935\u094d\u092f\u0915\u094d\u0924\u093f\u0917\u0924 \u0906\u092f \u0928\u0939\u0940\u0902 / \u0906\u0936\u094d\u0930\u093f\u0924",
   },
   {
-    value: "50000_120000",
-    labelEn: "Rs. 50k-Rs. 1.2L",
-    labelHi: "\u20b9 50 \u0939\u091c\u093e\u0930 - \u20b9 1.2 \u0932\u093e\u0916",
+    value: "under_100000",
+    labelEn: "Under Rs. 1L",
+    labelHi: "\u20b9 1 \u0932\u093e\u0916 \u0938\u0947 \u0915\u092e",
   },
   {
-    value: "120000_200000",
-    labelEn: "Rs. 1.2L-Rs. 2L",
-    labelHi: "\u20b9 1.2 \u0932\u093e\u0916 - \u20b9 2 \u0932\u093e\u0916",
+    value: "100000_300000",
+    labelEn: "Rs. 1L-Rs. 3L",
+    labelHi: "\u20b9 1 \u0932\u093e\u0916 - \u20b9 3 \u0932\u093e\u0916",
   },
   {
-    value: "200000_500000",
-    labelEn: "Rs. 2L-Rs. 5L",
-    labelHi: "\u20b9 2 \u0932\u093e\u0916 - \u20b9 5 \u0932\u093e\u0916",
+    value: "300000_500000",
+    labelEn: "Rs. 3L-Rs. 5L",
+    labelHi: "\u20b9 3 \u0932\u093e\u0916 - \u20b9 5 \u0932\u093e\u0916",
   },
   {
-    value: "above_500000",
-    labelEn: "Above Rs. 5L",
-    labelHi: "\u20b9 5 \u0932\u093e\u0916 \u0938\u0947 \u0905\u0927\u093f\u0915",
+    value: "500000_800000",
+    labelEn: "Rs. 5L-Rs. 8L",
+    labelHi: "\u20b9 5 \u0932\u093e\u0916 - \u20b9 8 \u0932\u093e\u0916",
+  },
+  {
+    value: "above_800000",
+    labelEn: "Above Rs. 8L",
+    labelHi: "\u20b9 8 \u0932\u093e\u0916 \u0938\u0947 \u0905\u0927\u093f\u0915",
   },
 ];
 

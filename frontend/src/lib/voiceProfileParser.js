@@ -79,6 +79,22 @@ function parseCategory(text) {
 }
 
 function parseIncomeBand(text) {
+  if (
+    includesAny(text, [
+      "no income",
+      "no personal income",
+      "dependent",
+      "unemployed",
+      "housewife",
+      "house wife",
+      "homemaker",
+      "berozgar",
+      "grihini",
+    ])
+  ) {
+    return "no_income";
+  }
+
   const contextualMatch =
     text.match(
       /(?:income|आय|कमाई|family income|पारिवारिक आय)\s*(?:is|है|का|की)?\s*(\d+(?:\.\d+)?)\s*(crore|करोड़|करोड|lakh|लाख|lac|thousand|हजार)?/
@@ -108,27 +124,27 @@ function parseIncomeBand(text) {
     amount *= 1000;
   }
 
-  if (!amount) {
-    return "";
+  if (amount <= 0) {
+    return "no_income";
   }
 
-  if (amount < 50000) {
-    return "under_50000";
+  if (amount < 100000) {
+    return "under_100000";
   }
 
-  if (amount <= 120000) {
-    return "50000_120000";
-  }
-
-  if (amount <= 200000) {
-    return "120000_200000";
+  if (amount <= 300000) {
+    return "100000_300000";
   }
 
   if (amount <= 500000) {
-    return "200000_500000";
+    return "300000_500000";
   }
 
-  return "above_500000";
+  if (amount <= 800000) {
+    return "500000_800000";
+  }
+
+  return "above_800000";
 }
 
 function parseAgeBand(text) {

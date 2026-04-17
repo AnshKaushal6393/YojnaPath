@@ -32,11 +32,23 @@ function FieldLabel({ children }) {
 }
 
 function getIncomeLabel(selectedUserType, t) {
-  if (selectedUserType === "student") {
+  if (["student", "women", "housing"].includes(selectedUserType)) {
     return t("adaptiveForm.familyIncome");
   }
 
   return t("adaptiveForm.annualIncome");
+}
+
+function getIncomeHelp(selectedUserType, t) {
+  if (selectedUserType === "women") {
+    return t("adaptiveForm.womenIncomeHelp");
+  }
+
+  if (["student", "housing"].includes(selectedUserType)) {
+    return t("adaptiveForm.familyIncomeHelp");
+  }
+
+  return t("adaptiveForm.annualIncomeHelp");
 }
 
 export default function AdaptiveForm({
@@ -178,6 +190,7 @@ export default function AdaptiveForm({
                 </option>
               ))}
             </select>
+            <p className="type-caption">{getIncomeHelp(selectedUserType, t)}</p>
           </div>
         ) : null}
 
