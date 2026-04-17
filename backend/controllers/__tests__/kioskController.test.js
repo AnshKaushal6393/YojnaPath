@@ -8,13 +8,13 @@ jest.mock("../../services/analyticsService", () => ({
 }));
 
 jest.mock("../../services/kioskAuthService", () => ({
-  resolveKioskId: jest.fn(),
+  resolveKiosk: jest.fn(),
 }));
 
 const jwt = require("jsonwebtoken");
 const { getMatchingSchemes } = require("../../engine/matcher");
 const { recordKioskUsage, recordMatchAnalytics } = require("../../services/analyticsService");
-const { resolveKioskId } = require("../../services/kioskAuthService");
+const { resolveKiosk } = require("../../services/kioskAuthService");
 const { kioskLogin, kioskMatch } = require("../kioskController");
 
 function createResponse() {
@@ -31,7 +31,7 @@ describe("kioskController", () => {
   });
 
   test("kioskLogin returns 401 for invalid kiosk code", async () => {
-    resolveKioskId.mockReturnValue(null);
+    resolveKiosk.mockResolvedValue(null);
     const req = { body: { kioskCode: "ABCD1234" } };
     const res = createResponse();
 
@@ -42,7 +42,10 @@ describe("kioskController", () => {
   });
 
   test("kioskLogin returns kiosk JWT for valid code", async () => {
-    resolveKioskId.mockReturnValue("kiosk-1");
+    resolveKiosk.mockResolvedValue({
+      id: "kiosk-1",
+      name: "Demo kiosk",
+    });
     const req = { body: { kioskCode: "ABCD1234" } };
     const res = createResponse();
 
@@ -54,6 +57,7 @@ describe("kioskController", () => {
     expect(res.json).toHaveBeenCalledWith({
       token: expect.any(String),
       kioskId: "kiosk-1",
+      kioskName: "Demo kiosk",
       role: "kiosk",
     });
   });
@@ -89,13 +93,23 @@ describe("kioskController", () => {
         landAcres: 1,
         disabilityPct: 0,
         isStudent: false,
+        lang: "hi",
       },
     };
     const res = createResponse();
 
     await kioskMatch(req, res);
 
-    expect(recordMatchAnalytics).toHaveBeenCalled();
+    expect(recordMatchAnalytics).toHaveBeenCalledWith({
+      userId: null,
+      sessionType: "kiosk",
+      state: "UP",
+      occupation: "farmer",
+      matchCount: 1,
+      nearMissCount: 0,
+      schemeIds: ["PM_KISAN_001"],
+      lang: "hi",
+    });
     expect(recordKioskUsage).toHaveBeenCalledWith("kiosk-1");
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       count: 1,

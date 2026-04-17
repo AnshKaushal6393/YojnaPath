@@ -46,6 +46,11 @@ function normalizePositiveInteger(value, fallback) {
   return Number.isInteger(normalized) && normalized > 0 ? normalized : fallback;
 }
 
+function normalizeLanguage(value) {
+  const normalized = normalizeOptionalString(value)?.toLowerCase() ?? null;
+  return normalized ? normalized.slice(0, 5) : null;
+}
+
 function normalizeBoolean(value, fallback = false) {
   if (typeof value === "boolean") {
     return value;
@@ -175,7 +180,16 @@ async function matchSchemes(req, res) {
     limitNearMisses,
     nearMissGap,
   });
-  await recordMatchAnalytics();
+  await recordMatchAnalytics({
+    userId: req.user?.id || null,
+    sessionType: "web",
+    state: profile.state,
+    occupation: profile.occupation,
+    matchCount: result.count,
+    nearMissCount: result.nearMissCount,
+    schemeIds: result.schemes.map((scheme) => scheme.schemeId),
+    lang: normalizeLanguage(req.body?.lang ?? req.query?.lang),
+  });
 
   return res.json({
     ...result,

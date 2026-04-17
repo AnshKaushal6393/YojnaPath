@@ -5,6 +5,10 @@ jest.mock("../../models/Scheme", () => ({
   },
 }));
 
+jest.mock("../../config/mongo", () => ({
+  isMongoReady: jest.fn(() => true),
+}));
+
 jest.mock("../../engine/matcher", () => ({
   getMatchingSchemes: jest.fn(),
   matchScheme: jest.fn(),
@@ -24,6 +28,7 @@ jest.mock("../../services/analyticsService", () => ({
 const { Scheme } = require("../../models/Scheme");
 const { getMatchingSchemes, matchScheme } = require("../../engine/matcher");
 const { topSchemesCache } = require("../../services/topSchemesCache");
+const { recordMatchAnalytics } = require("../../services/analyticsService");
 const {
   getSchemeById,
   getTopSchemesByUserType,
@@ -64,21 +69,41 @@ describe("schemesController", () => {
         disabilityPct: 0,
         isStudent: false,
       },
+      user: {
+        id: "user-1",
+      },
     };
     const res = createResponse();
 
     await matchSchemes(req, res);
 
-    expect(getMatchingSchemes).toHaveBeenCalledWith({
+    expect(getMatchingSchemes).toHaveBeenCalledWith(
+      {
+        state: "UP",
+        occupation: "farmer",
+        annual_income: 100000,
+        caste: "obc",
+        gender: "male",
+        age: 35,
+        landAcres: 1,
+        disabilityPct: 0,
+        isStudent: false,
+      },
+      {
+        limitMatches: 50,
+        limitNearMisses: 10,
+        nearMissGap: 1,
+      }
+    );
+    expect(recordMatchAnalytics).toHaveBeenCalledWith({
+      userId: "user-1",
+      sessionType: "web",
       state: "UP",
       occupation: "farmer",
-      annual_income: 100000,
-      caste: "obc",
-      gender: "male",
-      age: 35,
-      landAcres: 1,
-      disabilityPct: 0,
-      isStudent: false,
+      matchCount: 1,
+      nearMissCount: 0,
+      schemeIds: ["ABC"],
+      lang: null,
     });
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       count: 1,

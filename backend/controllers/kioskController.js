@@ -72,7 +72,16 @@ async function kioskMatch(req, res) {
 
   const result = await getMatchingSchemes(profile);
   await Promise.all([
-    recordMatchAnalytics(),
+    recordMatchAnalytics({
+      userId: null,
+      sessionType: "kiosk",
+      state: profile.state,
+      occupation: profile.occupation,
+      matchCount: result.count,
+      nearMissCount: result.nearMissCount,
+      schemeIds: result.schemes.map((scheme) => scheme.schemeId),
+      lang: String(req.body?.lang || "").trim().toLowerCase().slice(0, 5) || null,
+    }),
     recordKioskUsage(req.user.id),
   ]);
 
