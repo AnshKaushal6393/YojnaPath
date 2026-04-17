@@ -15,15 +15,16 @@ function requireAdminAuth(req, res, next) {
   try {
     const jwtSecret = getRequiredEnv("ADMIN_JWT_SECRET");
     const payload = jwt.verify(token, jwtSecret);
+    const isAdmin = payload.role === "admin" || payload.isAdmin === true;
 
-    if (payload.role !== "admin" || !payload.adminId) {
+    if (!isAdmin || !payload.adminId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     req.admin = {
       id: payload.adminId,
       email: payload.email || "",
-      role: payload.role,
+      role: payload.role || "admin",
     };
 
     return next();
@@ -34,4 +35,5 @@ function requireAdminAuth(req, res, next) {
 
 module.exports = {
   requireAdminAuth,
+  verifyAdmin: requireAdminAuth,
 };

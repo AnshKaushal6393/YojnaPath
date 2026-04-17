@@ -17,10 +17,10 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS admins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(160) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  last_login TIMESTAMP
+  email VARCHAR(120) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  last_login TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS kiosks (
@@ -94,4 +94,37 @@ CREATE TABLE IF NOT EXISTS applications (
   notes TEXT,
   remind_at DATE,
   PRIMARY KEY (user_id, scheme_id)
+);
+
+CREATE TABLE IF NOT EXISTS match_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  session_type VARCHAR(10) DEFAULT 'web',
+  state VARCHAR(10),
+  occupation VARCHAR(30),
+  match_count INTEGER,
+  near_miss_count INTEGER,
+  scheme_ids TEXT[],
+  lang VARCHAR(5),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS scheme_edit_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scheme_id VARCHAR(50),
+  action VARCHAR(20),
+  old_data JSONB,
+  new_data JSONB,
+  note TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS kiosk_codes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  code VARCHAR(20) UNIQUE NOT NULL,
+  label VARCHAR(100),
+  state VARCHAR(10),
+  active BOOLEAN DEFAULT TRUE,
+  sessions INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
 );

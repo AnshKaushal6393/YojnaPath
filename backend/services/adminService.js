@@ -12,12 +12,15 @@ async function ensureAdminTable() {
       await pool.query(
         `CREATE TABLE IF NOT EXISTS admins (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-          email VARCHAR(160) UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-          last_login TIMESTAMP
+          email VARCHAR(120) UNIQUE NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          last_login TIMESTAMP,
+          created_at TIMESTAMP DEFAULT NOW()
         )`
       );
+      await pool.query("ALTER TABLE admins ALTER COLUMN email TYPE VARCHAR(120)");
+      await pool.query("ALTER TABLE admins ALTER COLUMN password_hash TYPE VARCHAR(255)");
+      await pool.query("ALTER TABLE admins ALTER COLUMN created_at SET DEFAULT NOW()");
     })().catch((error) => {
       adminTableInitializationPromise = null;
       throw error;

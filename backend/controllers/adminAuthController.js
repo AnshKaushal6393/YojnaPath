@@ -43,6 +43,7 @@ async function login(req, res) {
     {
       adminId: admin.id,
       email: admin.email,
+      isAdmin: true,
       role: "admin",
     },
     jwtSecret,

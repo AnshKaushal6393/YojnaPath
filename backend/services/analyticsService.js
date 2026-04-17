@@ -4,7 +4,7 @@ const Redis = require("ioredis");
 
 const { isMongoReady } = require("../config/mongo");
 const { IMPACT_CACHE_TTL_SECONDS } = require("../config/constants");
-const { getPool } = require("../config/postgres");
+const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
 
 class MemoryAnalyticsStore {
@@ -48,6 +48,7 @@ let redis;
 let memoryStore;
 let redisUnavailable = false;
 let hasLoggedRedisError = false;
+let analyticsSchemaReadyPromise;
 
 function isMissingRelationError(error) {
   return error?.code === "42P01";
@@ -59,6 +60,34 @@ function getMemoryStore() {
   }
 
   return memoryStore;
+}
+
+async function ensureAnalyticsSchema() {
+  if (!analyticsSchemaReadyPromise) {
+    analyticsSchemaReadyPromise = (async () => {
+      await ensureDatabaseSchema();
+      const pool = getPool();
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS match_logs (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+          session_type VARCHAR(10) DEFAULT 'web',
+          state VARCHAR(10),
+          occupation VARCHAR(30),
+          match_count INTEGER,
+          near_miss_count INTEGER,
+          scheme_ids TEXT[],
+          lang VARCHAR(5),
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+    })().catch((error) => {
+      analyticsSchemaReadyPromise = null;
+      throw error;
+    });
+  }
+
+  return analyticsSchemaReadyPromise;
 }
 
 async function getRedisClient() {
@@ -141,8 +170,48 @@ async function setCachedValue(key, value, ttlSeconds = IMPACT_CACHE_TTL_SECONDS)
   await client.set(key, JSON.stringify(value), "EX", ttlSeconds);
 }
 
-async function recordMatchAnalytics() {
+async function recordMatchAnalytics(matchLog = null) {
   await incrementCounter("analytics:matches:total", 1);
+
+  if (!matchLog) {
+    return;
+  }
+
+  try {
+    await ensureAnalyticsSchema();
+    const pool = getPool();
+    await pool.query(
+      `
+        INSERT INTO match_logs (
+          user_id,
+          session_type,
+          state,
+          occupation,
+          match_count,
+          near_miss_count,
+          scheme_ids,
+          lang
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `,
+      [
+        matchLog.userId || null,
+        String(matchLog.sessionType || "web").slice(0, 10),
+        matchLog.state || null,
+        matchLog.occupation || null,
+        Number.isInteger(matchLog.matchCount) ? matchLog.matchCount : null,
+        Number.isInteger(matchLog.nearMissCount) ? matchLog.nearMissCount : null,
+        Array.isArray(matchLog.schemeIds)
+          ? matchLog.schemeIds.map((schemeId) => String(schemeId))
+          : null,
+        matchLog.lang || null,
+      ]
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[analytics] Failed to persist match log: ${error.message}`);
+    }
+  }
 }
 
 async function recordKioskUsage(kioskId) {
