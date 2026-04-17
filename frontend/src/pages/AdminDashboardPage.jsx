@@ -82,6 +82,7 @@ export default function AdminDashboardPage() {
   const activity = activityQuery.data?.events || [];
   const funnelStages = funnelQuery.data?.stages || [];
   const funnelMaxCount = funnelQuery.data?.maxCount || 0;
+  const criticalError = dashboardQuery.error || statsQuery.error;
   const photoCompletion = getPhotoCompletion(stats);
   const photoBreakdown = getPhotoBreakdown(stats);
   const avgMatchesPerUser =
@@ -154,8 +155,9 @@ export default function AdminDashboardPage() {
             </p>
             {overview ? (
               <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-400">
-                Refreshed {formatDateTime(overview.generatedAt)} • Mongo{" "}
-                {overview.mongoConnected ? "connected" : "offline"}
+                {`Refreshed ${formatDateTime(overview.generatedAt)} | Mongo ${
+                  overview.mongoConnected ? "connected" : "offline"
+                }`}
               </p>
             ) : null}
           </div>
@@ -175,13 +177,9 @@ export default function AdminDashboardPage() {
           </section>
         ) : null}
 
-        {dashboardQuery.error || statsQuery.error || activityQuery.error || funnelQuery.error ? (
+        {criticalError ? (
           <section className="rounded-[28px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
-            {dashboardQuery.error?.message ||
-              statsQuery.error?.message ||
-              activityQuery.error?.message ||
-              funnelQuery.error?.message ||
-              "Could not load admin dashboard right now."}
+            {criticalError.message || "Could not load admin dashboard right now."}
           </section>
         ) : null}
 
@@ -314,8 +312,9 @@ export default function AdminDashboardPage() {
                               {event.sessionType} match
                             </p>
                             <p className="mt-1 text-sm text-slate-300">
-                              {event.occupation || "Unknown occupation"}
-                              {event.state ? ` • ${event.state}` : ""}
+                              {`${event.occupation || "Unknown occupation"}${
+                                event.state ? ` | ${event.state}` : ""
+                              }`}
                             </p>
                           </div>
                           <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
