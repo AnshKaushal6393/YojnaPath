@@ -116,14 +116,17 @@ describe("authController", () => {
 
     expect(clearOtp).toHaveBeenCalledWith("9876543210");
     expect(findOrCreateUserByPhone).toHaveBeenCalledWith("9876543210", "hi");
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       token: expect.any(String),
-      user: {
+      needsRegistration: true,
+      user: expect.objectContaining({
         id: "user-1",
         phone: "9876543210",
         lang: "hi",
-      },
-    });
+        photoType: "none",
+        onboardingDone: false,
+      }),
+    }));
 
     const payload = jwt.verify(res.json.mock.calls[0][0].token, process.env.JWT_SECRET);
     expect(payload.userId).toBe("user-1");
@@ -151,13 +154,16 @@ describe("authController", () => {
     await verify(req, res);
 
     expect(findOrCreateUserByPhone).toHaveBeenCalledWith("9999999999", "en");
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       token: expect.any(String),
-      user: {
+      needsRegistration: true,
+      user: expect.objectContaining({
         id: "user-2",
         phone: "9999999999",
         lang: "en",
-      },
-    });
+        photoType: "none",
+        onboardingDone: false,
+      }),
+    }));
   });
 });
