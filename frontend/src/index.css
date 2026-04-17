@@ -232,6 +232,31 @@ select {
   min-height: 100vh;
 }
 
+.admin-shell {
+  color-scheme: dark;
+}
+
+.admin-shell a {
+  color: inherit;
+}
+
+.admin-shell input,
+.admin-shell select,
+.admin-shell button,
+.admin-shell textarea {
+  color: #f8fafc;
+}
+
+.admin-shell input::placeholder,
+.admin-shell textarea::placeholder {
+  color: #64748b;
+}
+
+.admin-shell select option {
+  color: #e2e8f0;
+  background-color: #020617;
+}
+
 .app-shell {
   min-height: 100vh;
   padding: var(--sp24) var(--sp16) calc(var(--sp24) + 72px);
