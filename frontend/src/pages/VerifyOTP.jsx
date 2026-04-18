@@ -4,7 +4,8 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import OTPInput from "../components/OTPInput";
 import { fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import { apiPost } from "../utils/api";
-import { getStoredPhone, setStoredPhone, setToken } from "../utils/auth";
+import { getTempAuthData, setTempAuthData, setToken } from "../utils/auth";
+
 
 const RESEND_SECONDS = 30;
 
@@ -87,8 +88,9 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
     try {
       setIsResending(true);
       setError("");
-      await apiPost("/api/auth/login", { phone });
-      setStoredPhone(phone);
+      await apiPost("/api/auth/login", { type, identifier });
+      setTempAuthData(type, identifier);
+
       setCountdown(RESEND_SECONDS);
     } catch (resendError) {
       setError(resendError.message || t("auth.verify.resendError"));
