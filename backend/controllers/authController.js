@@ -92,6 +92,10 @@ function isSmsOtpEnabled() {
   return process.env.SMS_OTP_ENABLED === "true";
 }
 
+function shouldExposeOtpInResponse() {
+  return process.env.EXPOSE_OTP_IN_RESPONSE === "true";
+}
+
 async function login(req, res) {
   const otpStore = getOtpStore();
   const type = String(req.body?.type || 'phone').toLowerCase();
@@ -132,18 +136,19 @@ async function login(req, res) {
   const otp = useDemoOtp ? getDemoOtpCode() : generateOtp();
 
   if (type === "phone") {
-    if (!useDemoOtp && !isSmsOtpEnabled()) {
-      return res.status(503).json({ message: "Phone OTP is not configured. Use email login for now." });
-    }
-
     await otpStore.saveOtp(key, otp);
 
     if (useDemoOtp) {
       console.log(`[auth] Demo OTP for ${phone}: ${otp}`);
+    } else if (!isSmsOtpEnabled()) {
+      console.log(`[auth] Generated phone OTP for ${phone}: ${otp}`);
     }
 
     // TODO: integrate SMS service when SMS_OTP_ENABLED is true.
-    return res.json({ message: "OTP sent" });
+    return res.json({
+      message: "OTP sent",
+      ...(shouldExposeOtpInResponse() ? { debugOtp: otp } : {}),
+    });
   }
 
   await otpStore.saveOtp(key, otp);
@@ -157,7 +162,10 @@ async function login(req, res) {
     return res.status(500).json({ message: "Failed to send OTP" });
   }
 
-  return res.json({ message: "OTP sent" });
+  return res.json({
+    message: "OTP sent",
+    ...(shouldExposeOtpInResponse() ? { debugOtp: otp } : {}),
+  });
 }
 
 

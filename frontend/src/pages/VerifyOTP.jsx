@@ -4,7 +4,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import OTPInput from "../components/OTPInput";
 import { fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import { apiPost } from "../utils/api";
-import { getTempAuthData, setTempAuthData, setToken } from "../utils/auth";
+import { getTempAuthData, getTempDebugOtp, setTempAuthData, setTempDebugOtp, setToken } from "../utils/auth";
 
 
 const RESEND_SECONDS = 30;
@@ -21,6 +21,7 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
   const tempData = useMemo(() => getTempAuthData(), []);
   const type = typeFromState || tempData?.type || 'phone';
   const identifier = identifierFromState || tempData?.identifier || '';
+  const [debugOtp, setDebugOtpValue] = useState(() => getTempDebugOtp());
 
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -62,6 +63,7 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
       });
       setToken(payload.token);
       setTempAuthData(type, identifier);
+      setTempDebugOtp("");
 
       if (payload.needsRegistration) {
         navigate("/register", { replace: true });
@@ -88,8 +90,11 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
     try {
       setIsResending(true);
       setError("");
-      await apiPost("/api/auth/login", { type, identifier });
+      const payload = await apiPost("/api/auth/login", { type, identifier });
       setTempAuthData(type, identifier);
+      const nextDebugOtp = payload?.debugOtp || "";
+      setTempDebugOtp(nextDebugOtp);
+      setDebugOtpValue(nextDebugOtp);
 
       setCountdown(RESEND_SECONDS);
     } catch (resendError) {
@@ -114,6 +119,11 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
     {t("auth.verify.sentTo", { identifier, phone: identifier })}
     <span className="ml-1 text-xs text-emerald-600 font-medium">({type.toUpperCase()})</span>
   </p>
+  {type === "phone" && debugOtp ? (
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+      Your OTP for this number is <span className="font-semibold tracking-[0.25em]">{debugOtp}</span>
+    </div>
+  ) : null}
   </div>
 
   <form className="space-y-5" onSubmit={handleVerify}>

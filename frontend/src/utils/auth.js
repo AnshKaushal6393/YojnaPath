@@ -1,5 +1,6 @@
 const TOKEN_KEY = "yojnapath_auth_token";
 const PHONE_KEY = "yojnapath_auth_phone";
+const TEMP_DEBUG_OTP_KEY = "yojnapath_temp_debug_otp";
 
 export function getToken() {
   if (typeof window === "undefined") {
@@ -72,6 +73,27 @@ export function setTempAuthData(type, identifier) {
   localStorage.setItem('tempAuthIdentifier', identifier);
 }
 
+export function getTempDebugOtp() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return localStorage.getItem(TEMP_DEBUG_OTP_KEY) || "";
+}
+
+export function setTempDebugOtp(otp) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (otp) {
+    localStorage.setItem(TEMP_DEBUG_OTP_KEY, otp);
+    return;
+  }
+
+  localStorage.removeItem(TEMP_DEBUG_OTP_KEY);
+}
+
 export function clearTempAuthData() {
   if (typeof window === "undefined") {
     return;
@@ -79,5 +101,5 @@ export function clearTempAuthData() {
 
   localStorage.removeItem('tempAuthType');
   localStorage.removeItem('tempAuthIdentifier');
+  localStorage.removeItem(TEMP_DEBUG_OTP_KEY);
 }
-

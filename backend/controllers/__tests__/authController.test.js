@@ -36,6 +36,7 @@ describe("authController", () => {
     process.env.DEMO_OTP_CODE = "123456";
     process.env.DEMO_OTP_PHONES = "";
     process.env.SMS_OTP_ENABLED = "false";
+    process.env.EXPOSE_OTP_IN_RESPONSE = "false";
   });
 
   test("login returns 400 for invalid phone", async () => {
@@ -81,10 +82,11 @@ describe("authController", () => {
     expect(res.json).toHaveBeenCalledWith({ message: "OTP sent" });
   });
 
-  test("login returns 503 for phone when demo and sms OTP are disabled", async () => {
+  test("login saves OTP and returns success for phone when sms is disabled", async () => {
+    const saveOtp = jest.fn().mockResolvedValue();
     getOtpStore.mockReturnValue({
       isRateLimited: jest.fn().mockResolvedValue(false),
-      saveOtp: jest.fn(),
+      saveOtp,
     });
 
     const req = { body: { type: "phone", identifier: "9876543210" } };
@@ -92,10 +94,28 @@ describe("authController", () => {
 
     await login(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.json).toHaveBeenCalledWith({
-      message: "Phone OTP is not configured. Use email login for now.",
+    expect(saveOtp).toHaveBeenCalledWith("phone:9876543210", expect.stringMatching(/^\d{6}$/));
+    expect(res.json).toHaveBeenCalledWith({ message: "OTP sent" });
+  });
+
+  test("login can expose generated OTP in response", async () => {
+    process.env.EXPOSE_OTP_IN_RESPONSE = "true";
+    getOtpStore.mockReturnValue({
+      isRateLimited: jest.fn().mockResolvedValue(false),
+      saveOtp: jest.fn().mockResolvedValue(),
     });
+
+    const req = { body: { type: "phone", identifier: "9876543210" } };
+    const res = createResponse();
+
+    await login(req, res);
+
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "OTP sent",
+        debugOtp: expect.stringMatching(/^\d{6}$/),
+      })
+    );
   });
 
   test("verify returns 400 for invalid payload", async () => {
