@@ -1,6 +1,31 @@
 const TOKEN_KEY = "yojnapath_auth_token";
 const PHONE_KEY = "yojnapath_auth_phone";
 
+export function clearStoredPhone() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(PHONE_KEY);
+}
+
+export function getStoredPhone() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.localStorage.getItem(PHONE_KEY) || "";
+}
+
+export function setStoredPhone(phone) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(PHONE_KEY, phone);
+}
+
+
 export function getToken() {
   if (typeof window === "undefined") {
     return "";
