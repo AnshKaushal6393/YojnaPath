@@ -165,9 +165,6 @@ export default function AdminUserDetailPage() {
                   <p className="mt-2 text-sm text-slate-300">
                     {user.primaryProfile?.state || "NA"} / {user.primaryProfile?.occupation || "unknown"}
                   </p>
-                  <p className="mt-2 text-sm text-slate-300">
-                    District: {user.primaryProfile?.district || "NA"}
-                  </p>
                 </div>
               </div>
             </article>
@@ -228,7 +225,6 @@ export default function AdminUserDetailPage() {
                           <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-slate-300">
                             <p>State: {profile.state || "NA"}</p>
                             <p>Occupation: {profile.occupation || "unknown"}</p>
-                            <p>District: {profile.district || "NA"}</p>
                             <p>Gender: {profile.gender || "NA"}</p>
                             <p>Age: {profile.age ?? "NA"}</p>
                             <p>Caste: {profile.caste || "NA"}</p>
