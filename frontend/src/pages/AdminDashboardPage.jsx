@@ -71,14 +71,49 @@ export default function AdminDashboardPage() {
   ]);
 
   const metricCards = [
-    { label: "Total users", value: formatNumber(stats?.totalUsers), accent: "text-emerald-300" },
-    { label: "Total matches", value: formatNumber(stats?.totalMatches), accent: "text-cyan-300" },
-    { label: "Avg matches / user", value: avgMatchesPerUser.toFixed(1), accent: "text-amber-300" },
-    { label: "Near misses", value: formatNumber(stats?.totalNearMisses), accent: "text-rose-300" },
-    { label: "Active schemes", value: formatNumber(stats?.activeSchemes), accent: "text-fuchsia-300" },
-    { label: "Matches today", value: formatNumber(stats?.activeToday), accent: "text-sky-300" },
-    { label: "Photo completion", value: formatPercent(photoCompletion), accent: "text-lime-300" },
-  ];
+    {
+      label: "Total users",
+      value: formatNumber(stats?.totalUsers),
+      accent: "text-emerald-300",
+      visible: true,
+    },
+    {
+      label: "Total matches",
+      value: formatNumber(stats?.totalMatches),
+      accent: "text-cyan-300",
+      visible: Number(stats?.totalMatches || 0) > 0,
+    },
+    {
+      label: "Avg matches / user",
+      value: avgMatchesPerUser.toFixed(1),
+      accent: "text-amber-300",
+      visible: Number(stats?.totalMatches || 0) > 0,
+    },
+    {
+      label: "Near misses",
+      value: formatNumber(stats?.totalNearMisses),
+      accent: "text-rose-300",
+      visible: Number(stats?.totalNearMisses || 0) > 0,
+    },
+    {
+      label: "Active schemes",
+      value: formatNumber(stats?.activeSchemes),
+      accent: "text-fuchsia-300",
+      visible: true,
+    },
+    {
+      label: "Matches today",
+      value: formatNumber(stats?.activeToday),
+      accent: "text-sky-300",
+      visible: Number(stats?.activeToday || 0) > 0,
+    },
+    {
+      label: "Photo completion",
+      value: formatPercent(photoCompletion),
+      accent: "text-lime-300",
+      visible: Number(stats?.totalUsers || 0) > 0,
+    },
+  ].filter((card) => card.visible);
 
   return (
     <>
