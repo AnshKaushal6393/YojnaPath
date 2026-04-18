@@ -121,6 +121,7 @@ export default function ProfilePage() {
   const [lang, setLang] = useState("hi");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [submitMessage, setSubmitMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -160,6 +161,7 @@ export default function ProfilePage() {
     setName(currentUserQuery.data.name || "");
     setLang(currentUserQuery.data.lang || "hi");
     setPhone(currentUserQuery.data.phone || "");
+    setEmail(currentUserQuery.data.email || "");
     setPhotoUrl(currentUserQuery.data.photoUrl || "");
     hasPrefilledAccountRef.current = true;
   }, [currentUserQuery.data]);
@@ -813,6 +815,7 @@ export default function ProfilePage() {
         <AccountSection
           name={name}
           phone={phone}
+          email={email}
           currentProfileName={memberName}
           onNameChange={(value) => setName(normalizeName(value))}
           onSave={handleAccountSave}

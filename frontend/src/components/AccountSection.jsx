@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 export default function AccountSection({
   name,
   phone,
+  email,
   currentProfileName,
   onNameChange,
   onSave,
@@ -10,7 +11,9 @@ export default function AccountSection({
   isSaving = false,
 }) {
   const { t } = useTranslation();
-  const phoneText = phone ? ` · ${phone}` : "";
+  const contactValue = phone || email || "";
+  const contactText = contactValue ? ` · ${contactValue}` : "";
+  const contactLabel = phone ? t("profile.account.phone") : t("profile.account.email");
 
   return (
     <section className="profile-card">
@@ -19,7 +22,7 @@ export default function AccountSection({
         <p className="type-caption">
           {t("profile.account.loggedInAs", {
             name: name || t("profile.account.accountOwnerFallback"),
-            phone: phoneText,
+            phone: contactText,
           })}
           {currentProfileName
             ? ` ${t("profile.account.currentProfile", { name: currentProfileName })}`
@@ -41,9 +44,9 @@ export default function AccountSection({
         </label>
 
         <div className="demo-field">
-          <span className="type-label">{t("profile.account.phone")}</span>
+          <span className="type-label">{contactLabel}</span>
           <div className="profile-account-value">
-            <p className="type-body-en">{phone || t("profile.account.phoneUnavailable")}</p>
+            <p className="type-body-en">{contactValue || t("profile.account.contactUnavailable")}</p>
           </div>
         </div>
       </div>
