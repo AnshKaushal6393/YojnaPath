@@ -148,16 +148,7 @@ export default function AdminUserDetailPage() {
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
                 {renderPhoto(displayPhotoUrl, user.name || "User photo")}
-                {displayPhotoUrl && (
-                  <p className="mt-2 text-xs text-slate-400">
-                    Photo source: {(() => {
-                      if (user?.photoUrl) return "user.photoUrl";
-                      if (user?.primaryProfile?.photoUrl) return "primaryProfile.photoUrl";
-                      const firstProfile = (user?.profiles || []).find(p => p.photoUrl);
-                      return firstProfile ? `profiles[${firstProfile.id || "first"}].photoUrl` : "none";
-                    })()}
-                  </p>
-                )}
+
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
                     Account
