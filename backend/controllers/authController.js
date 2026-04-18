@@ -28,6 +28,10 @@ function validatePhone(phone) {
   return /^\d{10}$/.test(phone);
 }
 
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email ?? "").trim().toLowerCase());
+}
+
 function validateName(name) {
   return String(name ?? "").trim().replace(/\s+/g, " ").length >= 2;
 }
@@ -89,18 +93,22 @@ async function login(req, res) {
   const type = String(req.body?.type || 'phone').toLowerCase();
   const identifier = String(req.body?.identifier || '').trim();
   let key;
+  let normalizedIdentifier;
+  let phone = "";
 
   if (type === 'phone') {
-    const phone = identifier.replace(/\\D/g, '');
+    phone = normalizePhone(identifier);
     if (!validatePhone(phone)) {
       return res.status(400).json({ message: "Valid 10-digit phone is required" });
     }
+    normalizedIdentifier = phone;
     key = `phone:${phone}`;
   } else if (type === 'email') {
     const email = identifier.toLowerCase();
-    if (!/^[ ^\\s@]+@[ ^\\s@]+\\.[^\\s@]+$/.test(email)) {
+    if (!validateEmail(email)) {
       return res.status(400).json({ message: "Valid email is required" });
     }
+    normalizedIdentifier = email;
     key = `email:${email}`;
   } else {
     return res.status(400).json({ message: "Type must be 'phone' or 'email'" });
@@ -116,25 +124,21 @@ async function login(req, res) {
     return res.status(429).json({ message: "Rate limit exceeded. Try again later." });
   }
 
-  const otp = generateOtp();
+  const useDemoOtp = type === "phone" && isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
+  const otp = useDemoOtp ? getDemoOtpCode() : generateOtp();
+
   await otpStore.saveOtp(key, otp);
 
   // Send OTP
-  if (type === 'phone') {
-    const phone = identifier.replace(/\\D/g, '');
-    const useDemoOtp = isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
-    if (useDemoOtp) {
-      console.log(`[auth] Demo OTP for ${phone}: ${otp}`);
-    } else if (process.env.NODE_ENV === "development" || !process.env.SMS_ENABLED) {
-      console.log(`[auth] OTP for ${phone}: ${otp}`);
-    }
+  if (useDemoOtp) {
     // TODO: integrate SMS service
   } else {
     try {
-      await sendOtpEmail(identifier, otp);
-      console.log(`[auth] OTP email sent to ${identifier}`);
+      await sendOtpEmail(normalizedIdentifier, otp);
+      console.log(`[auth] OTP sent to ${normalizedIdentifier}`);
     } catch (error) {
-      console.error(`[auth] Email send failed for ${identifier}:`, error);
+      await otpStore.clearOtp(key);
+      console.error(`[auth] OTP delivery failed for ${normalizedIdentifier}:`, error);
       return res.status(500).json({ message: "Failed to send OTP" });
     }
   }
@@ -152,13 +156,13 @@ async function verify(req, res) {
 
   let key;
   if (type === 'phone') {
-    const phone = identifier.replace(/\\D/g, '');
+    const phone = normalizePhone(identifier);
     if (!validatePhone(phone) || !/^\d{6}$/.test(otp)) {
       return res.status(400).json({ message: "Valid phone and 6-digit OTP are required" });
     }
     key = `phone:${phone}`;
   } else if (type === 'email') {
-    if (!/^[ ^\\s@]+@[ ^\\s@]+\\.[^\\s@]+$/.test(identifier) || !/^\d{6}$/.test(otp)) {
+    if (!validateEmail(identifier) || !/^\d{6}$/.test(otp)) {
       return res.status(400).json({ message: "Valid email and 6-digit OTP are required" });
     }
     key = `email:${identifier.toLowerCase()}`;

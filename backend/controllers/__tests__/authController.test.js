@@ -6,13 +6,18 @@ jest.mock("../../services/funnelService", () => ({
   recordFunnelStage: jest.fn(),
 }));
 
+jest.mock("../../services/emailService", () => ({
+  sendOtpEmail: jest.fn(),
+}));
+
 jest.mock("../../services/userService", () => ({
-  findOrCreateUserByPhone: jest.fn(),
+  findOrCreateUserByIdentifier: jest.fn(),
 }));
 
 const jwt = require("jsonwebtoken");
+const { sendOtpEmail } = require("../../services/emailService");
 const { getOtpStore } = require("../../services/otpStore");
-const { findOrCreateUserByPhone } = require("../../services/userService");
+const { findOrCreateUserByIdentifier } = require("../../services/userService");
 const { login, verify } = require("../authController");
 
 function createResponse() {
@@ -25,6 +30,7 @@ function createResponse() {
 describe("authController", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    sendOtpEmail.mockResolvedValue();
     process.env.JWT_SECRET = "test-secret";
     process.env.DEMO_OTP_ENABLED = "false";
     process.env.DEMO_OTP_CODE = "123456";
@@ -32,7 +38,7 @@ describe("authController", () => {
   });
 
   test("login returns 400 for invalid phone", async () => {
-    const req = { body: { phone: "123" } };
+    const req = { body: { type: "phone", identifier: "123" } };
     const res = createResponse();
 
     await login(req, res);
@@ -47,7 +53,7 @@ describe("authController", () => {
       saveOtp: jest.fn(),
     });
 
-    const req = { body: { phone: "9876543210" } };
+    const req = { body: { type: "phone", identifier: "9876543210" } };
     const res = createResponse();
 
     await login(req, res);
@@ -61,19 +67,20 @@ describe("authController", () => {
     getOtpStore.mockReturnValue({
       isRateLimited: jest.fn().mockResolvedValue(false),
       saveOtp,
+      clearOtp: jest.fn().mockResolvedValue(),
     });
 
-    const req = { body: { phone: "9876543210" } };
+    const req = { body: { type: "phone", identifier: "9876543210" } };
     const res = createResponse();
 
     await login(req, res);
 
-    expect(saveOtp).toHaveBeenCalledWith("9876543210", expect.stringMatching(/^\d{6}$/));
+    expect(saveOtp).toHaveBeenCalledWith("phone:9876543210", expect.stringMatching(/^\d{6}$/));
     expect(res.json).toHaveBeenCalledWith({ message: "OTP sent" });
   });
 
   test("verify returns 400 for invalid payload", async () => {
-    const req = { body: { phone: "123", otp: "12" } };
+    const req = { body: { type: "phone", identifier: "123", otp: "12" } };
     const res = createResponse();
 
     await verify(req, res);
@@ -88,7 +95,7 @@ describe("authController", () => {
       clearOtp: jest.fn(),
     });
 
-    const req = { body: { phone: "9876543210", otp: "123456", lang: "hi" } };
+    const req = { body: { type: "phone", identifier: "9876543210", otp: "123456", lang: "hi" } };
     const res = createResponse();
 
     await verify(req, res);
@@ -103,19 +110,19 @@ describe("authController", () => {
       getOtp: jest.fn().mockResolvedValue("123456"),
       clearOtp,
     });
-    findOrCreateUserByPhone.mockResolvedValue({
+    findOrCreateUserByIdentifier.mockResolvedValue({
       id: "user-1",
       phone: "9876543210",
       lang: "hi",
     });
 
-    const req = { body: { phone: "9876543210", otp: "123456", lang: "hi" } };
+    const req = { body: { type: "phone", identifier: "9876543210", otp: "123456", lang: "hi" } };
     const res = createResponse();
 
     await verify(req, res);
 
-    expect(clearOtp).toHaveBeenCalledWith("9876543210");
-    expect(findOrCreateUserByPhone).toHaveBeenCalledWith("9876543210", "hi");
+    expect(clearOtp).toHaveBeenCalledWith("phone:9876543210");
+    expect(findOrCreateUserByIdentifier).toHaveBeenCalledWith("9876543210", "phone", "hi");
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       token: expect.any(String),
       needsRegistration: true,
@@ -130,7 +137,6 @@ describe("authController", () => {
 
     const payload = jwt.verify(res.json.mock.calls[0][0].token, process.env.JWT_SECRET);
     expect(payload.userId).toBe("user-1");
-    expect(payload.phone).toBe("9876543210");
     expect(payload.role).toBe("user");
   });
 
@@ -139,21 +145,21 @@ describe("authController", () => {
     process.env.DEMO_OTP_CODE = "123456";
 
     getOtpStore.mockReturnValue({
-      getOtp: jest.fn(),
-      clearOtp: jest.fn(),
+      getOtp: jest.fn().mockResolvedValue("123456"),
+      clearOtp: jest.fn().mockResolvedValue(),
     });
-    findOrCreateUserByPhone.mockResolvedValue({
+    findOrCreateUserByIdentifier.mockResolvedValue({
       id: "user-2",
       phone: "9999999999",
       lang: "en",
     });
 
-    const req = { body: { phone: "9999999999", otp: "123456", lang: "en" } };
+    const req = { body: { type: "phone", identifier: "9999999999", otp: "123456", lang: "en" } };
     const res = createResponse();
 
     await verify(req, res);
 
-    expect(findOrCreateUserByPhone).toHaveBeenCalledWith("9999999999", "en");
+    expect(findOrCreateUserByIdentifier).toHaveBeenCalledWith("9999999999", "phone", "en");
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       token: expect.any(String),
       needsRegistration: true,

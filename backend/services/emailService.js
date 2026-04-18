@@ -33,6 +33,7 @@ async function getTransporter() {
 
 async function sendOtpEmail(to, otp) {
   const transporter = await getTransporter();
+  const from = getEnv('EMAIL_FROM', getRequiredEnv('EMAIL_USER'));
   const subject = `Your YojnaPath OTP is ${otp}`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto;">
