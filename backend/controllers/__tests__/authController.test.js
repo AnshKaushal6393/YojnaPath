@@ -35,6 +35,7 @@ describe("authController", () => {
     process.env.DEMO_OTP_ENABLED = "false";
     process.env.DEMO_OTP_CODE = "123456";
     process.env.DEMO_OTP_PHONES = "";
+    process.env.SMS_OTP_ENABLED = "false";
   });
 
   test("login returns 400 for invalid phone", async () => {
@@ -62,7 +63,7 @@ describe("authController", () => {
     expect(res.json).toHaveBeenCalledWith({ message: "Rate limit exceeded. Try again later." });
   });
 
-  test("login saves OTP and returns success", async () => {
+  test("login saves OTP and returns success for email", async () => {
     const saveOtp = jest.fn().mockResolvedValue();
     getOtpStore.mockReturnValue({
       isRateLimited: jest.fn().mockResolvedValue(false),
@@ -70,13 +71,31 @@ describe("authController", () => {
       clearOtp: jest.fn().mockResolvedValue(),
     });
 
+    const req = { body: { type: "email", identifier: "test@example.com" } };
+    const res = createResponse();
+
+    await login(req, res);
+
+    expect(saveOtp).toHaveBeenCalledWith("email:test@example.com", expect.stringMatching(/^\d{6}$/));
+    expect(sendOtpEmail).toHaveBeenCalledWith("test@example.com", expect.stringMatching(/^\d{6}$/));
+    expect(res.json).toHaveBeenCalledWith({ message: "OTP sent" });
+  });
+
+  test("login returns 503 for phone when demo and sms OTP are disabled", async () => {
+    getOtpStore.mockReturnValue({
+      isRateLimited: jest.fn().mockResolvedValue(false),
+      saveOtp: jest.fn(),
+    });
+
     const req = { body: { type: "phone", identifier: "9876543210" } };
     const res = createResponse();
 
     await login(req, res);
 
-    expect(saveOtp).toHaveBeenCalledWith("phone:9876543210", expect.stringMatching(/^\d{6}$/));
-    expect(res.json).toHaveBeenCalledWith({ message: "OTP sent" });
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Phone OTP is not configured. Use email login for now.",
+    });
   });
 
   test("verify returns 400 for invalid payload", async () => {

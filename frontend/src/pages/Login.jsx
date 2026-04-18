@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import InstallAppButton from "../components/InstallAppButton";
 import { apiPost } from "../utils/api";
 
+const DEMO_OTP_ENABLED = import.meta.env.VITE_DEMO_OTP_ENABLED === "true";
+const DEMO_OTP_CODE = import.meta.env.VITE_DEMO_OTP_CODE || "123456";
+
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -11,6 +14,13 @@ export default function Login() {
   const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const helperText =
+    type === "phone"
+      ? (DEMO_OTP_ENABLED
+          ? `Demo OTP: ${DEMO_OTP_CODE}`
+          : "Enter your number only if phone OTP is enabled on the backend.")
+      : "6-digit code will arrive in your email inbox.";
 
   function normalizeIdentifier(value, type) {
     if (type === 'phone') {
@@ -110,7 +120,7 @@ export default function Login() {
                 className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
               <p className="text-xs text-slate-500">
-                {type === 'phone' ? "(Demo OTP: 123456)" : "6-digit code will arrive in 30s"}
+                {helperText}
               </p>
             </div>
 
@@ -133,4 +143,3 @@ export default function Login() {
     </main>
   );
 }
-

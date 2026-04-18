@@ -210,7 +210,7 @@ const hi = {
     verify: {
       eyebrow: "OTP सत्यापित करें",
       title: "6 अंकों का कोड भरें",
-      sentTo: "हमने {{phone}} पर कोड भेजा है",
+      sentTo: "हमने {{identifier}} पर कोड भेजा है",
       invalidOtp: "6 अंकों का OTP भरें।",
       verify: "OTP सत्यापित करें",
       verifying: "सत्यापित किया जा रहा है...",

@@ -111,7 +111,7 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
               {t("auth.verify.title")}
             </h1>
   <p className="text-sm leading-6 text-slate-500">
-    {t("auth.verify.sentTo", { identifier })}
+    {t("auth.verify.sentTo", { identifier, phone: identifier })}
     <span className="ml-1 text-xs text-emerald-600 font-medium">({type.toUpperCase()})</span>
   </p>
   </div>

@@ -88,6 +88,10 @@ function isDemoPhoneAllowed(phone) {
   return allowedPhones.length === 0 || allowedPhones.includes(phone);
 }
 
+function isSmsOtpEnabled() {
+  return process.env.SMS_OTP_ENABLED === "true";
+}
+
 async function login(req, res) {
   const otpStore = getOtpStore();
   const type = String(req.body?.type || 'phone').toLowerCase();
@@ -127,20 +131,30 @@ async function login(req, res) {
   const useDemoOtp = type === "phone" && isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
   const otp = useDemoOtp ? getDemoOtpCode() : generateOtp();
 
+  if (type === "phone") {
+    if (!useDemoOtp && !isSmsOtpEnabled()) {
+      return res.status(503).json({ message: "Phone OTP is not configured. Use email login for now." });
+    }
+
+    await otpStore.saveOtp(key, otp);
+
+    if (useDemoOtp) {
+      console.log(`[auth] Demo OTP for ${phone}: ${otp}`);
+    }
+
+    // TODO: integrate SMS service when SMS_OTP_ENABLED is true.
+    return res.json({ message: "OTP sent" });
+  }
+
   await otpStore.saveOtp(key, otp);
 
-  // Send OTP
-  if (useDemoOtp) {
-    // TODO: integrate SMS service
-  } else {
-    try {
-      await sendOtpEmail(normalizedIdentifier, otp);
-      console.log(`[auth] OTP sent to ${normalizedIdentifier}`);
-    } catch (error) {
-      await otpStore.clearOtp(key);
-      console.error(`[auth] OTP delivery failed for ${normalizedIdentifier}:`, error);
-      return res.status(500).json({ message: "Failed to send OTP" });
-    }
+  try {
+    await sendOtpEmail(normalizedIdentifier, otp);
+    console.log(`[auth] OTP sent to ${normalizedIdentifier}`);
+  } catch (error) {
+    await otpStore.clearOtp(key);
+    console.error(`[auth] OTP delivery failed for ${normalizedIdentifier}:`, error);
+    return res.status(500).json({ message: "Failed to send OTP" });
   }
 
   return res.json({ message: "OTP sent" });

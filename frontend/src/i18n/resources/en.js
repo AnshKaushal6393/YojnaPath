@@ -214,7 +214,7 @@ const en = {
     verify: {
       eyebrow: "Verify OTP",
       title: "Enter the 6-digit code",
-      sentTo: "We sent a code to {{phone}}",
+      sentTo: "We sent a code to {{identifier}}",
       invalidOtp: "Enter the 6-digit OTP.",
       verify: "Verify OTP",
       verifying: "Verifying...",
