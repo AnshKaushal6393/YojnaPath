@@ -255,7 +255,7 @@ async function getAdminFunnel() {
   const stages = [
     {
       key: "phoneEntered",
-      label: "Phone entered",
+      label: "Identifier entered",
       count: Math.max(events.phone_entered || 0, summary.phone_entered || 0),
     },
     {

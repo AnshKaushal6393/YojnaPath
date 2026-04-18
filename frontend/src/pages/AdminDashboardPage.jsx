@@ -11,7 +11,6 @@ import {
   formatDateTime,
   formatNumber,
   formatPercent,
-  getPhotoBreakdown,
   getPhotoCompletion,
 } from "../lib/adminUi";
 
@@ -43,7 +42,6 @@ export default function AdminDashboardPage() {
   const criticalError = dashboardQuery.error || statsQuery.error;
   const photoCompletion =
     stats?.photoCompletionPct != null ? Number(stats.photoCompletionPct) : getPhotoCompletion(stats);
-  const photoBreakdown = getPhotoBreakdown(stats);
   const avgMatchesPerUser =
     stats?.avgMatchesPerUser != null
       ? Number(stats.avgMatchesPerUser)
@@ -79,6 +77,7 @@ export default function AdminDashboardPage() {
     { label: "Near misses", value: formatNumber(stats?.totalNearMisses), accent: "text-rose-300" },
     { label: "Active schemes", value: formatNumber(stats?.activeSchemes), accent: "text-fuchsia-300" },
     { label: "Matches today", value: formatNumber(stats?.activeToday), accent: "text-sky-300" },
+    { label: "Photo completion", value: formatPercent(photoCompletion), accent: "text-lime-300" },
   ];
 
   return (
@@ -116,78 +115,38 @@ export default function AdminDashboardPage() {
             ))}
           </section>
 
-          <section className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-                Today
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Dashboard pulse</h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[22px] bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Top scheme today</p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    {stats.topSchemeToday || "N/A"}
-                  </p>
-                </div>
-                <div className="rounded-[22px] bg-slate-900/70 p-5">
-                  <p className="text-sm text-slate-400">Photo completion</p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    {formatPercent(photoCompletion)}
-                  </p>
-                </div>
-              </div>
-              <p className="mt-5 text-sm leading-6 text-slate-300">
-                Dashboard keeps the high-level platform view. User search and profile inspection now
-                live in the dedicated Users section.
-              </p>
-            </article>
-
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                Photo Breakdown
-              </p>
-              <div className="mt-5 space-y-3">
-                {photoBreakdown.length ? (
-                  photoBreakdown.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex items-center justify-between rounded-[18px] bg-slate-900/70 px-4 py-3"
-                    >
-                      <span className="text-sm capitalize text-slate-300">{item.label}</span>
-                      <span className="text-sm font-semibold text-white">
-                        {formatNumber(item.count)}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No photo stats yet.
-                  </div>
-                )}
-              </div>
-            </article>
-          </section>
-
           <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
                 Registration Funnel
               </p>
               <h2 className="mt-3 text-2xl font-semibold text-white">User progression</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Track where users continue and where they drop off after login.
+              </p>
               <div className="mt-6 space-y-4">
                 {funnelStages.length ? (
-                  funnelStages.map((stage) => {
+                  funnelStages.map((stage, index) => {
                     const width = funnelMaxCount
                       ? Math.max((Number(stage.count || 0) / funnelMaxCount) * 100, 8)
                       : 0;
+                    const previousCount =
+                      index === 0 ? Number(stage.count || 0) : Number(funnelStages[index - 1]?.count || 0);
+                    const conversion =
+                      index === 0 || previousCount <= 0
+                        ? 100
+                        : (Number(stage.count || 0) / previousCount) * 100;
 
                     return (
                       <div key={stage.key} className="space-y-2">
                         <div className="flex items-center justify-between gap-4">
                           <span className="text-sm text-slate-300">{stage.label}</span>
-                          <span className="text-sm font-semibold text-white">
-                            {formatNumber(stage.count)}
-                          </span>
+                          <div className="text-right">
+                            <span className="text-sm font-semibold text-white">
+                              {formatNumber(stage.count)}
+                            </span>
+                            <p className="text-xs text-slate-400">{formatPercent(conversion)} retained</p>
+                          </div>
                         </div>
                         <div className="h-3 rounded-full bg-slate-900/70">
                           <div
