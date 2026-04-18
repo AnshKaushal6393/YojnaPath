@@ -25,15 +25,15 @@ import { clearStoredPhone, clearToken } from "../utils/auth";
 const DEFAULT_USER_TYPE = "farmer";
 
 const REQUIRED_FIELDS_BY_USER_TYPE = {
-  farmer: ["state", "gender", "caste", "ageBand", "incomeBand", "landBand"],
-  business: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  women: ["state", "caste", "ageBand", "incomeBand"],
-  student: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  worker: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  health: ["state", "gender", "caste", "ageBand", "incomeBand"],
+  farmer: ["state", "gender", "caste", "age", "incomeBand", "landBand"],
+  business: ["state", "gender", "caste", "age", "incomeBand"],
+  women: ["state", "caste", "age", "incomeBand"],
+  student: ["state", "gender", "caste", "age", "incomeBand"],
+  worker: ["state", "gender", "caste", "age", "incomeBand"],
+  health: ["state", "gender", "caste", "age", "incomeBand"],
   housing: ["state", "caste", "incomeBand"],
-  senior: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  disability: ["state", "gender", "caste", "ageBand", "incomeBand"],
+  senior: ["state", "gender", "caste", "age", "incomeBand"],
+  disability: ["state", "gender", "caste", "age", "incomeBand"],
 };
 
 function getInitialDraft() {
@@ -47,7 +47,7 @@ function getInitialDraft() {
       state: draft?.formState?.state || "",
       gender: draft?.formState?.gender || "",
       caste: draft?.formState?.caste || "",
-      ageBand: draft?.formState?.ageBand || "",
+      age: draft?.formState?.age || "",
       incomeBand: draft?.formState?.incomeBand || "",
       landBand: draft?.formState?.landBand || "",
       notes: draft?.formState?.notes || "",

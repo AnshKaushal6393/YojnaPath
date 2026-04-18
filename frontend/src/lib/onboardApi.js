@@ -19,12 +19,8 @@ const LAND_MAP = {
   above_10: 12,
 };
 
-const AGE_MAP = {
-  under_18: 16,
-  "18_35": 28,
-  "36_59": 45,
-  "60_plus": 65,
-};
+// Removed AGE_MAP - age now direct number input
+
 
 function mapState(value) {
   if (!value) {
@@ -64,7 +60,7 @@ function mapProfileToFormState(profile) {
     state: unmapState(profile?.state || ""),
     gender: profile?.gender || "",
     caste: profile?.caste || "",
-    ageBand: profile?.age != null ? pickClosestBand(profile.age, AGE_MAP) : "",
+    age: profile?.age != null ? String(profile.age) : "",
     incomeBand: profile?.annualIncome != null ? pickClosestBand(profile.annualIncome, INCOME_MAP) : "",
     landBand: profile?.landAcres != null ? pickClosestBand(profile.landAcres, LAND_MAP) : "",
     notes: "",
@@ -118,7 +114,7 @@ export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
     annualIncome: INCOME_MAP[formState.incomeBand] ?? 0,
     caste: formState.caste || null,
     gender: formState.gender || null,
-    age: AGE_MAP[formState.ageBand] ?? null,
+    age: Number(formState.age) || null,
     landAcres: LAND_MAP[formState.landBand] ?? 0,
     disabilityPct: selectedUserType === "disability" ? 40 : 0,
     isStudent: selectedUserType === "student",

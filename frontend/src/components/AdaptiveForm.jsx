@@ -20,12 +20,8 @@ const USER_TYPE_CONFIG = {
   disability: ["state", "gender", "caste", "age", "incomeBand", "notes"],
 };
 
-const AGE_BANDS = [
-  { value: "under_18", labelEn: "Under 18", labelHi: "18 से कम" },
-  { value: "18_35", labelEn: "18 - 35", labelHi: "18 - 35" },
-  { value: "36_59", labelEn: "36 - 59", labelHi: "36 - 59" },
-  { value: "60_plus", labelEn: "60+", labelHi: "60+" },
-];
+// Removed AGE_BANDS - now using number input
+
 
 function FieldLabel({ children }) {
   return <label className="type-label">{children}</label>;
@@ -157,21 +153,19 @@ export default function AdaptiveForm({
           </div>
         ) : null}
 
-        {activeFields.includes("age") ? (
+{activeFields.includes("age") ? (
           <div className="demo-field">
             <FieldLabel>{t("adaptiveForm.age")}</FieldLabel>
-            <select
+            <input
+              type="number"
+              min="0"
+              max="150"
               className="demo-select"
-              value={formState.ageBand}
-              onChange={(event) => updateField("ageBand", event.target.value)}
-            >
-              <option value="">{t("adaptiveForm.selectAgeBand")}</option>
-              {AGE_BANDS.map((band) => (
-                <option key={band.value} value={band.value}>
-                  {band.labelEn} / {band.labelHi}
-                </option>
-              ))}
-            </select>
+              value={formState.age || ""}
+              onChange={(event) => updateField("age", event.target.value)}
+              placeholder={t("adaptiveForm.agePlaceholder", { defaultValue: "Enter age in years" })}
+            />
+            <p className="type-caption">{t("adaptiveForm.ageHelp", { defaultValue: "Enter exact age in years" })}</p>
           </div>
         ) : null}
 

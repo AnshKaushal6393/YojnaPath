@@ -26,15 +26,15 @@ import { clearStoredPhone, clearToken } from "../utils/auth";
 import AdaptiveForm from "../components/AdaptiveForm";
 
 const REQUIRED_FIELDS_BY_USER_TYPE = {
-  farmer: ["state", "gender", "caste", "ageBand", "incomeBand", "landBand"],
-  business: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  women: ["state", "caste", "ageBand", "incomeBand"],
-  student: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  worker: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  health: ["state", "gender", "caste", "ageBand", "incomeBand"],
+  farmer: ["state", "gender", "caste", "age", "incomeBand", "landBand"],
+  business: ["state", "gender", "caste", "age", "incomeBand"],
+  women: ["state", "caste", "age", "incomeBand"],
+  student: ["state", "gender", "caste", "age", "incomeBand"],
+  worker: ["state", "gender", "caste", "age", "incomeBand"],
+  health: ["state", "gender", "caste", "age", "incomeBand"],
   housing: ["state", "caste", "incomeBand"],
-  senior: ["state", "gender", "caste", "ageBand", "incomeBand"],
-  disability: ["state", "gender", "caste", "ageBand", "incomeBand"],
+  senior: ["state", "gender", "caste", "age", "incomeBand"],
+  disability: ["state", "gender", "caste", "age", "incomeBand"],
 };
 
 function normalizeName(value) {
@@ -46,7 +46,7 @@ function createEmptyFormState() {
     state: "",
     gender: "",
     caste: "",
-    ageBand: "",
+    age: "",
     incomeBand: "",
     landBand: "",
     notes: "",
