@@ -31,6 +31,16 @@ async function ensureProfilesSchema() {
       .query(`
         DO $$
         BEGIN
+          ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_is_primary_key;
+          ALTER TABLE profiles ADD CONSTRAINT profiles_user_id_is_primary_key UNIQUE (user_id, is_primary);
+        END $$;
+      `)
+      .catch((error) => {
+        ensureProfilesSchemaPromise = null;
+        throw error;
+      });
+        DO $$
+        BEGIN
           IF EXISTS (
             SELECT 1
             FROM information_schema.tables

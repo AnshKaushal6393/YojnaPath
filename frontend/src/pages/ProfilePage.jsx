@@ -248,6 +248,8 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-data"] });
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-user"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       setSubmitMessage(t("profileMessages.profileUpdated"));
       setSubmitError("");
     },
@@ -322,6 +324,8 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-data"] });
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-user"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       resetCreateMemberModal();
       setSubmitMessage(t("profileMessages.memberCreated"));
       setSubmitError("");
@@ -355,6 +359,8 @@ export default function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["home-data"] });
       await queryClient.invalidateQueries({ queryKey: ["home-saved-profile"] });
       await queryClient.invalidateQueries({ queryKey: ["results-data"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-user"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
       clearProfileDraft(pendingDeleteMember?.id || "");
       setPendingDeleteMember(null);
       setSubmitMessage(t("profileMessages.memberDeleted"));

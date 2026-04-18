@@ -37,11 +37,20 @@ function renderPhoto(photoUrl, label) {
 function getUserTypeLabel(userType) {
   if (!userType) return "Unknown";
   const normalized = userType.toString().toLowerCase().trim();
+  // Map legacy occupations to standard keys
+  const legacyMap = {
+    'shopkeeper': 'business',
+    'artisan': 'business',
+    'daily_wage': 'worker',
+    'retired': 'senior',
+    'disabled': 'disability',
+    'migrant_worker': 'worker',
+  };
+  const mapped = legacyMap[normalized] || normalized;
   const match = USER_TYPE_OPTIONS.find((option) => 
-    option.key === normalized || 
-    option.key === userType.toString()
+    option.key === mapped
   );
-  return match?.label || normalized || "Unknown";
+  return match?.label || mapped.charAt(0).toUpperCase() + mapped.slice(1) || "Unknown";
 }
 
 export default function AdminUserDetailPage() {

@@ -264,6 +264,7 @@ async function getAdminUserMatches(userId) {
 
 async function getAdminUserById(userId) {
   await ensureDatabaseSchema();
+  console.log(`[ADMIN] Fetching user ${userId} profiles...`);
 
   const pool = getPool();
   const userPromise = pool.query(
@@ -379,7 +380,9 @@ async function getAdminUserById(userId) {
   }
 
   const profiles = profilesResult.rows.map(mapProfileRow);
+  console.log(`[ADMIN] User ${userId} has ${profiles.length} profiles:`, profiles.map(p => ({id: p.id, name: p.profileName, primary: p.isPrimary, state: p.state, occupation: p.occupation})));
   const primaryProfile = profiles.find((profile) => profile.isPrimary) || profiles[0] || null;
+  console.log(`[ADMIN] Selected primaryProfile for ${userId}:`, primaryProfile ? {name: primaryProfile.profileName, state: primaryProfile.state, occupation: primaryProfile.occupation} : 'none');
   const matchStats = matchSummary.rows[0] || {};
 
   return {
