@@ -58,7 +58,7 @@ export default function Login() {
     }
 
     if (type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)) {
-      setError("Valid email required");
+      setError(t("auth.login.invalidEmail"));
       return;
     }
 
@@ -97,7 +97,7 @@ export default function Login() {
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="mb-4 space-y-3">
-              <label className="text-sm font-medium text-slate-700">Choose login method:</label>
+              <label className="text-sm font-medium text-slate-700">{t("auth.login.methodLabel")}</label>
               <div className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-1">
                 <label className="flex-1 cursor-pointer">
                   <input
@@ -124,7 +124,7 @@ export default function Login() {
                   />
                   <div className={getOptionClass("email")}>
                     <div className={getIconClass("email")}>&#64;</div>
-                    <div className={getLabelClass("email")}>Email</div>
+                    <div className={getLabelClass("email")}>{t("auth.login.emailLabel")}</div>
                   </div>
                 </label>
               </div>
@@ -132,22 +132,22 @@ export default function Login() {
 
             <div className="space-y-2">
               <label htmlFor="identifier" className="text-sm font-medium text-slate-700">
-                {type === "phone" ? "Phone number" : "Email"}
+                {type === "phone" ? t("auth.login.phoneLabel") : t("auth.login.emailLabel")}
               </label>
               <input
                 id="identifier"
                 type={type === "phone" ? "tel" : "email"}
                 inputMode={type === "phone" ? "numeric" : "email"}
                 autoComplete={type === "phone" ? "tel" : "email"}
-                placeholder={type === "phone" ? "9999999999" : "your@gmail.com"}
+                placeholder={
+                  type === "phone" ? t("auth.login.phonePlaceholder") : t("auth.login.emailPlaceholder")
+                }
                 value={identifier}
                 onChange={handleIdentifierChange}
                 className="h-14 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               />
               <p className="text-xs text-slate-500">
-                {type === "phone"
-                  ? "We will generate a 6-digit OTP after you continue."
-                  : "6-digit code will arrive in your email inbox."}
+                {type === "phone" ? t("auth.login.phoneHint") : t("auth.login.emailHint")}
               </p>
             </div>
 
@@ -162,7 +162,7 @@ export default function Login() {
               disabled={isLoading}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
-              {isLoading ? "Sending..." : "Send OTP"}
+              {isLoading ? t("auth.login.sendingOtp") : t("auth.login.sendOtp")}
             </button>
           </form>
         </div>
