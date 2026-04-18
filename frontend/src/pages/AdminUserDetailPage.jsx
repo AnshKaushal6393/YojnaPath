@@ -14,6 +14,7 @@ import {
   getUserDisplayPhoto,
   summarizeMatchStats,
 } from "../lib/adminUi";
+import { USER_TYPE_OPTIONS } from "../data/profileOptions.js";
 
 function renderPhoto(photoUrl, label) {
   if (!photoUrl) {
@@ -31,6 +32,10 @@ function renderPhoto(photoUrl, label) {
       className="h-24 w-24 rounded-2xl border border-white/10 object-cover"
     />
   );
+}
+
+function getUserTypeLabel(userType) {
+  return USER_TYPE_OPTIONS.find((option) => option.key === userType)?.label || userType || "Unknown";
 }
 
 export default function AdminUserDetailPage() {
@@ -143,6 +148,16 @@ export default function AdminUserDetailPage() {
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
                 {renderPhoto(displayPhotoUrl, user.name || "User photo")}
+                {displayPhotoUrl && (
+                  <p className="mt-2 text-xs text-slate-400">
+                    Photo source: {(() => {
+                      if (user?.photoUrl) return "user.photoUrl";
+                      if (user?.primaryProfile?.photoUrl) return "primaryProfile.photoUrl";
+                      const firstProfile = (user?.profiles || []).find(p => p.photoUrl);
+                      return firstProfile ? `profiles[${firstProfile.id || "first"}].photoUrl` : "none";
+                    })()}
+                  </p>
+                )}
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
                     Account
@@ -183,9 +198,12 @@ export default function AdminUserDetailPage() {
                   <p className="mt-3 text-sm text-slate-200">
                     {user.primaryProfile?.profileName || "Unavailable"}
                   </p>
-                  <p className="mt-2 text-sm text-slate-300">
-                    {user.primaryProfile?.state || "NA"} / {user.primaryProfile?.occupation || "unknown"}
-                  </p>
+                  <div className="mt-2 space-y-1 text-sm text-slate-300">
+                    <p>
+                      {user.primaryProfile?.state || "NA"} / {getUserTypeLabel(user.primaryProfile?.userType)}
+                    </p>
+                    <p>Gender: {user.primaryProfile?.gender || "NA"}</p>
+                  </div>
                 </div>
               </div>
             </article>
