@@ -8,6 +8,7 @@ const {
   getFunnel,
   getStats,
   getUserById,
+  getUserLiveMatches,
   getUserMatches,
   getUsers,
 } = require("../controllers/adminController");
@@ -23,6 +24,7 @@ router.get("/funnel", getFunnel);
 router.get("/users/export", exportUsers);
 router.get("/users", getUsers);
 router.get("/users/:id", getUserById);
+router.get("/users/:id/live-matches", getUserLiveMatches);
 router.delete("/users/:id", deleteUserById);
 router.get("/users/:id/matches", getUserMatches);
 

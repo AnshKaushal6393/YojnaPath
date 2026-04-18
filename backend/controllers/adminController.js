@@ -8,6 +8,7 @@ const {
   deleteAdminUserById,
   exportAdminUsersCsv,
   getAdminUserById,
+  getAdminUserLiveMatches,
   getAdminUserMatches,
   listAdminUsers,
 } = require("../services/adminUserService");
@@ -91,6 +92,23 @@ async function getUserMatches(req, res) {
   return res.json({ userId, matches });
 }
 
+async function getUserLiveMatches(req, res) {
+  const userId = normalizeOptionalString(req.params?.id);
+
+  if (!userId) {
+    return res.status(400).json({ message: "User id is required" });
+  }
+
+  const user = await getAdminUserById(userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const liveMatches = await getAdminUserLiveMatches(userId);
+  return res.json(liveMatches);
+}
+
 async function deleteUserById(req, res) {
   const userId = normalizeOptionalString(req.params?.id);
 
@@ -125,6 +143,7 @@ module.exports = {
   getFunnel,
   getStats,
   getUserById,
+  getUserLiveMatches,
   getUserMatches,
   getUsers,
 };

@@ -1,7 +1,12 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { deleteAdminUser, fetchAdminUser, fetchAdminUserMatches } from "../lib/adminApi";
+import {
+  deleteAdminUser,
+  fetchAdminUser,
+  fetchAdminUserLiveMatches,
+  fetchAdminUserMatches,
+} from "../lib/adminApi";
 import {
   formatDate,
   formatDateTime,
@@ -42,6 +47,11 @@ export default function AdminUserDetailPage() {
     queryFn: () => fetchAdminUserMatches(userId),
     enabled: Boolean(userId),
   });
+  const liveMatchesQuery = useQuery({
+    queryKey: ["admin-user-live-matches", userId],
+    queryFn: () => fetchAdminUserLiveMatches(userId),
+    enabled: Boolean(userId),
+  });
   const deleteUserMutation = useMutation({
     mutationFn: deleteAdminUser,
     onSuccess: () => {
@@ -55,11 +65,20 @@ export default function AdminUserDetailPage() {
   useEffect(() => {
     if (
       (userQuery.isSuccess && userQuery.data === null) ||
-      (matchesQuery.isSuccess && matchesQuery.data === null)
+      (matchesQuery.isSuccess && matchesQuery.data === null) ||
+      (liveMatchesQuery.isSuccess && liveMatchesQuery.data === null)
     ) {
       navigate("/admin/login", { replace: true });
     }
-  }, [matchesQuery.data, matchesQuery.isSuccess, navigate, userQuery.data, userQuery.isSuccess]);
+  }, [
+    liveMatchesQuery.data,
+    liveMatchesQuery.isSuccess,
+    matchesQuery.data,
+    matchesQuery.isSuccess,
+    navigate,
+    userQuery.data,
+    userQuery.isSuccess,
+  ]);
 
   function handleDeleteUser() {
     if (!userId || deleteUserMutation.isPending) {
@@ -79,6 +98,7 @@ export default function AdminUserDetailPage() {
 
   const user = userQuery.data;
   const matches = matchesQuery.data?.matches || user?.recentMatches || [];
+  const liveMatches = liveMatchesQuery.data;
   const displayPhotoUrl = getUserDisplayPhoto(user);
   const matchStats = summarizeMatchStats(user, matches);
 
@@ -107,10 +127,11 @@ export default function AdminUserDetailPage() {
         </div>
       ) : null}
 
-      {userQuery.error || matchesQuery.error || deleteUserMutation.error ? (
+      {userQuery.error || matchesQuery.error || liveMatchesQuery.error || deleteUserMutation.error ? (
         <div className="rounded-[24px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
           {userQuery.error?.message ||
             matchesQuery.error?.message ||
+            liveMatchesQuery.error?.message ||
             deleteUserMutation.error?.message ||
             "Could not load this user right now."}
         </div>
@@ -192,6 +213,53 @@ export default function AdminUserDetailPage() {
           </section>
 
           <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
+                Live Eligibility
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold text-white">Current scheme snapshot</h3>
+              <p className="mt-2 text-sm text-slate-400">
+                Computed from the user&apos;s current primary profile, not from historical logs.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[18px] bg-slate-950/75 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Eligible now</p>
+                  <p className="mt-4 text-4xl font-semibold text-emerald-300">
+                    {formatNumber(liveMatches?.count || 0)}
+                  </p>
+                </div>
+                <div className="rounded-[18px] bg-slate-950/75 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Near misses now</p>
+                  <p className="mt-4 text-4xl font-semibold text-amber-300">
+                    {formatNumber(liveMatches?.nearMissCount || 0)}
+                  </p>
+                </div>
+              </div>
+              {!liveMatchesQuery.isLoading && liveMatches?.message ? (
+                <div className="mt-4 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
+                  {liveMatches.message}
+                </div>
+              ) : null}
+              {liveMatchesQuery.isLoading ? (
+                <div className="mt-4 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
+                  Loading live eligibility...
+                </div>
+              ) : null}
+              {liveMatches?.schemes?.length ? (
+                <div className="mt-4 space-y-2">
+                  {liveMatches.schemes.slice(0, 5).map((scheme) => (
+                    <div
+                      key={scheme.schemeId}
+                      className="flex items-center justify-between rounded-[16px] bg-slate-900/70 px-4 py-3 text-sm"
+                    >
+                      <span className="text-slate-200">{scheme.name?.en || scheme.schemeId}</span>
+                      <span className="text-slate-500">{scheme.schemeId}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </article>
+
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
                 Family Profiles

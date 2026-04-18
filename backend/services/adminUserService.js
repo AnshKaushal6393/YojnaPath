@@ -1,5 +1,7 @@
 require("../config/env");
 
+const { isMongoReady } = require("../config/mongo");
+const { getMatchingSchemes } = require("../engine/matcher");
 const { configureCloudinary } = require("../config/cloudinary");
 const { ensureDatabaseSchema, getPool } = require("../config/postgres");
 
@@ -421,6 +423,66 @@ async function getAdminUserById(userId) {
   };
 }
 
+async function getAdminUserLiveMatches(userId) {
+  await ensureDatabaseSchema();
+
+  const user = await getAdminUserById(userId);
+  if (!user) {
+    return null;
+  }
+
+  if (!isMongoReady()) {
+    return {
+      userId,
+      profileReady: false,
+      count: 0,
+      nearMissCount: 0,
+      schemes: [],
+      nearMisses: [],
+      message: "MongoDB is unavailable",
+    };
+  }
+
+  const sourceProfile = user.primaryProfile;
+  if (!sourceProfile?.state || !sourceProfile?.occupation) {
+    return {
+      userId,
+      profileReady: false,
+      count: 0,
+      nearMissCount: 0,
+      schemes: [],
+      nearMisses: [],
+      message: "Primary profile is incomplete for live matching",
+    };
+  }
+
+  const profile = {
+    state: sourceProfile.state,
+    occupation: sourceProfile.occupation,
+    annual_income: sourceProfile.annualIncome ?? 0,
+    caste: sourceProfile.caste || null,
+    gender: sourceProfile.gender || null,
+    age: sourceProfile.age ?? null,
+    landAcres: sourceProfile.landAcres ?? 0,
+    disabilityPct: sourceProfile.disabilityPct ?? 0,
+    isStudent: Boolean(sourceProfile.isStudent),
+  };
+
+  const result = await getMatchingSchemes(profile, {
+    limitMatches: 6,
+    limitNearMisses: 6,
+  });
+
+  return {
+    userId,
+    profileReady: true,
+    count: result.count,
+    nearMissCount: result.nearMissCount,
+    schemes: result.schemes || [],
+    nearMisses: result.nearMisses || [],
+  };
+}
+
 async function deleteCloudinaryAssets(urls) {
   const uniquePublicIds = [...new Set(urls.map(extractCloudinaryPublicId).filter(Boolean))];
 
@@ -535,6 +597,7 @@ module.exports = {
   deleteAdminUserById,
   exportAdminUsersCsv,
   getAdminUserById,
+  getAdminUserLiveMatches,
   getAdminUserMatches,
   listAdminUsers,
 };

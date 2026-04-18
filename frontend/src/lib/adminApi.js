@@ -92,6 +92,12 @@ export async function fetchAdminUserMatches(userId) {
   });
 }
 
+export async function fetchAdminUserLiveMatches(userId) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/users/${userId}/live-matches`, { token });
+  });
+}
+
 export async function deleteAdminUser(userId) {
   return withAdminSession(async (token) => {
     return apiDelete(`/api/admin/users/${userId}`, { token });
