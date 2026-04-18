@@ -171,19 +171,19 @@ export default function AdminUserDetailPage() {
 
             <article className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Match runs</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Logged match runs</p>
                 <p className="mt-4 text-4xl font-semibold text-cyan-300">
                   {formatNumber(matchStats.matchRuns)}
                 </p>
               </div>
               <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Schemes matched</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Schemes in logs</p>
                 <p className="mt-4 text-4xl font-semibold text-emerald-300">
                   {formatNumber(matchStats.totalMatches)}
                 </p>
               </div>
               <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Near misses</p>
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Near misses in logs</p>
                 <p className="mt-4 text-4xl font-semibold text-amber-300">
                   {formatNumber(matchStats.totalNearMisses)}
                 </p>
@@ -247,7 +247,7 @@ export default function AdminUserDetailPage() {
               </p>
               <h3 className="mt-3 text-2xl font-semibold text-white">Recent match logs</h3>
               <p className="mt-2 text-sm text-slate-400">
-                Future web match runs will now attach the logged-in user automatically.
+                This section shows only match runs saved in analytics logs for this user account.
               </p>
               <div className="mt-6 space-y-3">
                 {matchesQuery.isLoading ? (
