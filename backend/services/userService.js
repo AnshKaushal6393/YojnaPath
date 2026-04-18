@@ -9,6 +9,7 @@ async function ensureUserColumns() {
     userColumnsInitializationPromise = (async () => {
       await ensureDatabaseSchema();
       const pool = getPool();
+      await pool.query(`ALTER TABLE users ALTER COLUMN phone DROP NOT NULL`);
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)`);
       await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT`);
       await pool.query(
@@ -132,4 +133,3 @@ module.exports = {
   findOrCreateUserByIdentifier,
   getUserById,
 };
-
