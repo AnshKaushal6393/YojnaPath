@@ -11,9 +11,7 @@ async function getTransporter() {
   const port = Number(getEnv('EMAIL_PORT', '587'));
   const user = getRequiredEnv('EMAIL_USER');
   const pass = getRequiredEnv('EMAIL_PASS');
-  const from = getEnv('EMAIL_FROM', user);
-
-  transporter = nodemailer.createTransporter({
+  transporter = nodemailer.createTransport({
     host,
     port,
     secure: port === 465,
