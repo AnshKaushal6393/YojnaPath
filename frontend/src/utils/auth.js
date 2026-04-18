@@ -29,26 +29,31 @@ export function isAuthenticated() {
   return Boolean(getToken());
 }
 
-export function getStoredPhone() {
+export function getTempAuthData() {
   if (typeof window === "undefined") {
-    return "";
+    return null;
   }
 
-  return window.localStorage.getItem(PHONE_KEY) || "";
+  const type = localStorage.getItem('tempAuthType') || 'phone';
+  const identifier = localStorage.getItem('tempAuthIdentifier') || '';
+  return { type, identifier };
 }
 
-export function setStoredPhone(phone) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  window.localStorage.setItem(PHONE_KEY, phone);
-}
-
-export function clearStoredPhone() {
+export function setTempAuthData(type, identifier) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.removeItem(PHONE_KEY);
+  localStorage.setItem('tempAuthType', type);
+  localStorage.setItem('tempAuthIdentifier', identifier);
 }
+
+export function clearTempAuthData() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.removeItem('tempAuthType');
+  localStorage.removeItem('tempAuthIdentifier');
+}
+

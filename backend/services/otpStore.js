@@ -10,48 +10,48 @@ const {
 
 class MemoryOtpStore {
   constructor() {
-    this.otpByPhone = new Map();
-    this.rateLimitByPhone = new Map();
+    this.otpByKey = new Map();
+    this.rateLimitByKey = new Map();
   }
 
-  cleanupRateLimit(phone, now) {
-    const entries = this.rateLimitByPhone.get(phone) ?? [];
+  cleanupRateLimit(key, now) {
+    const entries = this.rateLimitByKey.get(key) ?? [];
     const cutoff = now - (OTP_RESEND_WINDOW_SECONDS * 1000);
     const filtered = entries.filter((timestamp) => timestamp > cutoff);
-    this.rateLimitByPhone.set(phone, filtered);
+    this.rateLimitByKey.set(key, filtered);
     return filtered;
   }
 
-  async isRateLimited(phone) {
+  async isRateLimited(key) {
     const now = Date.now();
-    const entries = this.cleanupRateLimit(phone, now);
+    const entries = this.cleanupRateLimit(key, now);
     return entries.length >= OTP_MAX_REQUESTS_PER_WINDOW;
   }
 
-  async saveOtp(phone, otp) {
+  async saveOtp(key, otp) {
     const expiresAt = Date.now() + (OTP_TTL_SECONDS * 1000);
-    this.otpByPhone.set(phone, { otp, expiresAt });
-    const entries = this.cleanupRateLimit(phone, Date.now());
+    this.otpByKey.set(key, { otp, expiresAt });
+    const entries = this.cleanupRateLimit(key, Date.now());
     entries.push(Date.now());
-    this.rateLimitByPhone.set(phone, entries);
+    this.rateLimitByKey.set(key, entries);
   }
 
-  async getOtp(phone) {
-    const record = this.otpByPhone.get(phone);
+  async getOtp(key) {
+    const record = this.otpByKey.get(key);
     if (!record) {
       return null;
     }
 
     if (Date.now() > record.expiresAt) {
-      this.otpByPhone.delete(phone);
+      this.otpByKey.delete(key);
       return null;
     }
 
     return record.otp;
   }
 
-  async clearOtp(phone) {
-    this.otpByPhone.delete(phone);
+  async clearOtp(key) {
+    this.otpByKey.delete(key);
   }
 }
 
@@ -112,48 +112,51 @@ function getOtpStore() {
 }
 
 const otpStoreFacade = {
-  async isRateLimited(phone) {
+  async isRateLimited(key) {
     const client = await getRedisClient();
     if (!client) {
-      return getMemoryStore().isRateLimited(phone);
+      return getMemoryStore().isRateLimited(key);
     }
 
-    const key = `otp:rate:${phone}`;
-    const count = await client.get(key);
+    const redisKey = `otp:rate:${key}`;
+    const count = await client.get(redisKey);
     return Number(count ?? 0) >= OTP_MAX_REQUESTS_PER_WINDOW;
   },
-  async saveOtp(phone, otp) {
+  async saveOtp(key, otp) {
     const client = await getRedisClient();
     if (!client) {
-      return getMemoryStore().saveOtp(phone, otp);
+      return getMemoryStore().saveOtp(key, otp);
     }
 
-    const otpKey = `otp:value:${phone}`;
-    const rateKey = `otp:rate:${phone}`;
+    const otpRedisKey = `otp:value:${key}`;
+    const rateRedisKey = `otp:rate:${key}`;
     const multi = client.multi();
-    multi.set(otpKey, otp, "EX", OTP_TTL_SECONDS);
-    multi.incr(rateKey);
-    multi.expire(rateKey, OTP_RESEND_WINDOW_SECONDS);
+    multi.set(otpRedisKey, otp, "EX", OTP_TTL_SECONDS);
+    multi.incr(rateRedisKey);
+    multi.expire(rateRedisKey, OTP_RESEND_WINDOW_SECONDS);
     await multi.exec();
   },
-  async getOtp(phone) {
+
+  async getOtp(key) {
     const client = await getRedisClient();
     if (!client) {
-      return getMemoryStore().getOtp(phone);
+      return getMemoryStore().getOtp(key);
     }
 
-    return client.get(`otp:value:${phone}`);
+    const redisKey = `otp:value:${key}`;
+    return client.get(redisKey);
   },
-  async clearOtp(phone) {
+  async clearOtp(key) {
     const client = await getRedisClient();
     if (!client) {
-      return getMemoryStore().clearOtp(phone);
+      return getMemoryStore().clearOtp(key);
     }
 
-    await client.del(`otp:value:${phone}`);
+    await client.del(`otp:value:${key}`);
   },
 };
 
 module.exports = {
   getOtpStore: () => otpStoreFacade,
 };
+

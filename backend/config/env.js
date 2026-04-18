@@ -14,6 +14,16 @@ function getRequiredEnv(name) {
   return value;
 }
 
+function getEnv(name, defaultValue = '') {
+  return process.env[name] || defaultValue;
+}
+
+module.exports = {
+  getRequiredEnv,
+  getEnv,
+};
+
+
 module.exports = {
   getRequiredEnv,
 };

@@ -14,6 +14,7 @@ async function ensureUserColumns() {
       await pool.query(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_type VARCHAR(12) NOT NULL DEFAULT 'none'`
       );
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255) UNIQUE`);
       await pool.query(
         `ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_done BOOLEAN NOT NULL DEFAULT FALSE`
       );
@@ -39,7 +40,7 @@ async function findOrCreateUserByPhone(phone, lang = "hi") {
       ON CONFLICT (phone) DO UPDATE SET
         lang = COALESCE(EXCLUDED.lang, users.lang),
         last_login = NOW()
-      RETURNING id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
+      RETURNING id, phone, email, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
     `,
     [phone, lang]
   );
@@ -52,13 +53,14 @@ async function getUserById(userId) {
   const pool = getPool();
   const result = await pool.query(
     `
-      SELECT id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
+      SELECT id, phone, email, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
       FROM users
       WHERE id = $1
       LIMIT 1
     `,
     [userId]
   );
+
 
   return result.rows[0] || null;
 }
@@ -84,7 +86,7 @@ async function completeUserRegistration(userId, { name, lang, photoUrl, photoTyp
         registration_completed_at = COALESCE(registration_completed_at, NOW()),
         last_login = NOW()
       WHERE id = $1
-      RETURNING id, phone, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
+      RETURNING id, phone, email, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
     `,
     [userId, normalizedName, normalizedPhotoUrl, normalizedLang, normalizedPhotoType]
   );
@@ -92,8 +94,42 @@ async function completeUserRegistration(userId, { name, lang, photoUrl, photoTyp
   return result.rows[0] || null;
 }
 
+async function findOrCreateUserByIdentifier(identifier, type, lang = "hi") {
+  await ensureUserColumns();
+  const pool = getPool();
+  const normalizedLang = lang === "en" ? "en" : "hi";
+
+  if (type === 'phone') {
+    const normalizedPhone = String(identifier || "").replace(/\D/g, '');
+    if (!/^\d{10}$/.test(normalizedPhone)) {
+      throw new Error('Invalid phone number');
+    }
+    return findOrCreateUserByPhone(normalizedPhone, normalizedLang);
+  } else if (type === 'email') {
+    const normalizedEmail = String(identifier || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      throw new Error('Invalid email address');
+    }
+    const result = await pool.query(
+      `
+        INSERT INTO users (email, lang, created_at, last_login)
+        VALUES ($1, $2, NOW(), NOW())
+        ON CONFLICT (email) DO UPDATE SET
+          lang = COALESCE(EXCLUDED.lang, users.lang),
+          last_login = NOW()
+        RETURNING id, phone, email, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
+      `,
+      [normalizedEmail, normalizedLang]
+    );
+    return result.rows[0];
+  }
+  throw new Error('Type must be "phone" or "email"');
+}
+
 module.exports = {
   completeUserRegistration,
   findOrCreateUserByPhone,
+  findOrCreateUserByIdentifier,
   getUserById,
 };
+

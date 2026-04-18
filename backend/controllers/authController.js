@@ -9,9 +9,12 @@ const { recordFunnelStage } = require("../services/funnelService");
 const { getOtpStore } = require("../services/otpStore");
 const {
   completeUserRegistration,
-  findOrCreateUserByPhone,
+  findOrCreateUserByIdentifier,
   getUserById,
 } = require("../services/userService");
+
+const { sendOtpEmail } = require("../services/emailService");
+
 
 function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
@@ -49,7 +52,8 @@ function serializeUser(user) {
 
   return {
     id: user.id,
-    phone: user.phone,
+    phone: user.phone || null,
+    email: user.email || null,
     name: user.name || null,
     photoUrl: user.photo_url || null,
     photoType: user.photo_type || "none",
@@ -58,6 +62,7 @@ function serializeUser(user) {
     needsRegistration: !user.name,
   };
 }
+
 
 function parseDemoPhones() {
   return String(process.env.DEMO_OTP_PHONES || "")
@@ -81,91 +86,104 @@ function isDemoPhoneAllowed(phone) {
 
 async function login(req, res) {
   const otpStore = getOtpStore();
-  const phone = normalizePhone(req.body?.phone);
+  const type = String(req.body?.type || 'phone').toLowerCase();
+  const identifier = String(req.body?.identifier || '').trim();
+  let key;
 
-  if (!validatePhone(phone)) {
-    return res.status(400).json({ message: "Valid 10-digit phone is required" });
+  if (type === 'phone') {
+    const phone = identifier.replace(/\\D/g, '');
+    if (!validatePhone(phone)) {
+      return res.status(400).json({ message: "Valid 10-digit phone is required" });
+    }
+    key = `phone:${phone}`;
+  } else if (type === 'email') {
+    const email = identifier.toLowerCase();
+    if (!/^[ ^\\s@]+@[ ^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "Valid email is required" });
+    }
+    key = `email:${email}`;
+  } else {
+    return res.status(400).json({ message: "Type must be 'phone' or 'email'" });
   }
 
   await recordFunnelStage({
-    stage: "phone_entered",
-    phone,
+    stage: "identifier_entered",
+    phone: type === 'phone' ? identifier : undefined,
     oncePerPhone: true,
   });
 
-  if (await otpStore.isRateLimited(phone)) {
+  if (await otpStore.isRateLimited(key)) {
     return res.status(429).json({ message: "Rate limit exceeded. Try again later." });
   }
 
-  const useDemoOtp = isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
-  const otp = useDemoOtp ? getDemoOtpCode() : generateOtp();
-  await otpStore.saveOtp(phone, otp);
+  const otp = generateOtp();
+  await otpStore.saveOtp(key, otp);
 
-  if (useDemoOtp) {
-    console.log(`[auth] Demo OTP for ${phone}: ${otp}`);
-  } else if (process.env.NODE_ENV === "development" || !process.env.SMS_ENABLED) {
-    console.log(`[auth] OTP for ${phone}: ${otp}`);
+  // Send OTP
+  if (type === 'phone') {
+    const phone = identifier.replace(/\\D/g, '');
+    const useDemoOtp = isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
+    if (useDemoOtp) {
+      console.log(`[auth] Demo OTP for ${phone}: ${otp}`);
+    } else if (process.env.NODE_ENV === "development" || !process.env.SMS_ENABLED) {
+      console.log(`[auth] OTP for ${phone}: ${otp}`);
+    }
+    // TODO: integrate SMS service
+  } else {
+    try {
+      await sendOtpEmail(identifier, otp);
+      console.log(`[auth] OTP email sent to ${identifier}`);
+    } catch (error) {
+      console.error(`[auth] Email send failed for ${identifier}:`, error);
+      return res.status(500).json({ message: "Failed to send OTP" });
+    }
   }
 
   return res.json({ message: "OTP sent" });
 }
 
+
 async function verify(req, res) {
   const otpStore = getOtpStore();
-  const phone = normalizePhone(req.body?.phone);
+  const type = String(req.body?.type || 'phone').toLowerCase();
+  const identifier = String(req.body?.identifier || '').trim();
   const otp = String(req.body?.otp ?? "").trim();
   const lang = req.body?.lang === "en" ? "en" : "hi";
 
-  if (!validatePhone(phone) || !/^\d{6}$/.test(otp)) {
-    return res.status(400).json({ message: "Valid phone and 6-digit OTP are required" });
+  let key;
+  if (type === 'phone') {
+    const phone = identifier.replace(/\\D/g, '');
+    if (!validatePhone(phone) || !/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ message: "Valid phone and 6-digit OTP are required" });
+    }
+    key = `phone:${phone}`;
+  } else if (type === 'email') {
+    if (!/^[ ^\\s@]+@[ ^\\s@]+\\.[^\\s@]+$/.test(identifier) || !/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ message: "Valid email and 6-digit OTP are required" });
+    }
+    key = `email:${identifier.toLowerCase()}`;
+  } else {
+    return res.status(400).json({ message: "Type must be 'phone' or 'email'" });
   }
 
-  const useDemoOtp = isDemoOtpEnabled() && isDemoPhoneAllowed(phone);
-  if (useDemoOtp && otp === getDemoOtpCode()) {
-    const user = await findOrCreateUserByPhone(phone, lang);
-    await recordFunnelStage({
-      stage: "otp_verified",
-      userId: user.id,
-      phone,
-      oncePerUser: true,
-    });
-    const jwtSecret = getRequiredEnv("JWT_SECRET");
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        phone: user.phone,
-        role: "user",
-      },
-      jwtSecret,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-
-    return res.json({
-      token,
-      user: serializeUser(user),
-      needsRegistration: !user.name,
-    });
-  }
-
-  const storedOtp = await otpStore.getOtp(phone);
+  const storedOtp = await otpStore.getOtp(key);
   if (!storedOtp || storedOtp !== otp) {
     return res.status(401).json({ message: "OTP wrong or expired" });
   }
 
-  await otpStore.clearOtp(phone);
+  await otpStore.clearOtp(key);
 
-  const user = await findOrCreateUserByPhone(phone, lang);
+  const user = await findOrCreateUserByIdentifier(identifier, type, lang);
   await recordFunnelStage({
     stage: "otp_verified",
     userId: user.id,
-    phone,
+    phone: type === 'phone' ? identifier : undefined,
     oncePerUser: true,
   });
   const jwtSecret = getRequiredEnv("JWT_SECRET");
   const token = jwt.sign(
     {
       userId: user.id,
-      phone: user.phone,
       role: "user",
     },
     jwtSecret,
@@ -178,6 +196,7 @@ async function verify(req, res) {
     needsRegistration: !user.name,
   });
 }
+
 
 async function me(req, res) {
   const user = await getUserById(req.user.id);

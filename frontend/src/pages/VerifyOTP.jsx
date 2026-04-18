@@ -16,8 +16,11 @@ export default function VerifyOTP() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const phoneFromState = location.state?.phone || "";
-  const phone = useMemo(() => phoneFromState || getStoredPhone(), [phoneFromState]);
+const { type: typeFromState, identifier: identifierFromState } = location.state || {};
+  const tempData = useMemo(() => getTempAuthData(), []);
+  const type = typeFromState || tempData?.type || 'phone';
+  const identifier = identifierFromState || tempData?.identifier || '';
+
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +39,7 @@ export default function VerifyOTP() {
     return () => window.clearTimeout(timer);
   }, [countdown]);
 
-  if (!phone) {
+  if (!identifier) {
     return <Navigate to="/login" replace />;
   }
 
@@ -52,16 +55,18 @@ export default function VerifyOTP() {
       setIsLoading(true);
       setError("");
       const payload = await apiPost("/api/auth/verify", {
-        phone,
+        type,
+        identifier,
         otp: normalizeOtp(otp),
       });
       setToken(payload.token);
-      setStoredPhone(phone);
+      setTempAuthData(type, identifier);
 
       if (payload.needsRegistration) {
         navigate("/register", { replace: true });
         return;
       }
+
 
       const savedProfile = await fetchSavedProfile();
       navigate(isProfileReadyForMatching(savedProfile) ? "/results" : "/onboard", {
@@ -94,7 +99,7 @@ export default function VerifyOTP() {
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[375px] items-center">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-93.75 items-center">
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
           <div className="mb-8 space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
@@ -103,18 +108,22 @@ export default function VerifyOTP() {
             <h1 className="text-[28px] font-bold leading-tight text-slate-950">
               {t("auth.verify.title")}
             </h1>
-            <p className="text-sm leading-6 text-slate-500">{t("auth.verify.sentTo", { phone })}</p>
-          </div>
+  <p className="text-sm leading-6 text-slate-500">
+    {t("auth.verify.sentTo", { identifier })}
+    <span className="ml-1 text-xs text-emerald-600 font-medium">({type.toUpperCase()})</span>
+  </p>
+  </div>
 
-          <form className="space-y-5" onSubmit={handleVerify}>
-            <OTPInput
-              value={otp}
-              onChange={(value) => {
-                setOtp(normalizeOtp(value));
-                setError("");
-              }}
-              disabled={isLoading}
-            />
+  <form className="space-y-5" onSubmit={handleVerify}>
+    <OTPInput
+      value={otp}
+      onChange={(value) => {
+        setOtp(normalizeOtp(value));
+        setError("");
+      }}
+      disabled={isLoading}
+    />
+
 
             {error ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
