@@ -92,14 +92,14 @@ export default function AdminUsersPage() {
           type="search"
           value={filters.search}
           onChange={(event) => handleFilterChange("search", event.target.value)}
-          placeholder="Search by name, phone, district"
+          placeholder="Search by name, phone, or profile name"
           className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50"
         />
         <input
           type="text"
           value={filters.state}
           onChange={(event) => handleFilterChange("state", event.target.value.toUpperCase())}
-          placeholder="State code"
+          placeholder="Filter by state"
           maxLength={10}
           className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-400/50"
         />
