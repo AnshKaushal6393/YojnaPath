@@ -35,7 +35,13 @@ function renderPhoto(photoUrl, label) {
 }
 
 function getUserTypeLabel(userType) {
-  return USER_TYPE_OPTIONS.find((option) => option.key === userType)?.label || userType || "Unknown";
+  if (!userType) return "Unknown";
+  const normalized = userType.toString().toLowerCase().trim();
+  const match = USER_TYPE_OPTIONS.find((option) => 
+    option.key === normalized || 
+    option.key === userType.toString()
+  );
+  return match?.label || normalized || "Unknown";
 }
 
 export default function AdminUserDetailPage() {
