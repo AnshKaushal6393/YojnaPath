@@ -445,15 +445,24 @@ async function setAdminSchemeReviewAction(schemeId, body = {}, actor = null) {
     return null;
   }
 
+  let baseScheme = existing;
+  const replacementUrl = normalizeOptionalString(body.applyUrl);
+  if (replacementUrl && isLikelyValidUrl(replacementUrl) && replacementUrl !== existing.applyUrl) {
+    const updated = await updateAdminScheme(normalizedId, { applyUrl: replacementUrl }, actor);
+    if (updated) {
+      baseScheme = updated;
+    }
+  }
+
   const reviewAction = await recordSchemeReviewAction(normalizedId, body, actor);
   const matchCounts = await getMatchCountsBySchemeIds([normalizedId]);
 
   return {
-    ...attachDeadlineInfo(existing),
+    ...attachDeadlineInfo(baseScheme),
     matchCount: matchCounts.get(normalizedId) || 0,
     reviewAction,
-    reviewReasons: resolveReviewReasons(existing, reviewAction),
-    enrichmentReasons: getEnrichmentReasons(existing),
+    reviewReasons: resolveReviewReasons(baseScheme, reviewAction),
+    enrichmentReasons: getEnrichmentReasons(baseScheme),
   };
 }
 

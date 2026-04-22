@@ -65,6 +65,7 @@ export default function AdminSchemesPage() {
   });
   const [selectedSchemeId, setSelectedSchemeId] = useState("");
   const [reviewNote, setReviewNote] = useState("");
+  const [reviewUrl, setReviewUrl] = useState("");
 
   const schemesQuery = useQuery({
     queryKey: ["admin-schemes", filters],
@@ -111,6 +112,10 @@ export default function AdminSchemesPage() {
     setReviewNote(selectedScheme?.reviewAction?.note || "");
   }, [selectedScheme?.reviewAction?.note, selectedScheme?.schemeId]);
 
+  useEffect(() => {
+    setReviewUrl(selectedScheme?.applyUrl || "");
+  }, [selectedScheme?.applyUrl, selectedScheme?.schemeId]);
+
   const reviewSummary = useMemo(
     () => ({
       missingHindi: activeFlags.filter((scheme) => scheme.reviewReasons?.includes("missing_hindi")).length,
@@ -155,8 +160,22 @@ export default function AdminSchemesPage() {
       schemeId: selectedSchemeId,
       status,
       note: reviewNote,
+      applyUrl: reviewUrl,
     });
   }
+
+  const reviewUrlIsValid = (() => {
+    if (!reviewUrl) {
+      return false;
+    }
+
+    try {
+      const parsed = new URL(reviewUrl);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  })();
 
   return (
     <section className="space-y-6 pb-6">
@@ -521,6 +540,21 @@ export default function AdminSchemesPage() {
 
                   <div className="mt-4">
                     <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-500">
+                      Replacement URL
+                    </label>
+                    <input
+                      value={reviewUrl}
+                      onChange={(event) => setReviewUrl(event.target.value)}
+                      placeholder="https://official.gov.in/scheme"
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/50"
+                    />
+                    <p className="mt-2 text-xs text-slate-400">
+                      Paste the corrected official URL for fixed or moved schemes. Inactive schemes can be left blank.
+                    </p>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-500">
                       Review note
                     </label>
                     <textarea
@@ -536,7 +570,7 @@ export default function AdminSchemesPage() {
                     <button
                       type="button"
                       onClick={() => handleReviewStatus("fixed")}
-                      disabled={reviewMutation.isPending}
+                      disabled={reviewMutation.isPending || !reviewUrlIsValid}
                       className="min-h-11 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Mark fixed
@@ -544,7 +578,7 @@ export default function AdminSchemesPage() {
                     <button
                       type="button"
                       onClick={() => handleReviewStatus("moved")}
-                      disabled={reviewMutation.isPending}
+                      disabled={reviewMutation.isPending || !reviewUrlIsValid}
                       className="min-h-11 rounded-2xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Mark moved
@@ -562,6 +596,12 @@ export default function AdminSchemesPage() {
                   {reviewMutation.error ? (
                     <p className="mt-3 text-sm text-rose-200">
                       {reviewMutation.error.message || "Could not save the review action."}
+                    </p>
+                  ) : null}
+
+                  {!reviewUrlIsValid && (selectedScheme.reviewReasons?.includes("dead_url") || selectedScheme.reviewAction) ? (
+                    <p className="mt-3 text-xs text-amber-200">
+                      Add a valid replacement URL to enable the fixed/moved actions.
                     </p>
                   ) : null}
 

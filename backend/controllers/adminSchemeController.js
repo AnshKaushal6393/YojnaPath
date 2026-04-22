@@ -27,6 +27,19 @@ function normalizeReviewStatus(value) {
   return ["fixed", "moved", "inactive"].includes(normalized) ? normalized : null;
 }
 
+function isValidHttpUrl(value) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 async function listSchemes(req, res) {
   const payload = await listAdminSchemes({
     page: req.query?.page,
@@ -96,6 +109,7 @@ async function exportSchemes(req, res) {
 async function reviewScheme(req, res) {
   const schemeId = normalizeOptionalString(req.params?.id);
   const status = normalizeReviewStatus(req.body?.status);
+  const applyUrl = normalizeOptionalString(req.body?.applyUrl);
 
   if (!schemeId) {
     return res.status(400).json({ message: "Scheme id is required" });
@@ -105,9 +119,17 @@ async function reviewScheme(req, res) {
     return res.status(400).json({ message: "A valid review status is required" });
   }
 
+  if (applyUrl && !isValidHttpUrl(applyUrl)) {
+    return res.status(400).json({ message: "A valid replacement URL is required" });
+  }
+
+  if ((status === "fixed" || status === "moved") && !applyUrl) {
+    return res.status(400).json({ message: "Replacement URL is required for fixed or moved schemes" });
+  }
+
   const scheme = await setAdminSchemeReviewAction(
     schemeId,
-    { status, note: normalizeOptionalString(req.body?.note) },
+    { status, note: normalizeOptionalString(req.body?.note), applyUrl },
     req.admin?.email || req.admin?.id || null
   );
 

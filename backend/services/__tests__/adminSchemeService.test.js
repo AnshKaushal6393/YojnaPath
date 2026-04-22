@@ -150,4 +150,60 @@ describe("adminSchemeService", () => {
     expect(flags.schemes[0].reviewReasons).toContain("missing_hindi");
     expect(flags.schemes[0].reviewReasons).not.toContain("dead_url");
   });
+
+  test("setAdminSchemeReviewAction updates the applyUrl for a fixed dead link", async () => {
+    const existingScheme = {
+      schemeId: "SCHEME-1",
+      name: { en: "Scheme One", hi: "" },
+      description: { en: "Desc", hi: "" },
+      applyUrl: "notaurl",
+      eligibility: {},
+      active: true,
+    };
+    const updatedSchemeDoc = {
+      ...existingScheme,
+      applyUrl: "https://example.com/new",
+      save: jest.fn().mockResolvedValue(),
+      toObject: jest.fn(function toObject() {
+        return {
+          schemeId: this.schemeId,
+          name: this.name,
+          description: this.description,
+          applyUrl: this.applyUrl,
+          eligibility: this.eligibility,
+          active: this.active,
+        };
+      }),
+    };
+
+    Scheme.findOne
+      .mockReturnValueOnce({
+        lean: jest.fn().mockResolvedValue(existingScheme),
+      })
+      .mockReturnValueOnce(updatedSchemeDoc);
+
+    getPool.mockReturnValue({
+      query: jest.fn().mockResolvedValue({ rows: [] }),
+    });
+
+    const { setAdminSchemeReviewAction } = loadAdminSchemeService();
+    const scheme = await setAdminSchemeReviewAction(
+      "SCHEME-1",
+      {
+        status: "fixed",
+        note: "Updated with the official portal URL",
+        applyUrl: "https://example.com/new",
+      },
+      "admin@example.com"
+    );
+
+    expect(scheme.applyUrl).toBe("https://example.com/new");
+    expect(scheme.reviewAction).toMatchObject({
+      status: "fixed",
+      note: "Updated with the official portal URL",
+      reviewedBy: "admin@example.com",
+    });
+    expect(scheme.reviewReasons).toContain("missing_hindi");
+    expect(scheme.reviewReasons).not.toContain("dead_url");
+  });
 });
