@@ -103,10 +103,10 @@ describe("adminSchemeService", () => {
     const { getAdminSchemeFlags } = loadAdminSchemeService();
     const flags = await getAdminSchemeFlags();
 
-    expect(flags).toHaveLength(2);
-    expect(flags[0].reviewReasons).toContain("missing_hindi");
-    expect(flags[0].reviewReasons).toContain("dead_url");
-    expect(flags[1].reviewReasons).toContain("user_reported");
+    expect(flags.schemes).toHaveLength(2);
+    expect(flags.schemes[0].reviewReasons).toContain("missing_hindi");
+    expect(flags.schemes[0].reviewReasons).toContain("dead_url");
+    expect(flags.schemes[1].reviewReasons).toContain("user_reported");
   });
 
   test("getAdminSchemeFlags omits dead_url after a resolved review action", async () => {
@@ -141,13 +141,13 @@ describe("adminSchemeService", () => {
     const { getAdminSchemeFlags } = loadAdminSchemeService();
     const flags = await getAdminSchemeFlags();
 
-    expect(flags).toHaveLength(1);
-    expect(flags[0].reviewAction).toMatchObject({
+    expect(flags.schemes).toHaveLength(1);
+    expect(flags.schemes[0].reviewAction).toMatchObject({
       status: "fixed",
       note: "Replaced with a new official link",
       reviewedBy: "admin@example.com",
     });
-    expect(flags[0].reviewReasons).toContain("missing_hindi");
-    expect(flags[0].reviewReasons).not.toContain("dead_url");
+    expect(flags.schemes[0].reviewReasons).toContain("missing_hindi");
+    expect(flags.schemes[0].reviewReasons).not.toContain("dead_url");
   });
 });

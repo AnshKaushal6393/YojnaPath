@@ -544,6 +544,12 @@ export default function AdminSchemesPage() {
                     </button>
                   </div>
 
+                  {reviewMutation.error ? (
+                    <p className="mt-3 text-sm text-rose-200">
+                      {reviewMutation.error.message || "Could not save the review action."}
+                    </p>
+                  ) : null}
+
                   {selectedScheme.reviewAction?.reviewedAt ? (
                     <p className="mt-3 text-xs text-slate-400">
                       Last triaged {formatDateTime(selectedScheme.reviewAction.reviewedAt)}
