@@ -343,7 +343,7 @@ export default function AdminUserDetailPage() {
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-slate-300">
                             <p>State: {profile.state || "NA"}</p>
-                            <p>Occupation: {profile.occupation || "unknown"}</p>
+                            <p>User type: {getUserTypeLabel(profile.userType || profile.occupation)}</p>
                             <p>Gender: {profile.gender || "NA"}</p>
                             <p>Age: {profile.age ?? "NA"}</p>
                             <p>Caste: {profile.caste || "NA"}</p>
