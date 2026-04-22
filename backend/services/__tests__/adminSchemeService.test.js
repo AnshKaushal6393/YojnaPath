@@ -108,4 +108,46 @@ describe("adminSchemeService", () => {
     expect(flags[0].reviewReasons).toContain("dead_url");
     expect(flags[1].reviewReasons).toContain("user_reported");
   });
+
+  test("getAdminSchemeFlags omits dead_url after a resolved review action", async () => {
+    const findChain = {
+      sort: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue([
+        {
+          schemeId: "SCHEME-1",
+          name: { en: "Scheme One", hi: "" },
+          description: { en: "Desc", hi: "" },
+          applyUrl: "notaurl",
+          eligibility: {},
+          active: true,
+        },
+      ]),
+    };
+    Scheme.find.mockReturnValue(findChain);
+    getPool.mockReturnValue({
+      query: jest.fn().mockResolvedValue({
+        rows: [
+          {
+            scheme_id: "SCHEME-1",
+            status: "fixed",
+            note: "Replaced with a new official link",
+            reviewed_by: "admin@example.com",
+            reviewed_at: "2026-04-22T10:00:00.000Z",
+          },
+        ],
+      }),
+    });
+
+    const { getAdminSchemeFlags } = loadAdminSchemeService();
+    const flags = await getAdminSchemeFlags();
+
+    expect(flags).toHaveLength(1);
+    expect(flags[0].reviewAction).toMatchObject({
+      status: "fixed",
+      note: "Replaced with a new official link",
+      reviewedBy: "admin@example.com",
+    });
+    expect(flags[0].reviewReasons).toContain("missing_hindi");
+    expect(flags[0].reviewReasons).not.toContain("dead_url");
+  });
 });

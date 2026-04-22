@@ -488,6 +488,71 @@ export default function AdminSchemesPage() {
                 </div>
               </div>
 
+              {(selectedScheme.reviewReasons?.includes("dead_url") || selectedScheme.reviewAction) ? (
+                <div className="rounded-[24px] border border-amber-400/20 bg-amber-400/10 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-amber-100">Dead URL triage</p>
+                      <p className="mt-2 text-sm text-amber-50">
+                        Mark this link as fixed, moved, or inactive so the queue stops flagging it after review.
+                      </p>
+                    </div>
+                    {selectedScheme.reviewAction?.status ? (
+                      <Badge tone="amber">{selectedScheme.reviewAction.status.replace(/_/g, " ")}</Badge>
+                    ) : (
+                      <Badge tone="rose">Needs triage</Badge>
+                    )}
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="mb-2 block text-xs uppercase tracking-[0.16em] text-slate-500">
+                      Review note
+                    </label>
+                    <textarea
+                      value={reviewNote}
+                      onChange={(event) => setReviewNote(event.target.value)}
+                      rows={3}
+                      placeholder="Add a note about the replacement URL, outage, or deactivation."
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/50"
+                    />
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleReviewStatus("fixed")}
+                      disabled={reviewMutation.isPending}
+                      className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Mark fixed
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReviewStatus("moved")}
+                      disabled={reviewMutation.isPending}
+                      className="rounded-2xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Mark moved
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleReviewStatus("inactive")}
+                      disabled={reviewMutation.isPending}
+                      className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Mark inactive
+                    </button>
+                  </div>
+
+                  {selectedScheme.reviewAction?.reviewedAt ? (
+                    <p className="mt-3 text-xs text-slate-400">
+                      Last triaged {formatDateTime(selectedScheme.reviewAction.reviewedAt)}
+                      {selectedScheme.reviewAction.reviewedBy ? ` by ${selectedScheme.reviewAction.reviewedBy}` : ""}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <p className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500">Eligibility</p>
