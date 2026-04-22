@@ -1,4 +1,4 @@
-import { apiDelete, apiGet } from "./api";
+import { apiDelete, apiGet, apiPost } from "./api";
 import { clearAdminToken, getAdminToken, setAdminToken } from "./adminAuthStorage";
 
 export async function loginAdmin(email, password) {
@@ -145,6 +145,12 @@ export async function fetchAdminSchemeFlags() {
 export async function fetchAdminScheme(schemeId) {
   return withAdminSession(async (token) => {
     return apiGet(`/api/admin/schemes/${schemeId}`, { token });
+  });
+}
+
+export async function reviewAdminScheme(schemeId, body) {
+  return withAdminSession(async (token) => {
+    return apiPost(`/api/admin/schemes/${schemeId}/review`, body, { token });
   });
 }
 

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   downloadAdminSchemesExport,
   fetchAdminScheme,
   fetchAdminSchemeFlags,
   fetchAdminSchemes,
+  reviewAdminScheme,
 } from "../lib/adminApi";
 import { formatDateTime, formatNumber } from "../lib/adminUi";
 
@@ -53,6 +54,7 @@ function JsonBlock({ value }) {
 
 export default function AdminSchemesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
     search: "",
     state: "",
@@ -62,6 +64,7 @@ export default function AdminSchemesPage() {
     limit: 12,
   });
   const [selectedSchemeId, setSelectedSchemeId] = useState("");
+  const [reviewNote, setReviewNote] = useState("");
 
   const schemesQuery = useQuery({
     queryKey: ["admin-schemes", filters],
@@ -79,6 +82,16 @@ export default function AdminSchemesPage() {
     enabled: Boolean(selectedSchemeId),
   });
 
+  const reviewMutation = useMutation({
+    mutationFn: ({ schemeId, status, note }) => reviewAdminScheme(schemeId, { status, note }),
+    onSuccess: async (updatedScheme) => {
+      setReviewNote(updatedScheme?.reviewAction?.note || "");
+      await queryClient.invalidateQueries({ queryKey: ["admin-schemes"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-scheme-flags"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-scheme", selectedSchemeId] });
+    },
+  });
+
   useEffect(() => {
     if (schemesQuery.isSuccess && schemesQuery.data === null) {
       navigate("/admin/login", { replace: true });
@@ -93,6 +106,10 @@ export default function AdminSchemesPage() {
   const selectedScheme = selectedSchemeQuery.data || null;
   const flaggedCount = activeFlags.length;
   const enrichmentCount = enrichmentFlags.length;
+
+  useEffect(() => {
+    setReviewNote(selectedScheme?.reviewAction?.note || "");
+  }, [selectedScheme?.reviewAction?.note, selectedScheme?.schemeId]);
 
   const reviewSummary = useMemo(
     () => ({
@@ -127,6 +144,18 @@ export default function AdminSchemesPage() {
 
   function handleClearSelection() {
     setSelectedSchemeId("");
+  }
+
+  function handleReviewStatus(status) {
+    if (!selectedSchemeId || reviewMutation.isPending) {
+      return;
+    }
+
+    reviewMutation.mutate({
+      schemeId: selectedSchemeId,
+      status,
+      note: reviewNote,
+    });
   }
 
   return (

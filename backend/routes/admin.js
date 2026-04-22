@@ -19,6 +19,7 @@ const {
   getScheme,
   getSchemeFlags,
   listSchemes,
+  reviewScheme,
   updateScheme,
 } = require("../controllers/adminSchemeController");
 const { requireAdminAuth } = require("../middleware/adminAuth");
@@ -40,6 +41,7 @@ router.get("/schemes/flags", getSchemeFlags);
 router.get("/schemes/export", exportSchemes);
 router.get("/schemes", listSchemes);
 router.get("/schemes/:id", getScheme);
+router.post("/schemes/:id/review", reviewScheme);
 router.post("/schemes", createScheme);
 router.put("/schemes/:id", updateScheme);
 router.delete("/schemes/:id", deleteScheme);

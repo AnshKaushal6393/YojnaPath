@@ -176,6 +176,8 @@ function getEnrichmentReasons(scheme) {
   return reasons;
 }
 
+const RESOLVED_REVIEW_STATUSES = new Set(["fixed", "moved", "inactive"]);
+
 function collectSchemePayload(body = {}, existing = null) {
   const source = existing?.toObject ? existing.toObject({ versionKey: false }) : (existing || {});
   const payload = {
@@ -420,11 +422,39 @@ async function recordSchemeReviewAction(schemeId, body = {}, reviewer = null) {
 
 function resolveReviewReasons(scheme, reviewAction = null) {
   const reasons = getReviewReasons(scheme);
-  if (reviewAction && ["fixed", "moved", "inactive"].includes(String(reviewAction.status || "").toLowerCase())) {
+  if (reviewAction && RESOLVED_REVIEW_STATUSES.has(String(reviewAction.status || "").toLowerCase())) {
     return reasons.filter((reason) => reason !== "dead_url");
   }
 
   return reasons;
+}
+
+async function setAdminSchemeReviewAction(schemeId, body = {}, actor = null) {
+  if (!isMongoReady()) {
+    return null;
+  }
+
+  await ensureDatabaseSchema();
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const existing = await Scheme.findOne({ schemeId: normalizedId }).lean();
+  if (!existing) {
+    return null;
+  }
+
+  const reviewAction = await recordSchemeReviewAction(normalizedId, body, actor);
+  const matchCounts = await getMatchCountsBySchemeIds([normalizedId]);
+
+  return {
+    ...attachDeadlineInfo(existing),
+    matchCount: matchCounts.get(normalizedId) || 0,
+    reviewAction,
+    reviewReasons: resolveReviewReasons(existing, reviewAction),
+    enrichmentReasons: getEnrichmentReasons(existing),
+  };
 }
 
 async function listAdminSchemes(options = {}) {
@@ -471,6 +501,7 @@ async function listAdminSchemes(options = {}) {
     Scheme.countDocuments(query),
   ]);
   const matchCounts = await getMatchCountsBySchemeIds(schemes.map((scheme) => scheme.schemeId));
+  const reviewActionMap = await getSchemeReviewMap(schemes.map((scheme) => scheme.schemeId));
 
   return {
     page,
@@ -480,7 +511,8 @@ async function listAdminSchemes(options = {}) {
     schemes: schemes.map((scheme) => ({
       ...attachDeadlineInfo(scheme),
       matchCount: matchCounts.get(scheme.schemeId) || 0,
-      reviewReasons: getReviewReasons(scheme),
+      reviewAction: reviewActionMap.get(scheme.schemeId) || null,
+      reviewReasons: resolveReviewReasons(scheme, reviewActionMap.get(scheme.schemeId) || null),
       enrichmentReasons: getEnrichmentReasons(scheme),
     })),
   };
@@ -503,11 +535,14 @@ async function getAdminSchemeById(schemeId) {
   }
 
   const [matchCounts] = await Promise.all([getMatchCountsBySchemeIds([scheme.schemeId])]);
+  const reviewActionMap = await getSchemeReviewMap([scheme.schemeId]);
+  const reviewAction = reviewActionMap.get(scheme.schemeId) || null;
 
   return {
     ...attachDeadlineInfo(scheme),
     matchCount: matchCounts.get(scheme.schemeId) || 0,
-    reviewReasons: getReviewReasons(scheme),
+    reviewAction,
+    reviewReasons: resolveReviewReasons(scheme, reviewAction),
     enrichmentReasons: getEnrichmentReasons(scheme),
   };
 }
@@ -618,10 +653,12 @@ async function getAdminSchemeFlags() {
 
   await ensureDatabaseSchema();
   const schemes = await Scheme.find({ active: true }).sort({ updatedAt: -1, schemeId: 1 }).lean();
+  const reviewActionMap = await getSchemeReviewMap(schemes.map((scheme) => scheme.schemeId));
 
   const normalizedSchemes = schemes.map((scheme) => ({
     ...attachDeadlineInfo(scheme),
-    reviewReasons: getReviewReasons(scheme),
+    reviewAction: reviewActionMap.get(scheme.schemeId) || null,
+    reviewReasons: resolveReviewReasons(scheme, reviewActionMap.get(scheme.schemeId) || null),
     enrichmentReasons: getEnrichmentReasons(scheme),
   }));
 
@@ -680,5 +717,6 @@ module.exports = {
   getAdminSchemeFlags,
   getEnrichmentReasons,
   listAdminSchemes,
+  setAdminSchemeReviewAction,
   updateAdminScheme,
 };

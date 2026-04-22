@@ -5,6 +5,7 @@ const {
   getAdminSchemeById,
   getAdminSchemeFlags,
   listAdminSchemes,
+  setAdminSchemeReviewAction,
   updateAdminScheme,
 } = require("../services/adminSchemeService");
 
@@ -15,6 +16,15 @@ function normalizeOptionalString(value) {
 
   const normalized = String(value).trim();
   return normalized === "" ? null : normalized;
+}
+
+function normalizeReviewStatus(value) {
+  const normalized = normalizeOptionalString(value)?.toLowerCase();
+  if (!normalized) {
+    return null;
+  }
+
+  return ["fixed", "moved", "inactive"].includes(normalized) ? normalized : null;
 }
 
 async function listSchemes(req, res) {
@@ -83,6 +93,31 @@ async function exportSchemes(req, res) {
   return res.status(200).send(csv);
 }
 
+async function reviewScheme(req, res) {
+  const schemeId = normalizeOptionalString(req.params?.id);
+  const status = normalizeReviewStatus(req.body?.status);
+
+  if (!schemeId) {
+    return res.status(400).json({ message: "Scheme id is required" });
+  }
+
+  if (!status) {
+    return res.status(400).json({ message: "A valid review status is required" });
+  }
+
+  const scheme = await setAdminSchemeReviewAction(
+    schemeId,
+    { status, note: normalizeOptionalString(req.body?.note) },
+    req.admin?.email || req.admin?.id || null
+  );
+
+  if (!scheme) {
+    return res.status(404).json({ message: "Scheme not found" });
+  }
+
+  return res.json(scheme);
+}
+
 module.exports = {
   createScheme,
   deleteScheme,
@@ -90,5 +125,6 @@ module.exports = {
   getScheme,
   getSchemeFlags,
   listSchemes,
+  reviewScheme,
   updateScheme,
 };
