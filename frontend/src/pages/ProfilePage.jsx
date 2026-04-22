@@ -814,7 +814,7 @@ export default function ProfilePage() {
             onUserTypeChange={handleUserTypeChange}
             onFormStateChange={handleFormStateChange}
             isSubmitting={profileMutation.isPending}
-            allowUserTypeChange={!isOwnerProfile || !savedProfileQuery.data?.selectedUserType}
+            allowUserTypeChange
           />
         </form>
 

@@ -32,12 +32,12 @@ describe("profileController", () => {
 
   test("getProfile returns empty object with userId when profile does not exist", async () => {
     getProfileByUserId.mockResolvedValue(null);
-    const req = { user: { id: "user-1" } };
+    const req = { user: { id: "user-1" }, query: {} };
     const res = createResponse();
 
     await getProfile(req, res);
 
-    expect(getProfileByUserId).toHaveBeenCalledWith("user-1");
+    expect(getProfileByUserId).toHaveBeenCalledWith("user-1", null);
     expect(res.json).toHaveBeenCalledWith({ userId: "user-1" });
   });
 
@@ -105,6 +105,7 @@ describe("profileController", () => {
     const req = {
       user: { id: "user-1" },
       body: {
+        profileId: null,
         state: "mh",
         occupation: "migrant_worker",
         annual_income: 90000,
@@ -123,7 +124,7 @@ describe("profileController", () => {
 
     await saveProfile(req, res);
 
-    expect(upsertProfile).toHaveBeenCalledWith("user-1", {
+    expect(upsertProfile).toHaveBeenCalledWith("user-1", null, {
       state: "MH",
       occupation: "migrant_worker",
       annualIncome: 90000,
