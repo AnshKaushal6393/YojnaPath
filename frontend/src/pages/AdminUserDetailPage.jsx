@@ -121,9 +121,10 @@ export default function AdminUserDetailPage() {
   const liveMatches = liveMatchesQuery.data;
   const displayPhotoUrl = getUserDisplayPhoto(user);
   const matchStats = summarizeMatchStats(user, matches);
+  const matchSummary = user?.matchSummary || {};
   const hasRecentMatchLogs = Boolean(user?.recentMatches?.length);
   const hasMatchSummary = Boolean(
-    user?.matchSummary?.matchRuns || user?.matchSummary?.totalMatches || user?.matchSummary?.totalNearMisses
+    matchSummary.matchRuns || matchSummary.totalMatches || matchSummary.totalNearMisses
   );
   const matchSourceLabel = hasRecentMatchLogs
     ? "recentMatches"
@@ -362,6 +363,31 @@ export default function AdminUserDetailPage() {
               <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
                 Source: {matchSourceLabel}
               </p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[18px] bg-slate-950/75 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary runs</p>
+                  <p className="mt-3 text-2xl font-semibold text-cyan-300">
+                    {formatNumber(matchSummary.matchRuns)}
+                  </p>
+                </div>
+                <div className="rounded-[18px] bg-slate-950/75 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary matches</p>
+                  <p className="mt-3 text-2xl font-semibold text-emerald-300">
+                    {formatNumber(matchSummary.totalMatches)}
+                  </p>
+                </div>
+                <div className="rounded-[18px] bg-slate-950/75 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary near misses</p>
+                  <p className="mt-3 text-2xl font-semibold text-amber-300">
+                    {formatNumber(matchSummary.totalNearMisses)}
+                  </p>
+                </div>
+              </div>
+              {matchSummary.lastMatchAt ? (
+                <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
+                  Last summary match: {formatDateTime(matchSummary.lastMatchAt)}
+                </p>
+              ) : null}
               {hasMatchSummary && !hasRecentMatchLogs ? (
                 <div className="mt-4 rounded-[18px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
                   We found aggregated match totals, but no individual match rows. That usually means
