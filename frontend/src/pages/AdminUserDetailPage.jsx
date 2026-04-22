@@ -121,6 +121,15 @@ export default function AdminUserDetailPage() {
   const liveMatches = liveMatchesQuery.data;
   const displayPhotoUrl = getUserDisplayPhoto(user);
   const matchStats = summarizeMatchStats(user, matches);
+  const hasRecentMatchLogs = Boolean(user?.recentMatches?.length);
+  const hasMatchSummary = Boolean(
+    user?.matchSummary?.matchRuns || user?.matchSummary?.totalMatches || user?.matchSummary?.totalNearMisses
+  );
+  const matchSourceLabel = hasRecentMatchLogs
+    ? "recentMatches"
+    : hasMatchSummary
+      ? "matchSummary fallback"
+      : "no match data";
 
   return (
     <section className="space-y-6">
@@ -171,17 +180,25 @@ export default function AdminUserDetailPage() {
                   <h3 className="mt-3 text-2xl font-semibold text-white">{user.name || "Unknown user"}</h3>
                   <p className="mt-2 text-sm text-slate-300">{user.phone}</p>
                   <p className="mt-1 text-sm text-slate-400">Created {formatDate(user.createdAt)}</p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-                    <span className="rounded-full bg-white/5 px-3 py-1">Lang: {user.lang || "hi"}</span>
-                    <span className="rounded-full bg-white/5 px-3 py-1">
-                      Photo type: {user.registration?.photoType || user.photoType || "none"}
-                    </span>
-                    <span className="rounded-full bg-white/5 px-3 py-1">
-                      Profiles: {formatNumber(user.registration?.totalProfiles)}
-                    </span>
-                  </div>
-                </div>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
+                <span className="rounded-full bg-white/5 px-3 py-1">Lang: {user.lang || "hi"}</span>
+                <span className="rounded-full bg-white/5 px-3 py-1">
+                  Photo type: {user.registration?.photoType || user.photoType || "none"}
+                </span>
+                <span className="rounded-full bg-white/5 px-3 py-1">
+                  Profiles: {formatNumber(user.registration?.totalProfiles)}
+                </span>
+                <span className="rounded-full bg-white/5 px-3 py-1">
+                  Logged runs: {formatNumber(matchStats.matchRuns)}
+                </span>
+                {user.matchSummary?.lastMatchAt ? (
+                  <span className="rounded-full bg-white/5 px-3 py-1">
+                    Last match: {formatDateTime(user.matchSummary.lastMatchAt)}
+                  </span>
+                ) : null}
               </div>
+            </div>
+          </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[18px] bg-slate-950/75 p-4">
@@ -342,6 +359,15 @@ export default function AdminUserDetailPage() {
               <p className="mt-2 text-sm text-slate-400">
                 This section shows only match runs saved in analytics logs for this user account.
               </p>
+              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
+                Source: {matchSourceLabel}
+              </p>
+              {hasMatchSummary && !hasRecentMatchLogs ? (
+                <div className="mt-4 rounded-[18px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                  We found aggregated match totals, but no individual match rows. That usually means
+                  the summary was saved without the detailed log list.
+                </div>
+              ) : null}
               <div className="mt-6 space-y-3">
                 {matchesQuery.isLoading ? (
                   <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
@@ -380,7 +406,8 @@ export default function AdminUserDetailPage() {
                   ))
                 ) : (
                   <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No attributed match history for this user yet.
+                    No logged match runs were found for this user yet. They appear after a signed-in
+                    match run is saved.
                   </div>
                 )}
               </div>
