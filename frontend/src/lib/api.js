@@ -110,3 +110,15 @@ export function apiPatch(path, body, options = {}) {
     body: JSON.stringify(body),
   });
 }
+
+export function apiPut(path, body, options = {}) {
+  return apiRequest(path, {
+    ...options,
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    body: JSON.stringify(body),
+  });
+}

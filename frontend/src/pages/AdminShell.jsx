@@ -44,6 +44,9 @@ export default function AdminShell() {
             <NavLink to="/admin/users" className={getNavClassName}>
               Users
             </NavLink>
+            <NavLink to="/admin/schemes" className={getNavClassName}>
+              Schemes
+            </NavLink>
             <button
               type="button"
               className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"

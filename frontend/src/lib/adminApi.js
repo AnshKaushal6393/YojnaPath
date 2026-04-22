@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost } from "./api";
+import { apiDelete, apiGet, apiPost, apiPut } from "./api";
 import { clearAdminToken, getAdminToken, setAdminToken } from "./adminAuthStorage";
 
 export async function loginAdmin(email, password) {
@@ -113,6 +113,68 @@ export async function downloadAdminUsersExport() {
 
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
   const response = await fetch(`${apiBaseUrl}/api/admin/users/export`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    clearAdminToken();
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Export failed: ${response.status}`);
+  }
+
+  return response.blob();
+}
+
+export async function fetchAdminSchemes(params = {}) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/schemes${buildQueryString(params)}`, { token });
+  });
+}
+
+export async function fetchAdminSchemeFlags() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/schemes/flags", { token });
+  });
+}
+
+export async function fetchAdminScheme(schemeId) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/schemes/${schemeId}`, { token });
+  });
+}
+
+export async function createAdminScheme(payload) {
+  return withAdminSession(async (token) => {
+    return apiPost("/api/admin/schemes", payload, { token });
+  });
+}
+
+export async function updateAdminScheme(schemeId, payload) {
+  return withAdminSession(async (token) => {
+    return apiPut(`/api/admin/schemes/${schemeId}`, payload, { token });
+  });
+}
+
+export async function deleteAdminScheme(schemeId) {
+  return withAdminSession(async (token) => {
+    return apiDelete(`/api/admin/schemes/${schemeId}`, { token });
+  });
+}
+
+export async function downloadAdminSchemesExport() {
+  const token = getAdminToken();
+  if (!token) {
+    clearAdminToken();
+    return null;
+  }
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "";
+  const response = await fetch(`${apiBaseUrl}/api/admin/schemes/export`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

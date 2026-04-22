@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminShell from "./pages/AdminShell";
+import AdminSchemesPage from "./pages/AdminSchemesPage";
 import AdminUserDetailPage from "./pages/AdminUserDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import HomePage from "./pages/HomePage";
@@ -48,6 +49,7 @@ export default function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="users/:userId" element={<AdminUserDetailPage />} />
+          <Route path="schemes" element={<AdminSchemesPage />} />
         </Route>
       </Route>
 
