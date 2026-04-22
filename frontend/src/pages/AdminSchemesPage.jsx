@@ -159,45 +159,46 @@ export default function AdminSchemesPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+    <section className="space-y-6 pb-6">
+      <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 p-6 shadow-2xl shadow-slate-950/30">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.10),transparent_28%)]" />
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
               Scheme Routes
             </p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">Scheme review console</h2>
-            <p className="mt-2 max-w-3xl text-sm text-slate-300">
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Scheme review console</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
               Scraped schemes appear here for review, filtering, export, and QA. This screen is read-only
               by design so the scraper remains the source of truth.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 lg:justify-end">
             <button
               type="button"
               onClick={handleClearSelection}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="min-h-11 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               Clear selection
             </button>
             <button
               type="button"
               onClick={handleExport}
-              className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20"
+              className="min-h-11 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20"
             >
               Export CSV
             </button>
           </div>
         </div>
 
-        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+        <div className="relative mt-6 grid gap-3 rounded-[28px] border border-white/8 bg-slate-950/45 p-4 shadow-inner shadow-slate-950/30 md:grid-cols-2 xl:grid-cols-5">
           <input
             value={filters.search}
             onChange={(event) =>
               setFilters((current) => ({ ...current, search: event.target.value, page: 1 }))
             }
             placeholder="Search schemes"
-            className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
+            className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
           />
           <input
             value={filters.state}
@@ -205,14 +206,14 @@ export default function AdminSchemesPage() {
               setFilters((current) => ({ ...current, state: event.target.value.toUpperCase(), page: 1 }))
             }
             placeholder="State"
-            className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
+            className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-400/50"
           />
           <select
             value={filters.category}
             onChange={(event) =>
               setFilters((current) => ({ ...current, category: event.target.value, page: 1 }))
             }
-            className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
+            className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
           >
             <option value="">All categories</option>
             {CATEGORY_OPTIONS.map((category) => (
@@ -226,7 +227,7 @@ export default function AdminSchemesPage() {
             onChange={(event) =>
               setFilters((current) => ({ ...current, active: event.target.value, page: 1 }))
             }
-            className="rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
+            className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
           >
             <option value="">All status</option>
             <option value="true">Active</option>
@@ -244,15 +245,15 @@ export default function AdminSchemesPage() {
                 limit: 12,
               })
             }
-            className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+            className="min-h-11 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
           >
             Reset filters
           </button>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6">
+      <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+        <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
@@ -268,21 +269,21 @@ export default function AdminSchemesPage() {
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4">
+            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4 shadow-inner shadow-slate-950/30">
               <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Missing Hindi</p>
               <p className="mt-2 text-2xl font-semibold text-white">{formatNumber(reviewSummary.missingHindi)}</p>
             </div>
-            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4">
+            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4 shadow-inner shadow-slate-950/30">
               <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Dead URL</p>
               <p className="mt-2 text-2xl font-semibold text-white">{formatNumber(reviewSummary.deadUrl)}</p>
             </div>
-            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4">
+            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4 shadow-inner shadow-slate-950/30">
               <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Empty eligibility</p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {formatNumber(reviewSummary.emptyEligibility)}
               </p>
             </div>
-            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4">
+            <div className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4 shadow-inner shadow-slate-950/30">
               <p className="text-xs uppercase tracking-[0.16em] text-slate-500">User-reported</p>
               <p className="mt-2 text-2xl font-semibold text-white">
                 {formatNumber(reviewSummary.userReported)}
@@ -306,7 +307,11 @@ export default function AdminSchemesPage() {
                 key={scheme.schemeId}
                 type="button"
                 onClick={() => handleSelectScheme(scheme.schemeId)}
-                className="w-full rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4 text-left transition hover:bg-white/5"
+                className={`w-full rounded-[18px] border px-4 py-4 text-left transition ${
+                  selectedSchemeId === scheme.schemeId
+                    ? "border-cyan-400/40 bg-cyan-400/10 shadow-lg shadow-cyan-950/20"
+                    : "border-white/8 bg-slate-900/70 hover:bg-white/5"
+                }`}
               >
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-white">{scheme.schemeId}</span>
@@ -321,12 +326,16 @@ export default function AdminSchemesPage() {
             ))}
           </div>
 
-          <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10">
-            <div className="grid grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-              <span>Scheme</span>
-              <span>State / Category</span>
-              <span>Status</span>
-              <span>Updated</span>
+          <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60">
+            <div className="overflow-x-auto">
+              <div className="min-w-[860px]">
+                <div className="grid grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  <span>Scheme</span>
+                  <span>State / Category</span>
+                  <span>Status</span>
+                  <span>Updated</span>
+                </div>
+              </div>
             </div>
             <div className="divide-y divide-white/6 bg-slate-950/60">
               {schemesQuery.isLoading ? (
@@ -340,7 +349,9 @@ export default function AdminSchemesPage() {
                   key={scheme.schemeId}
                   type="button"
                   onClick={() => handleSelectScheme(scheme.schemeId)}
-                  className="grid w-full grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 px-4 py-4 text-left transition hover:bg-white/5"
+                  className={`grid w-full grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 px-4 py-4 text-left transition ${
+                    selectedSchemeId === scheme.schemeId ? "bg-cyan-400/8" : "hover:bg-white/5"
+                  }`}
                 >
                   <span>
                     <span className="block text-sm font-semibold text-white">{scheme.schemeId}</span>
@@ -367,7 +378,7 @@ export default function AdminSchemesPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+          <div className="mt-6 rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
@@ -399,7 +410,7 @@ export default function AdminSchemesPage() {
                   setFilters((current) => ({ ...current, page: Math.max(current.page - 1, 1) }))
                 }
                 disabled={filters.page <= 1}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="min-h-11 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Previous
               </button>
@@ -412,7 +423,7 @@ export default function AdminSchemesPage() {
                   }))
                 }
                 disabled={Boolean(totalPages) && filters.page >= totalPages}
-                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                className="min-h-11 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Next
               </button>
@@ -420,7 +431,7 @@ export default function AdminSchemesPage() {
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6">
+        <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25 xl:sticky xl:top-6 xl:self-start">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
@@ -438,9 +449,9 @@ export default function AdminSchemesPage() {
 
           {selectedScheme ? (
             <div className="mt-5 space-y-4">
-              <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+              <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
                 <p className="text-lg font-semibold text-white">{selectedScheme.name?.en || "Untitled"}</p>
-                <p className="mt-1 text-sm text-slate-300">{selectedScheme.name?.hi || "No Hindi title"}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-300">{selectedScheme.name?.hi || "No Hindi title"}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge tone={selectedScheme.active ? "emerald" : "rose"}>
                     {selectedScheme.active ? "Active" : "Inactive"}
@@ -453,9 +464,9 @@ export default function AdminSchemesPage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Key details</p>
-                  <div className="mt-3 space-y-2 text-sm text-slate-300">
+                  <div className="mt-3 space-y-2 text-sm leading-6 text-slate-300">
                     <p>Ministry: {selectedScheme.ministry || "Unknown"}</p>
                     <p>Apply mode: {selectedScheme.applyMode || "Unknown"}</p>
                     <p>Apply URL: {selectedScheme.applyUrl || "Missing"}</p>
@@ -463,7 +474,7 @@ export default function AdminSchemesPage() {
                     <p>Updated: {formatDateTime(selectedScheme.updatedAt)}</p>
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Review reasons</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selectedScheme.reviewReasons?.length ? (
@@ -489,11 +500,11 @@ export default function AdminSchemesPage() {
               </div>
 
               {(selectedScheme.reviewReasons?.includes("dead_url") || selectedScheme.reviewAction) ? (
-                <div className="rounded-[24px] border border-amber-400/20 bg-amber-400/10 p-4">
+                <div className="rounded-[24px] border border-amber-400/20 bg-amber-400/10 p-4 shadow-inner shadow-amber-950/20">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.16em] text-amber-100">Dead URL triage</p>
-                      <p className="mt-2 text-sm text-amber-50">
+                      <p className="mt-2 text-sm leading-6 text-amber-50">
                         Mark this link as fixed, moved, or inactive so the queue stops flagging it after review.
                       </p>
                     </div>
@@ -513,7 +524,7 @@ export default function AdminSchemesPage() {
                       onChange={(event) => setReviewNote(event.target.value)}
                       rows={3}
                       placeholder="Add a note about the replacement URL, outage, or deactivation."
-                      className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/50"
+                      className="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/50"
                     />
                   </div>
 
@@ -522,7 +533,7 @@ export default function AdminSchemesPage() {
                       type="button"
                       onClick={() => handleReviewStatus("fixed")}
                       disabled={reviewMutation.isPending}
-                      className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="min-h-11 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Mark fixed
                     </button>
@@ -530,7 +541,7 @@ export default function AdminSchemesPage() {
                       type="button"
                       onClick={() => handleReviewStatus("moved")}
                       disabled={reviewMutation.isPending}
-                      className="rounded-2xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="min-h-11 rounded-2xl border border-sky-400/30 bg-sky-400/10 px-4 py-2 text-sm font-semibold text-sky-100 transition hover:bg-sky-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Mark moved
                     </button>
@@ -538,7 +549,7 @@ export default function AdminSchemesPage() {
                       type="button"
                       onClick={() => handleReviewStatus("inactive")}
                       disabled={reviewMutation.isPending}
-                      className="rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="min-h-11 rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 transition hover:bg-rose-400/20 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       Mark inactive
                     </button>
@@ -572,7 +583,7 @@ export default function AdminSchemesPage() {
 
               <div>
                 <p className="mb-2 text-xs uppercase tracking-[0.16em] text-slate-500">Description</p>
-                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-300">
+                <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 text-sm leading-6 text-slate-300 shadow-inner shadow-slate-950/30">
                   <p>{selectedScheme.description?.en || "No English description."}</p>
                   <p className="mt-3 text-slate-400">{selectedScheme.description?.hi || "No Hindi description."}</p>
                 </div>
