@@ -72,13 +72,18 @@ function mapApiProfileToDraft(profile) {
     return null;
   }
 
+  const displayPhotoUrl = profile.displayPhotoUrl || profile.photoUrl || "";
+  const displayProfile = profile.displayProfile || null;
+
   return {
     id: profile.id,
     isPrimary: Boolean(profile.isPrimary),
     profileName: profile.profileName || "",
     relation: profile.relation || "",
-    photoUrl: profile.photoUrl || "",
-    selectedUserType: profile.occupation || "",
+    photoUrl: displayPhotoUrl,
+    displayPhotoUrl,
+    displayProfile,
+    selectedUserType: profile.userType || profile.occupation || "",
     formState: mapProfileToFormState(profile),
     storageMode: "synced",
   };

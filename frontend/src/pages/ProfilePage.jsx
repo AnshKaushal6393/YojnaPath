@@ -771,7 +771,11 @@ export default function ProfilePage() {
 
         <ProfileIdentityCard
           name={memberName || name}
-          photoUrl={isOwnerProfile ? photoUrl : savedProfileQuery.data?.photoUrl || ""}
+          photoUrl={
+            isOwnerProfile
+              ? photoUrl
+              : savedProfileQuery.data?.displayPhotoUrl || savedProfileQuery.data?.photoUrl || ""
+          }
           selectedUserType={selectedUserType}
           state={formState.state}
           caste={formState.caste}

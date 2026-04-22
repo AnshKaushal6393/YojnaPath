@@ -78,6 +78,10 @@ export function getProfileDisplayPhoto(user, profile) {
     return "";
   }
 
+  if (profile.displayPhotoUrl) {
+    return profile.displayPhotoUrl;
+  }
+
   if (profile.photoUrl) {
     return profile.photoUrl;
   }

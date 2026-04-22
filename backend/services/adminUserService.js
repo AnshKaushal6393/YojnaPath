@@ -89,12 +89,15 @@ function mapMatchRow(row) {
 }
 
 function mapProfileRow(row) {
+  const displayPhotoUrl = row.photo_url || row.account_photo_url || null;
+
   return {
     id: row.id,
     userId: row.user_id,
     profileName: row.profile_name,
     relation: row.relation,
     photoUrl: row.photo_url || null,
+    displayPhotoUrl,
     isPrimary: row.is_primary,
     gender: row.gender || null,
     caste: row.caste || null,
@@ -109,6 +112,23 @@ function mapProfileRow(row) {
     isStudent: Boolean(row.is_student),
     isMigrant: Boolean(row.is_migrant),
     updatedAt: row.updated_at,
+    displayProfile: {
+      profileName: row.profile_name,
+      relation: row.relation,
+      photoUrl: displayPhotoUrl,
+      gender: row.gender || null,
+      caste: row.caste || null,
+      occupation: row.occupation || null,
+      userType: row.occupation || null,
+      state: row.state || null,
+      annualIncome: row.annual_income == null ? null : Number(row.annual_income),
+      district: row.district || null,
+      age: row.age == null ? null : Number(row.age),
+      landAcres: row.land_acres == null ? null : Number(row.land_acres),
+      disabilityPct: row.disability_pct == null ? null : Number(row.disability_pct),
+      isStudent: Boolean(row.is_student),
+      isMigrant: Boolean(row.is_migrant),
+    },
   };
 }
 
@@ -146,6 +166,7 @@ function pickDisplayProfile(profiles = []) {
 function getPreferredPhotoUrl(user, profiles = []) {
   return (
     user?.photo_url ||
+    profiles.find((profile) => profile.displayPhotoUrl)?.displayPhotoUrl ||
     profiles.find((profile) => profile.photoUrl)?.photoUrl ||
     null
   );
@@ -256,7 +277,7 @@ async function listAdminUsers(options = {}) {
       primaryProfile: {
         profileName: row.profile_name || null,
         relation: row.relation || null,
-        photoUrl: row.profile_photo_url || null,
+        photoUrl: row.photo_url || row.profile_photo_url || null,
         state: row.state || null,
         occupation: row.occupation || null,
         userType: row.occupation || null,
@@ -265,7 +286,7 @@ async function listAdminUsers(options = {}) {
       displayProfile: {
         profileName: row.profile_name || null,
         relation: row.relation || null,
-        photoUrl: row.profile_photo_url || null,
+        photoUrl: row.photo_url || row.profile_photo_url || null,
         state: row.state || null,
         occupation: row.occupation || null,
         userType: row.occupation || null,

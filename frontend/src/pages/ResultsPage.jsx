@@ -91,7 +91,8 @@ export default function ResultsPage() {
 
   const totalPages = Math.max(1, Math.ceil(visibleSchemes.length / RESULTS_PER_PAGE));
   const activeProfileName = resultsQuery.data?.profile?.profileName || "";
-  const activeProfilePhotoUrl = resultsQuery.data?.profile?.photoUrl || "";
+  const activeProfilePhotoUrl =
+    resultsQuery.data?.profile?.displayPhotoUrl || resultsQuery.data?.profile?.photoUrl || "";
   const isRefreshingResults = resultsQuery.isFetching && !resultsQuery.isLoading;
 
   const paginatedSchemes = useMemo(() => {

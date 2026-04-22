@@ -103,7 +103,8 @@ export default function HomePage() {
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes, t);
   const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
-  const activeProfilePhotoUrl = savedProfileQuery.data?.photoUrl || "";
+  const activeProfilePhotoUrl =
+    savedProfileQuery.data?.displayPhotoUrl || savedProfileQuery.data?.photoUrl || "";
   const isSwitchingProfile =
     Boolean(pendingSwitchName) || savedProfileQuery.isFetching || homeQuery.isFetching;
 

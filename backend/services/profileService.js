@@ -33,14 +33,7 @@ async function ensureProfilesSchema() {
         BEGIN
           ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_is_primary_key;
           ALTER TABLE profiles ADD CONSTRAINT profiles_user_id_is_primary_key UNIQUE (user_id, is_primary);
-        END $$;
-      `)
-      .catch((error) => {
-        ensureProfilesSchemaPromise = null;
-        throw error;
-      });
-        DO $$
-        BEGIN
+
           IF EXISTS (
             SELECT 1
             FROM information_schema.tables
@@ -118,15 +111,19 @@ function mapProfileRow(row) {
     return null;
   }
 
+  const displayPhotoUrl = row.photo_url || row.account_photo_url || null;
+
   return {
     id: row.id,
     userId: row.user_id,
     profileName: row.profile_name,
     relation: row.relation,
     photoUrl: row.photo_url || null,
+    displayPhotoUrl,
     isPrimary: row.is_primary,
     state: row.state,
     occupation: row.occupation,
+    userType: row.occupation || null,
     annualIncome: row.annual_income,
     caste: row.caste,
     gender: row.gender,
@@ -137,6 +134,22 @@ function mapProfileRow(row) {
     isMigrant: row.is_migrant,
     district: row.district,
     lang: row.lang,
+    displayProfile: {
+      profileName: row.profile_name,
+      relation: row.relation,
+      photoUrl: displayPhotoUrl,
+      state: row.state,
+      occupation: row.occupation,
+      userType: row.occupation || null,
+      gender: row.gender,
+      caste: row.caste,
+      age: row.age,
+      landAcres: row.land_acres == null ? null : Number(row.land_acres),
+      disabilityPct: row.disability_pct,
+      isStudent: row.is_student,
+      isMigrant: row.is_migrant,
+      district: row.district,
+    },
   };
 }
 
@@ -170,6 +183,7 @@ async function getProfileByUserId(userId, profileId = null) {
         p.is_student,
         p.is_migrant,
         p.district,
+        u.photo_url AS account_photo_url,
         u.lang
       FROM profiles p
       JOIN users u ON u.id = p.user_id
@@ -207,6 +221,7 @@ async function listProfilesByUserId(userId) {
         p.is_student,
         p.is_migrant,
         p.district,
+        u.photo_url AS account_photo_url,
         u.lang
       FROM profiles p
       JOIN users u ON u.id = p.user_id
@@ -229,7 +244,7 @@ async function upsertProfile(userId, profileId, profile) {
 
     const userInfoResult = await client.query(
       `
-        SELECT name, lang
+        SELECT name, lang, photo_url
         FROM users
         WHERE id = $1
         LIMIT 1
@@ -415,12 +430,13 @@ async function upsertProfile(userId, profileId, profile) {
             p.disability_pct,
             p.is_student,
             p.is_migrant,
-            p.district
+            p.district,
+            $3::TEXT AS account_photo_url
           FROM profiles p
           WHERE p.user_id = $1 AND p.id = $2
           LIMIT 1
         `,
-        [userId, result.rows[0].id]
+        [userId, result.rows[0].id, userInfo.photo_url || null]
       );
 
       result = refreshedResult;
@@ -447,6 +463,7 @@ async function upsertProfile(userId, profileId, profile) {
     return mapProfileRow({
       ...result.rows[0],
       lang,
+      account_photo_url: userInfo.photo_url || null,
     });
   } catch (error) {
     await client.query("ROLLBACK");
@@ -526,13 +543,14 @@ async function deleteProfileByUserId(userId, profileId) {
           p.gender,
           p.age,
           p.land_acres,
-          p.disability_pct,
-          p.is_student,
-          p.is_migrant,
-          p.district,
-          u.lang
-        FROM profiles p
-        JOIN users u ON u.id = p.user_id
+        p.disability_pct,
+        p.is_student,
+        p.is_migrant,
+        p.district,
+        u.photo_url AS account_photo_url,
+        u.lang
+      FROM profiles p
+      JOIN users u ON u.id = p.user_id
         WHERE p.user_id = $1
         ORDER BY p.is_primary DESC, p.updated_at DESC, p.id ASC
       `,
