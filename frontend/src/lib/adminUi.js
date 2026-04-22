@@ -69,6 +69,22 @@ export function getUserDisplayPhoto(user) {
   return firstProfilePhoto || "";
 }
 
+export function getProfileDisplayPhoto(user, profile) {
+  if (!profile) {
+    return "";
+  }
+
+  if (profile.photoUrl) {
+    return profile.photoUrl;
+  }
+
+  if (profile.isPrimary) {
+    return user?.photoUrl || "";
+  }
+
+  return "";
+}
+
 export function summarizeMatchStats(user, matches = []) {
   const summary = user?.matchSummary || {};
   const matchRuns = Number(summary.matchRuns || 0);

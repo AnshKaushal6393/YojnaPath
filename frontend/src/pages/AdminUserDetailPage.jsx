@@ -12,6 +12,7 @@ import {
   formatDateTime,
   formatNumber,
   getUserDisplayPhoto,
+  getProfileDisplayPhoto,
   summarizeMatchStats,
 } from "../lib/adminUi";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions.js";
@@ -324,7 +325,10 @@ export default function AdminUserDetailPage() {
                       className="rounded-[20px] border border-white/8 bg-slate-900/70 p-4"
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        {renderPhoto(profile.photoUrl, profile.profileName || "Profile photo")}
+                        {renderPhoto(
+                          getProfileDisplayPhoto(user, profile),
+                          profile.profileName || "Profile photo"
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="text-lg font-semibold text-white">
