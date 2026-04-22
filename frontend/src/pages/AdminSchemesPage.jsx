@@ -89,17 +89,19 @@ export default function AdminSchemesPage() {
   const schemes = schemesPayload?.schemes || [];
   const totalPages = schemesPayload?.totalPages || 0;
   const activeFlags = flagsQuery.data?.schemes || [];
+  const enrichmentFlags = flagsQuery.data?.enrichmentSchemes || [];
   const selectedScheme = selectedSchemeQuery.data || null;
   const flaggedCount = activeFlags.length;
+  const enrichmentCount = enrichmentFlags.length;
 
   const reviewSummary = useMemo(
     () => ({
       missingHindi: activeFlags.filter((scheme) => scheme.reviewReasons.includes("missing_hindi")).length,
       deadUrl: activeFlags.filter((scheme) => scheme.reviewReasons.includes("dead_url")).length,
-      emptyEligibility: activeFlags.filter((scheme) => scheme.reviewReasons.includes("empty_eligibility")).length,
       userReported: activeFlags.filter((scheme) => scheme.reviewReasons.includes("user_reported")).length,
+      emptyEligibility: enrichmentFlags.filter((scheme) => scheme.enrichmentReasons.includes("empty_eligibility")).length,
     }),
-    [activeFlags]
+    [activeFlags, enrichmentFlags]
   );
 
   async function handleExport() {
@@ -228,7 +230,7 @@ export default function AdminSchemesPage() {
                 Review queue
               </p>
               <h3 className="mt-2 text-2xl font-semibold text-white">
-                {formatNumber(flaggedCount)} flagged schemes
+                {formatNumber(flaggedCount)} actionable flags
               </h3>
             </div>
             <Badge tone={flaggedCount > 0 ? "amber" : "emerald"}>
@@ -267,7 +269,7 @@ export default function AdminSchemesPage() {
             ) : null}
             {!flagsQuery.isLoading && activeFlags.length === 0 ? (
               <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                No active schemes currently need review.
+                No active schemes currently need manual review.
               </div>
             ) : null}
             {activeFlags.slice(0, 5).map((scheme) => (
@@ -334,6 +336,26 @@ export default function AdminSchemesPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="mt-6 rounded-[24px] border border-white/10 bg-slate-950/60 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+                  Scraper enrichment gaps
+                </p>
+                <h4 className="mt-2 text-xl font-semibold text-white">
+                  {formatNumber(enrichmentCount)} schemes need enrichment
+                </h4>
+              </div>
+              <Badge tone={enrichmentCount > 0 ? "amber" : "emerald"}>
+                {enrichmentCount > 0 ? "Needs enrichment" : "Enriched"}
+              </Badge>
+            </div>
+            <p className="mt-3 text-sm text-slate-400">
+              Empty eligibility is tracked separately so the manual review queue stays focused on issues
+              that need an admin decision.
+            </p>
           </div>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -425,6 +447,15 @@ export default function AdminSchemesPage() {
                       <span className="text-sm text-slate-400">No flags found.</span>
                     )}
                   </div>
+                  {selectedScheme.enrichmentReasons?.length ? (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {selectedScheme.enrichmentReasons.map((reason) => (
+                        <Badge key={reason} tone="amber">
+                          {reason.replace(/_/g, " ")}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 

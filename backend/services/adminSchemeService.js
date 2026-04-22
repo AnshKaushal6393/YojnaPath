@@ -158,13 +158,19 @@ function getReviewReasons(scheme) {
     reasons.push("dead_url");
   }
 
-  if (isEligibilityEmpty(scheme?.eligibility)) {
-    reasons.push("empty_eligibility");
-  }
-
   const tags = Array.isArray(scheme?.tags) ? scheme.tags.map((tag) => normalizeOptionalString(tag)?.toLowerCase()).filter(Boolean) : [];
   if (tags.includes("user-reported") || tags.includes("reported")) {
     reasons.push("user_reported");
+  }
+
+  return reasons;
+}
+
+function getEnrichmentReasons(scheme) {
+  const reasons = [];
+
+  if (isEligibilityEmpty(scheme?.eligibility)) {
+    reasons.push("empty_eligibility");
   }
 
   return reasons;
@@ -390,6 +396,7 @@ async function listAdminSchemes(options = {}) {
       ...attachDeadlineInfo(scheme),
       matchCount: matchCounts.get(scheme.schemeId) || 0,
       reviewReasons: getReviewReasons(scheme),
+      enrichmentReasons: getEnrichmentReasons(scheme),
     })),
   };
 }
@@ -416,6 +423,7 @@ async function getAdminSchemeById(schemeId) {
     ...attachDeadlineInfo(scheme),
     matchCount: matchCounts.get(scheme.schemeId) || 0,
     reviewReasons: getReviewReasons(scheme),
+    enrichmentReasons: getEnrichmentReasons(scheme),
   };
 }
 
@@ -439,6 +447,7 @@ async function createAdminScheme(body = {}, actor = null) {
     ...attachDeadlineInfo(plain),
     matchCount: 0,
     reviewReasons: getReviewReasons(plain),
+    enrichmentReasons: getEnrichmentReasons(plain),
   };
 }
 
@@ -476,6 +485,7 @@ async function updateAdminScheme(schemeId, body = {}, actor = null) {
     ...attachDeadlineInfo(updated),
     matchCount: (await getMatchCountsBySchemeIds([updated.schemeId])).get(updated.schemeId) || 0,
     reviewReasons: getReviewReasons(updated),
+    enrichmentReasons: getEnrichmentReasons(updated),
   };
 }
 
@@ -512,23 +522,28 @@ async function deleteAdminScheme(schemeId, actor = null) {
     ...attachDeadlineInfo(updated),
     matchCount: (await getMatchCountsBySchemeIds([updated.schemeId])).get(updated.schemeId) || 0,
     reviewReasons: getReviewReasons(updated),
+    enrichmentReasons: getEnrichmentReasons(updated),
   };
 }
 
 async function getAdminSchemeFlags() {
   if (!isMongoReady()) {
-    return [];
+    return { schemes: [], enrichmentSchemes: [] };
   }
 
   await ensureDatabaseSchema();
   const schemes = await Scheme.find({ active: true }).sort({ updatedAt: -1, schemeId: 1 }).lean();
 
-  return schemes
-    .map((scheme) => ({
-      ...attachDeadlineInfo(scheme),
-      reviewReasons: getReviewReasons(scheme),
-    }))
-    .filter((scheme) => scheme.reviewReasons.length > 0);
+  const normalizedSchemes = schemes.map((scheme) => ({
+    ...attachDeadlineInfo(scheme),
+    reviewReasons: getReviewReasons(scheme),
+    enrichmentReasons: getEnrichmentReasons(scheme),
+  }));
+
+  return {
+    schemes: normalizedSchemes.filter((scheme) => scheme.reviewReasons.length > 0),
+    enrichmentSchemes: normalizedSchemes.filter((scheme) => scheme.enrichmentReasons.length > 0),
+  };
 }
 
 async function exportAdminSchemesCsv() {
@@ -578,6 +593,7 @@ module.exports = {
   exportAdminSchemesCsv,
   getAdminSchemeById,
   getAdminSchemeFlags,
+  getEnrichmentReasons,
   listAdminSchemes,
   updateAdminScheme,
 };
