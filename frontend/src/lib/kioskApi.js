@@ -110,3 +110,12 @@ export async function fetchKioskMatches(profile) {
     pdfData: payload.pdfData || null,
   };
 }
+
+export async function recordKioskPdfDownload() {
+  const token = getKioskToken();
+  if (!token) {
+    return null;
+  }
+
+  return apiPost("/api/kiosk/pdf-download", {}, { token });
+}

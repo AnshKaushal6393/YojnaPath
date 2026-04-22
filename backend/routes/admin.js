@@ -13,6 +13,14 @@ const {
   getUsers,
 } = require("../controllers/adminController");
 const {
+  getAnalyticsFunnelRoute,
+  getAnalyticsKioskRoute,
+  getAnalyticsNearMissRoute,
+  getAnalyticsOverviewRoute,
+  getAnalyticsPhotoRoute,
+  getAnalyticsSchemesRoute,
+} = require("../controllers/adminAnalyticsController");
+const {
   createScheme,
   deleteScheme,
   exportSchemes,
@@ -31,6 +39,12 @@ router.get("/dashboard", getDashboard);
 router.get("/stats", getStats);
 router.get("/activity", getActivity);
 router.get("/funnel", getFunnel);
+router.get("/analytics/overview", getAnalyticsOverviewRoute);
+router.get("/analytics/funnel", getAnalyticsFunnelRoute);
+router.get("/analytics/nearmiss", getAnalyticsNearMissRoute);
+router.get("/analytics/schemes", getAnalyticsSchemesRoute);
+router.get("/analytics/photo", getAnalyticsPhotoRoute);
+router.get("/analytics/kiosk", getAnalyticsKioskRoute);
 router.get("/users/export", exportUsers);
 router.get("/users", getUsers);
 router.get("/users/:id", getUserById);

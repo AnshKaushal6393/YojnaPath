@@ -1,3 +1,5 @@
+import { recordKioskPdfDownload } from "../lib/kioskApi";
+
 function buildPrintableMarkup(pdfData) {
   const schemes = pdfData?.schemes || [];
   const rows = schemes
@@ -44,6 +46,7 @@ export default function KioskPdfExport({ pdfData, disabled = false }) {
       className="saved-export-button"
       disabled={disabled}
       onClick={() => {
+        recordKioskPdfDownload().catch(() => null);
         const popup = window.open("", "_blank", "width=960,height=720");
         if (!popup) {
           return;

@@ -5,7 +5,11 @@ const jwt = require("jsonwebtoken");
 const { KIOSK_JWT_EXPIRES_IN } = require("../config/constants");
 const { getRequiredEnv } = require("../config/env");
 const { getMatchingSchemes } = require("../engine/matcher");
-const { recordKioskUsage, recordMatchAnalytics } = require("../services/analyticsService");
+const {
+  recordKioskPdfDownloadEvent,
+  recordKioskUsage,
+  recordMatchAnalytics,
+} = require("../services/analyticsService");
 const { resolveKiosk } = require("../services/kioskAuthService");
 const { buildMatchProfile, validateMatchProfile } = require("./schemesController");
 
@@ -91,8 +95,14 @@ async function kioskMatch(req, res) {
   });
 }
 
+async function kioskPdfDownload(req, res) {
+  await recordKioskPdfDownloadEvent(req.user.id);
+  return res.json({ ok: true });
+}
+
 module.exports = {
   buildPdfReadyData,
   kioskLogin,
+  kioskPdfDownload,
   kioskMatch,
 };

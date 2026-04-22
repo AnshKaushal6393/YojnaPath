@@ -144,3 +144,15 @@ CREATE TABLE IF NOT EXISTS user_funnel_events (
   stage VARCHAR(30) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS kiosk_usage_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS kiosk_pdf_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);

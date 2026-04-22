@@ -82,6 +82,20 @@ async function ensureAnalyticsSchema() {
           created_at TIMESTAMP DEFAULT NOW()
         )
       `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS kiosk_usage_events (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS kiosk_pdf_events (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
     })().catch((error) => {
       analyticsSchemaReadyPromise = null;
       throw error;
@@ -228,6 +242,45 @@ async function recordKioskUsage(kioskId) {
   if (kioskId) {
     await incrementCounter(`analytics:kiosk:${kioskId}`, 1);
   }
+
+  try {
+    await ensureAnalyticsSchema();
+    const pool = getPool();
+    await pool.query(
+      `
+        INSERT INTO kiosk_usage_events (kiosk_id)
+        VALUES ($1)
+      `,
+      [kioskId || null]
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[analytics] Failed to persist kiosk usage: ${error.message}`);
+    }
+  }
+}
+
+async function recordKioskPdfDownload(kioskId) {
+  await incrementCounter("analytics:kiosk:pdf_downloads", 1);
+  if (kioskId) {
+    await incrementCounter(`analytics:kiosk:pdf_downloads:${kioskId}`, 1);
+  }
+
+  try {
+    await ensureAnalyticsSchema();
+    const pool = getPool();
+    await pool.query(
+      `
+        INSERT INTO kiosk_pdf_events (kiosk_id)
+        VALUES ($1)
+      `,
+      [kioskId || null]
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[analytics] Failed to persist kiosk PDF download: ${error.message}`);
+    }
+  }
 }
 
 async function getUsersServedCount() {
@@ -339,6 +392,7 @@ async function getImpactStats() {
 module.exports = {
   buildImpactStats,
   getImpactStats,
+  recordKioskPdfDownload,
   recordKioskUsage,
   recordMatchAnalytics,
 };
