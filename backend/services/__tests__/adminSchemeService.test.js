@@ -66,7 +66,7 @@ describe("adminSchemeService", () => {
         {
           schemeId: "SCHEME-1",
           matchCount: 4,
-          reviewReasons: ["missing_hindi", "dead_url", "empty_eligibility"],
+          reviewReasons: ["missing_hindi", "dead_url"],
         },
       ],
     });
