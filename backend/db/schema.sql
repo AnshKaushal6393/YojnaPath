@@ -119,6 +119,14 @@ CREATE TABLE IF NOT EXISTS scheme_edit_log (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS scheme_review_actions (
+  scheme_id VARCHAR(50) PRIMARY KEY,
+  status VARCHAR(20) NOT NULL,
+  note TEXT,
+  reviewed_by VARCHAR(120),
+  reviewed_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS kiosk_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(20) UNIQUE NOT NULL,

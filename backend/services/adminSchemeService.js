@@ -342,6 +342,91 @@ async function appendSchemeEditLog({ schemeId, action, oldData = null, newData =
   );
 }
 
+async function ensureSchemeReviewSchema() {
+  await ensureDatabaseSchema();
+  const pool = getPool();
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS scheme_review_actions (
+      scheme_id VARCHAR(50) PRIMARY KEY,
+      status VARCHAR(20) NOT NULL,
+      note TEXT,
+      reviewed_by VARCHAR(120),
+      reviewed_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
+async function getSchemeReviewMap(schemeIds = []) {
+  if (schemeIds.length === 0) {
+    return new Map();
+  }
+
+  await ensureSchemeReviewSchema();
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT scheme_id, status, note, reviewed_by, reviewed_at
+      FROM scheme_review_actions
+      WHERE scheme_id = ANY($1::TEXT[])
+    `,
+    [schemeIds]
+  );
+
+  return new Map(
+    result.rows.map((row) => [
+      row.scheme_id,
+      {
+        status: row.status,
+        note: row.note || null,
+        reviewedBy: row.reviewed_by || null,
+        reviewedAt: row.reviewed_at,
+      },
+    ])
+  );
+}
+
+async function recordSchemeReviewAction(schemeId, body = {}, reviewer = null) {
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  const status = normalizeOptionalString(body.status)?.toLowerCase();
+  const note = normalizeOptionalString(body.note);
+
+  if (!normalizedId || !status) {
+    return null;
+  }
+
+  await ensureSchemeReviewSchema();
+  const pool = getPool();
+  await pool.query(
+    `
+      INSERT INTO scheme_review_actions (scheme_id, status, note, reviewed_by, reviewed_at)
+      VALUES ($1, $2, $3, $4, NOW())
+      ON CONFLICT (scheme_id)
+      DO UPDATE SET
+        status = EXCLUDED.status,
+        note = EXCLUDED.note,
+        reviewed_by = EXCLUDED.reviewed_by,
+        reviewed_at = NOW()
+    `,
+    [normalizedId, status, note, reviewer ? String(reviewer).slice(0, 120) : null]
+  );
+
+  return {
+    schemeId: normalizedId,
+    status,
+    note,
+    reviewedBy: reviewer ? String(reviewer).slice(0, 120) : null,
+  };
+}
+
+function resolveReviewReasons(scheme, reviewAction = null) {
+  const reasons = getReviewReasons(scheme);
+  if (reviewAction && ["fixed", "moved", "inactive"].includes(String(reviewAction.status || "").toLowerCase())) {
+    return reasons.filter((reason) => reason !== "dead_url");
+  }
+
+  return reasons;
+}
+
 async function listAdminSchemes(options = {}) {
   if (!isMongoReady()) {
     return { page: 1, limit: 0, total: 0, totalPages: 0, schemes: [] };
