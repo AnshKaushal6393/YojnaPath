@@ -14,6 +14,7 @@ import OnboardPage from "./pages/OnboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import Register from "./pages/Register";
 import ResultsPage from "./pages/ResultsPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import SavedPage from "./pages/SavedPage";
 import SchemeDetailPage from "./pages/SchemeDetailPage";
 import TrackerPage from "./pages/TrackerPage";
@@ -73,7 +74,7 @@ export default function App() {
         <Route path="/schemes/:schemeId" element={<SchemeDetailPage />} />
       </Route>
 
-      <Route path="*" element={<Navigate to={isAuthenticated() ? "/" : "/login"} replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
