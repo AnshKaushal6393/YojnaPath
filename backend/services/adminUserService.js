@@ -81,6 +81,7 @@ function mapMatchRow(row) {
     sessionType: row.session_type || "web",
     state: row.state || null,
     occupation: row.occupation || null,
+    userType: row.occupation || null,
     matchCount: Number(row.match_count || 0),
     nearMissCount: Number(row.near_miss_count || 0),
     schemeIds: Array.isArray(row.scheme_ids) ? row.scheme_ids : [],

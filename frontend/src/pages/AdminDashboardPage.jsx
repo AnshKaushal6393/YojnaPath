@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
                             {event.sessionType} match
                           </p>
                           <p className="mt-1 text-sm text-slate-300">
-                            {`User type: ${event.occupation || "Unknown user type"}${
+                            {`User type: ${event.userType || event.occupation || "Unknown user type"}${
                               event.state ? ` | ${event.state}` : ""
                             }`}
                           </p>

@@ -12,6 +12,15 @@ const {
   getUserMatches,
   getUsers,
 } = require("../controllers/adminController");
+const {
+  createScheme,
+  deleteScheme,
+  exportSchemes,
+  getScheme,
+  getSchemeFlags,
+  listSchemes,
+  updateScheme,
+} = require("../controllers/adminSchemeController");
 const { requireAdminAuth } = require("../middleware/adminAuth");
 
 const router = express.Router();
@@ -27,5 +36,12 @@ router.get("/users/:id", getUserById);
 router.get("/users/:id/live-matches", getUserLiveMatches);
 router.delete("/users/:id", deleteUserById);
 router.get("/users/:id/matches", getUserMatches);
+router.get("/schemes/flags", getSchemeFlags);
+router.get("/schemes/export", exportSchemes);
+router.get("/schemes", listSchemes);
+router.get("/schemes/:id", getScheme);
+router.post("/schemes", createScheme);
+router.put("/schemes/:id", updateScheme);
+router.delete("/schemes/:id", deleteScheme);
 
 module.exports = router;

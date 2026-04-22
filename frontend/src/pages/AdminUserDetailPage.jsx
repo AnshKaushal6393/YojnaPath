@@ -421,7 +421,7 @@ export default function AdminUserDetailPage() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-sm font-semibold text-white">
-                            User type: {match.occupation || "unknown"}
+                            User type: {match.userType || match.occupation || "unknown"}
                             {match.state ? ` | ${match.state}` : ""}
                           </p>
                           <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">

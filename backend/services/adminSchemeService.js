@@ -1,0 +1,583 @@
+require("../config/env");
+
+const { ensureDatabaseSchema, getPool } = require("../config/postgres");
+const { isMongoReady } = require("../config/mongo");
+const { Scheme } = require("../models/Scheme");
+const { attachDeadlineInfo } = require("./deadlineTrackerService");
+
+function normalizeOptionalString(value) {
+  if (value == null) {
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  return normalized === "" ? null : normalized;
+}
+
+function normalizeBoolean(value, fallback = null) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (value == null || value === "") {
+    return fallback;
+  }
+
+  const normalized = String(value).toLowerCase();
+  if (normalized === "true") {
+    return true;
+  }
+
+  if (normalized === "false") {
+    return false;
+  }
+
+  return fallback;
+}
+
+function normalizeNumber(value, fallback = null) {
+  if (value == null || value === "") {
+    return fallback;
+  }
+
+  const normalized = Number(value);
+  return Number.isFinite(normalized) ? normalized : fallback;
+}
+
+function normalizeInteger(value, fallback = null) {
+  if (value == null || value === "") {
+    return fallback;
+  }
+
+  const normalized = Number(value);
+  return Number.isInteger(normalized) ? normalized : fallback;
+}
+
+function normalizeStringArray(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => normalizeOptionalString(entry)).filter(Boolean);
+  }
+
+  const normalized = normalizeOptionalString(value);
+  return normalized ? [normalized] : [];
+}
+
+function normalizeLocalizedText(value, fallback = null) {
+  if (value == null) {
+    return fallback;
+  }
+
+  if (typeof value === "string") {
+    return {
+      en: value.trim(),
+      hi: value.trim(),
+    };
+  }
+
+  if (typeof value !== "object") {
+    return fallback;
+  }
+
+  const en = normalizeOptionalString(value.en || value.english || value.enText);
+  const hi = normalizeOptionalString(value.hi || value.hindi || value.hiText);
+
+  if (!en && !hi) {
+    return fallback;
+  }
+
+  return {
+    en: en || fallback?.en || "",
+    hi: hi || fallback?.hi || "",
+  };
+}
+
+function toPlainScheme(scheme) {
+  if (!scheme) {
+    return null;
+  }
+
+  const plain = typeof scheme.toObject === "function" ? scheme.toObject({ versionKey: false }) : scheme;
+
+  return attachDeadlineInfo(plain);
+}
+
+function escapeCsv(value) {
+  const text = value == null ? "" : String(value);
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  return text;
+}
+
+function isLikelyValidUrl(value) {
+  const url = normalizeOptionalString(value);
+  if (!url) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isEligibilityEmpty(eligibility = {}) {
+  const fields = eligibility || {};
+  const arrayFields = ["occupation", "beneficiaryType", "caste", "gender"];
+  const scalarFields = [
+    "maxAnnualIncome",
+    "minAge",
+    "maxAge",
+    "minDisabilityPct",
+    "minEducation",
+    "mustBeStudent",
+    "mustHaveBankAccount",
+    "mustHaveAadhaar",
+  ];
+
+  const hasArrayValue = arrayFields.some((field) => Array.isArray(fields[field]) && fields[field].length > 0);
+  const hasScalarValue = scalarFields.some((field) => fields[field] != null);
+  const hasLandOwned = Boolean(fields.landOwned && (fields.landOwned.min != null || fields.landOwned.max != null));
+
+  return !hasArrayValue && !hasScalarValue && !hasLandOwned;
+}
+
+function getReviewReasons(scheme) {
+  const reasons = [];
+  const nameHi = normalizeOptionalString(scheme?.name?.hi);
+  const descriptionHi = normalizeOptionalString(scheme?.description?.hi);
+
+  if (!nameHi || !descriptionHi) {
+    reasons.push("missing_hindi");
+  }
+
+  if (!isLikelyValidUrl(scheme?.applyUrl)) {
+    reasons.push("dead_url");
+  }
+
+  if (isEligibilityEmpty(scheme?.eligibility)) {
+    reasons.push("empty_eligibility");
+  }
+
+  const tags = Array.isArray(scheme?.tags) ? scheme.tags.map((tag) => normalizeOptionalString(tag)?.toLowerCase()).filter(Boolean) : [];
+  if (tags.includes("user-reported") || tags.includes("reported")) {
+    reasons.push("user_reported");
+  }
+
+  return reasons;
+}
+
+function collectSchemePayload(body = {}, existing = null) {
+  const source = existing?.toObject ? existing.toObject({ versionKey: false }) : (existing || {});
+  const payload = {
+    schemeId: normalizeOptionalString(body.schemeId || source.schemeId)?.toUpperCase(),
+    name: source.name || null,
+    description: source.description || null,
+    ministry: normalizeOptionalString(body.ministry) ?? source.ministry,
+    categories: source.categories || [],
+    state: normalizeOptionalString(body.state)?.toUpperCase() ?? source.state,
+    eligibility: source.eligibility || {},
+    benefitAmount: source.benefitAmount ?? null,
+    benefitType: normalizeOptionalString(body.benefitType) ?? source.benefitType,
+    documents: source.documents || [],
+    applyUrl: normalizeOptionalString(body.applyUrl) ?? source.applyUrl,
+    applyMode: normalizeOptionalString(body.applyMode) ?? source.applyMode,
+    officeAddress: source.officeAddress || null,
+    deadline: source.deadline || {},
+    tags: source.tags || [],
+    active: typeof source.active === "boolean" ? source.active : true,
+    verified: typeof source.verified === "boolean" ? source.verified : false,
+    source: normalizeOptionalString(body.source) ?? source.source,
+  };
+
+  if (Object.prototype.hasOwnProperty.call(body, "name")) {
+    payload.name = normalizeLocalizedText(body.name, source.name);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "description")) {
+    payload.description = normalizeLocalizedText(body.description, source.description);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "categories")) {
+    payload.categories = normalizeStringArray(body.categories);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "documents")) {
+    payload.documents = Array.isArray(body.documents)
+      ? body.documents
+          .map((doc) => normalizeLocalizedText(doc))
+          .filter(Boolean)
+      : [];
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "officeAddress")) {
+    payload.officeAddress = normalizeLocalizedText(body.officeAddress, source.officeAddress);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "tags")) {
+    payload.tags = normalizeStringArray(body.tags);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "eligibility")) {
+    const eligibility = body.eligibility && typeof body.eligibility === "object" ? body.eligibility : {};
+    payload.eligibility = {
+      occupation: normalizeStringArray(eligibility.occupation),
+      beneficiaryType: normalizeStringArray(eligibility.beneficiaryType),
+      caste: normalizeStringArray(eligibility.caste),
+      gender: normalizeStringArray(eligibility.gender),
+      maxAnnualIncome: Object.prototype.hasOwnProperty.call(eligibility, "maxAnnualIncome")
+        ? normalizeInteger(eligibility.maxAnnualIncome, null)
+        : source.eligibility?.maxAnnualIncome ?? null,
+      minAge: Object.prototype.hasOwnProperty.call(eligibility, "minAge")
+        ? normalizeInteger(eligibility.minAge, null)
+        : source.eligibility?.minAge ?? null,
+      maxAge: Object.prototype.hasOwnProperty.call(eligibility, "maxAge")
+        ? normalizeInteger(eligibility.maxAge, null)
+        : source.eligibility?.maxAge ?? null,
+      landOwned: Object.prototype.hasOwnProperty.call(eligibility, "landOwned")
+        ? eligibility.landOwned && typeof eligibility.landOwned === "object"
+          ? {
+              min: normalizeNumber(eligibility.landOwned.min, 0),
+              max: normalizeNumber(eligibility.landOwned.max, 0),
+            }
+          : null
+        : source.eligibility?.landOwned ?? null,
+      minDisabilityPct: Object.prototype.hasOwnProperty.call(eligibility, "minDisabilityPct")
+        ? normalizeInteger(eligibility.minDisabilityPct, null)
+        : source.eligibility?.minDisabilityPct ?? null,
+      minEducation: normalizeOptionalString(eligibility.minEducation) ?? source.eligibility?.minEducation ?? null,
+      mustBeStudent: Object.prototype.hasOwnProperty.call(eligibility, "mustBeStudent")
+        ? normalizeBoolean(eligibility.mustBeStudent, null)
+        : source.eligibility?.mustBeStudent ?? null,
+      mustHaveBankAccount: Object.prototype.hasOwnProperty.call(eligibility, "mustHaveBankAccount")
+        ? normalizeBoolean(eligibility.mustHaveBankAccount, null)
+        : source.eligibility?.mustHaveBankAccount ?? null,
+      mustHaveAadhaar: Object.prototype.hasOwnProperty.call(eligibility, "mustHaveAadhaar")
+        ? normalizeBoolean(eligibility.mustHaveAadhaar, null)
+        : source.eligibility?.mustHaveAadhaar ?? null,
+    };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "deadline")) {
+    const deadline = body.deadline && typeof body.deadline === "object" ? body.deadline : {};
+    payload.deadline = {
+      opens: Object.prototype.hasOwnProperty.call(deadline, "opens")
+        ? normalizeOptionalString(deadline.opens)
+        : source.deadline?.opens ?? null,
+      closes: Object.prototype.hasOwnProperty.call(deadline, "closes")
+        ? normalizeOptionalString(deadline.closes)
+        : source.deadline?.closes ?? null,
+      recurring: Object.prototype.hasOwnProperty.call(deadline, "recurring")
+        ? normalizeBoolean(deadline.recurring, false)
+        : Boolean(source.deadline?.recurring),
+      recurringMonth: Object.prototype.hasOwnProperty.call(deadline, "recurringMonth")
+        ? normalizeInteger(deadline.recurringMonth, null)
+        : source.deadline?.recurringMonth ?? null,
+      recurringDay: Object.prototype.hasOwnProperty.call(deadline, "recurringDay")
+        ? normalizeInteger(deadline.recurringDay, null)
+        : source.deadline?.recurringDay ?? null,
+    };
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "benefitAmount")) {
+    payload.benefitAmount = normalizeNumber(body.benefitAmount, null);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "active")) {
+    payload.active = normalizeBoolean(body.active, true);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "verified")) {
+    payload.verified = normalizeBoolean(body.verified, false);
+  }
+
+  return payload;
+}
+
+async function getMatchCountsBySchemeIds(schemeIds = []) {
+  if (schemeIds.length === 0) {
+    return new Map();
+  }
+
+  await ensureDatabaseSchema();
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT scheme_id, COUNT(*)::INT AS count
+      FROM match_logs
+      CROSS JOIN LATERAL UNNEST(COALESCE(scheme_ids, ARRAY[]::TEXT[])) AS scheme_id
+      WHERE scheme_id = ANY($1::TEXT[])
+      GROUP BY scheme_id
+    `,
+    [schemeIds]
+  );
+
+  return new Map(result.rows.map((row) => [row.scheme_id, Number(row.count || 0)]));
+}
+
+async function appendSchemeEditLog({ schemeId, action, oldData = null, newData = null, note = null }) {
+  await ensureDatabaseSchema();
+  const pool = getPool();
+  await pool.query(
+    `
+      INSERT INTO scheme_edit_log (scheme_id, action, old_data, new_data, note)
+      VALUES ($1, $2, $3::jsonb, $4::jsonb, $5)
+    `,
+    [
+      schemeId,
+      action,
+      oldData ? JSON.stringify(oldData) : null,
+      newData ? JSON.stringify(newData) : null,
+      note,
+    ]
+  );
+}
+
+async function listAdminSchemes(options = {}) {
+  if (!isMongoReady()) {
+    return { page: 1, limit: 0, total: 0, totalPages: 0, schemes: [] };
+  }
+
+  await ensureDatabaseSchema();
+
+  const page = Math.max(Number(options.page || 1), 1);
+  const limit = Math.min(Math.max(Number(options.limit || 25), 1), 100);
+  const offset = (page - 1) * limit;
+  const query = {};
+
+  if (options.active != null && options.active !== "") {
+    const active = normalizeBoolean(options.active, null);
+    if (active != null) {
+      query.active = active;
+    }
+  }
+
+  if (options.state) {
+    query.state = normalizeOptionalString(options.state)?.toUpperCase();
+  }
+
+  if (options.category) {
+    query.categories = normalizeOptionalString(options.category);
+  }
+
+  if (options.search) {
+    const search = normalizeOptionalString(options.search);
+    const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    query.$or = [
+      { schemeId: new RegExp(escaped, "i") },
+      { "name.en": new RegExp(escaped, "i") },
+      { "name.hi": new RegExp(escaped, "i") },
+      { ministry: new RegExp(escaped, "i") },
+      { tags: new RegExp(escaped, "i") },
+    ];
+  }
+
+  const [schemes, total] = await Promise.all([
+    Scheme.find(query).sort({ updatedAt: -1, schemeId: 1 }).skip(offset).limit(limit).lean(),
+    Scheme.countDocuments(query),
+  ]);
+  const matchCounts = await getMatchCountsBySchemeIds(schemes.map((scheme) => scheme.schemeId));
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages: total > 0 ? Math.ceil(total / limit) : 0,
+    schemes: schemes.map((scheme) => ({
+      ...attachDeadlineInfo(scheme),
+      matchCount: matchCounts.get(scheme.schemeId) || 0,
+      reviewReasons: getReviewReasons(scheme),
+    })),
+  };
+}
+
+async function getAdminSchemeById(schemeId) {
+  if (!isMongoReady()) {
+    return null;
+  }
+
+  await ensureDatabaseSchema();
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const scheme = await Scheme.findOne({ schemeId: normalizedId }).lean();
+  if (!scheme) {
+    return null;
+  }
+
+  const [matchCounts] = await Promise.all([getMatchCountsBySchemeIds([scheme.schemeId])]);
+
+  return {
+    ...attachDeadlineInfo(scheme),
+    matchCount: matchCounts.get(scheme.schemeId) || 0,
+    reviewReasons: getReviewReasons(scheme),
+  };
+}
+
+async function createAdminScheme(body = {}, actor = null) {
+  if (!isMongoReady()) {
+    return null;
+  }
+
+  await ensureDatabaseSchema();
+  const payload = collectSchemePayload(body);
+  const created = await Scheme.create(payload);
+  const plain = created.toObject({ versionKey: false });
+  await appendSchemeEditLog({
+    schemeId: plain.schemeId,
+    action: "create",
+    newData: plain,
+    note: actor ? `created by ${actor}` : null,
+  });
+
+  return {
+    ...attachDeadlineInfo(plain),
+    matchCount: 0,
+    reviewReasons: getReviewReasons(plain),
+  };
+}
+
+async function updateAdminScheme(schemeId, body = {}, actor = null) {
+  if (!isMongoReady()) {
+    return null;
+  }
+
+  await ensureDatabaseSchema();
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const existing = await Scheme.findOne({ schemeId: normalizedId });
+  if (!existing) {
+    return null;
+  }
+
+  const previous = existing.toObject({ versionKey: false });
+  const payload = collectSchemePayload(body, existing);
+  Object.assign(existing, payload);
+  await existing.save();
+
+  const updated = existing.toObject({ versionKey: false });
+  await appendSchemeEditLog({
+    schemeId: updated.schemeId,
+    action: "update",
+    oldData: previous,
+    newData: updated,
+    note: actor ? `updated by ${actor}` : null,
+  });
+
+  return {
+    ...attachDeadlineInfo(updated),
+    matchCount: (await getMatchCountsBySchemeIds([updated.schemeId])).get(updated.schemeId) || 0,
+    reviewReasons: getReviewReasons(updated),
+  };
+}
+
+async function deleteAdminScheme(schemeId, actor = null) {
+  if (!isMongoReady()) {
+    return null;
+  }
+
+  await ensureDatabaseSchema();
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  if (!normalizedId) {
+    return null;
+  }
+
+  const existing = await Scheme.findOne({ schemeId: normalizedId });
+  if (!existing) {
+    return null;
+  }
+
+  const previous = existing.toObject({ versionKey: false });
+  existing.active = false;
+  await existing.save();
+  const updated = existing.toObject({ versionKey: false });
+
+  await appendSchemeEditLog({
+    schemeId: updated.schemeId,
+    action: "delete",
+    oldData: previous,
+    newData: updated,
+    note: actor ? `soft deleted by ${actor}` : null,
+  });
+
+  return {
+    ...attachDeadlineInfo(updated),
+    matchCount: (await getMatchCountsBySchemeIds([updated.schemeId])).get(updated.schemeId) || 0,
+    reviewReasons: getReviewReasons(updated),
+  };
+}
+
+async function getAdminSchemeFlags() {
+  if (!isMongoReady()) {
+    return [];
+  }
+
+  await ensureDatabaseSchema();
+  const schemes = await Scheme.find({ active: true }).sort({ updatedAt: -1, schemeId: 1 }).lean();
+
+  return schemes
+    .map((scheme) => ({
+      ...attachDeadlineInfo(scheme),
+      reviewReasons: getReviewReasons(scheme),
+    }))
+    .filter((scheme) => scheme.reviewReasons.length > 0);
+}
+
+async function exportAdminSchemesCsv() {
+  if (!isMongoReady()) {
+    return "schemeId,nameEn,nameHi,state,categories,active,verified,matchCount,updatedAt\n";
+  }
+
+  await ensureDatabaseSchema();
+  const schemes = await Scheme.find({ active: true }).sort({ schemeId: 1 }).lean();
+  const matchCounts = await getMatchCountsBySchemeIds(schemes.map((scheme) => scheme.schemeId));
+
+  const rows = [
+    [
+      "schemeId",
+      "nameEn",
+      "nameHi",
+      "state",
+      "categories",
+      "active",
+      "verified",
+      "matchCount",
+      "updatedAt",
+    ],
+    ...schemes.map((scheme) => [
+      scheme.schemeId,
+      scheme.name?.en || "",
+      scheme.name?.hi || "",
+      scheme.state || "",
+      Array.isArray(scheme.categories) ? scheme.categories.join("|") : "",
+      String(Boolean(scheme.active)),
+      String(Boolean(scheme.verified)),
+      String(matchCounts.get(scheme.schemeId) || 0),
+      scheme.updatedAt || "",
+    ]),
+  ];
+
+  return rows
+    .map((row) => row.map(escapeCsv).join(","))
+    .join("\n");
+}
+
+module.exports = {
+  appendSchemeEditLog,
+  collectSchemePayload,
+  createAdminScheme,
+  deleteAdminScheme,
+  exportAdminSchemesCsv,
+  getAdminSchemeById,
+  getAdminSchemeFlags,
+  listAdminSchemes,
+  updateAdminScheme,
+};

@@ -199,7 +199,7 @@ async function recordMatchAnalytics(matchLog = null) {
         matchLog.userId || null,
         String(matchLog.sessionType || "web").slice(0, 10),
         matchLog.state || null,
-        matchLog.occupation || null,
+        matchLog.userType || matchLog.occupation || null,
         Number.isInteger(matchLog.matchCount) ? matchLog.matchCount : null,
         Number.isInteger(matchLog.nearMissCount) ? matchLog.nearMissCount : null,
         Array.isArray(matchLog.schemeIds)
@@ -317,6 +317,7 @@ async function buildImpactStats() {
     totalBenefitValue,
     usersServed,
     byUserType,
+    byOccupation: byUserType,
     byState,
     schemesInDatabase,
     lastUpdated: new Date().toISOString(),

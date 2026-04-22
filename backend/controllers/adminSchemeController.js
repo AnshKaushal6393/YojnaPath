@@ -1,0 +1,94 @@
+const {
+  createAdminScheme,
+  deleteAdminScheme,
+  exportAdminSchemesCsv,
+  getAdminSchemeById,
+  getAdminSchemeFlags,
+  listAdminSchemes,
+  updateAdminScheme,
+} = require("../services/adminSchemeService");
+
+function normalizeOptionalString(value) {
+  if (value == null) {
+    return null;
+  }
+
+  const normalized = String(value).trim();
+  return normalized === "" ? null : normalized;
+}
+
+async function listSchemes(req, res) {
+  const payload = await listAdminSchemes({
+    page: req.query?.page,
+    limit: req.query?.limit,
+    state: normalizeOptionalString(req.query?.state),
+    category: normalizeOptionalString(req.query?.category),
+    active: req.query?.active,
+    search: normalizeOptionalString(req.query?.search),
+  });
+
+  return res.json(payload);
+}
+
+async function getScheme(req, res) {
+  const scheme = await getAdminSchemeById(req.params?.id);
+  if (!scheme) {
+    return res.status(404).json({ message: "Scheme not found" });
+  }
+
+  return res.json(scheme);
+}
+
+async function createScheme(req, res) {
+  const scheme = await createAdminScheme(req.body || {}, req.admin?.email || req.admin?.id || null);
+  return res.status(201).json(scheme);
+}
+
+async function updateScheme(req, res) {
+  const scheme = await updateAdminScheme(
+    req.params?.id,
+    req.body || {},
+    req.admin?.email || req.admin?.id || null
+  );
+
+  if (!scheme) {
+    return res.status(404).json({ message: "Scheme not found" });
+  }
+
+  return res.json(scheme);
+}
+
+async function deleteScheme(req, res) {
+  const scheme = await deleteAdminScheme(req.params?.id, req.admin?.email || req.admin?.id || null);
+
+  if (!scheme) {
+    return res.status(404).json({ message: "Scheme not found" });
+  }
+
+  return res.json({
+    message: "Scheme deactivated successfully",
+    scheme,
+  });
+}
+
+async function getSchemeFlags(req, res) {
+  const flags = await getAdminSchemeFlags();
+  return res.json({ schemes: flags });
+}
+
+async function exportSchemes(req, res) {
+  const csv = await exportAdminSchemesCsv();
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", 'attachment; filename="admin-schemes-export.csv"');
+  return res.status(200).send(csv);
+}
+
+module.exports = {
+  createScheme,
+  deleteScheme,
+  exportSchemes,
+  getScheme,
+  getSchemeFlags,
+  listSchemes,
+  updateScheme,
+};
