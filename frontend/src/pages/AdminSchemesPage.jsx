@@ -101,8 +101,8 @@ export default function AdminSchemesPage() {
   const schemesPayload = schemesQuery.data;
   const schemes = schemesPayload?.schemes || [];
   const totalPages = schemesPayload?.totalPages || 0;
-  const activeFlags = flagsQuery.data?.schemes || [];
-  const enrichmentFlags = flagsQuery.data?.enrichmentSchemes || [];
+  const activeFlags = Array.isArray(flagsQuery.data?.schemes) ? flagsQuery.data.schemes : [];
+  const enrichmentFlags = Array.isArray(flagsQuery.data?.enrichmentSchemes) ? flagsQuery.data.enrichmentSchemes : [];
   const selectedScheme = selectedSchemeQuery.data || null;
   const flaggedCount = activeFlags.length;
   const enrichmentCount = enrichmentFlags.length;
@@ -113,10 +113,10 @@ export default function AdminSchemesPage() {
 
   const reviewSummary = useMemo(
     () => ({
-      missingHindi: activeFlags.filter((scheme) => scheme.reviewReasons.includes("missing_hindi")).length,
-      deadUrl: activeFlags.filter((scheme) => scheme.reviewReasons.includes("dead_url")).length,
-      userReported: activeFlags.filter((scheme) => scheme.reviewReasons.includes("user_reported")).length,
-      emptyEligibility: enrichmentFlags.filter((scheme) => scheme.enrichmentReasons.includes("empty_eligibility")).length,
+      missingHindi: activeFlags.filter((scheme) => scheme.reviewReasons?.includes("missing_hindi")).length,
+      deadUrl: activeFlags.filter((scheme) => scheme.reviewReasons?.includes("dead_url")).length,
+      userReported: activeFlags.filter((scheme) => scheme.reviewReasons?.includes("user_reported")).length,
+      emptyEligibility: enrichmentFlags.filter((scheme) => scheme.enrichmentReasons?.includes("empty_eligibility")).length,
     }),
     [activeFlags, enrichmentFlags]
   );

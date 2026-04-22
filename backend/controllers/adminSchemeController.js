@@ -83,7 +83,7 @@ async function deleteScheme(req, res) {
 
 async function getSchemeFlags(req, res) {
   const flags = await getAdminSchemeFlags();
-  return res.json({ schemes: flags });
+  return res.json(flags);
 }
 
 async function exportSchemes(req, res) {
