@@ -32,6 +32,30 @@ function Metric({ label, value, hint, tone = "text-emerald-300" }) {
   );
 }
 
+function emptyStateHint(label, value) {
+  if (Number(value || 0) > 0) {
+    return null;
+  }
+
+  if (label === "Total matches") {
+    return "No match logs yet.";
+  }
+
+  if (label === "Near misses") {
+    return "No near-miss logs yet.";
+  }
+
+  if (label === "Analyzed profiles") {
+    return "Profiles are ready, but no match analysis has surfaced yet.";
+  }
+
+  if (label === "Schemes ranked") {
+    return "Active schemes are available, but no ranking data has been generated.";
+  }
+
+  return null;
+}
+
 function BarRow({ label, count, width, suffix = "" }) {
   return (
     <div className="space-y-2">
@@ -153,13 +177,33 @@ export default function AdminAnalyticsPage() {
       <Section
         eyebrow="Analytics Routes"
         title="Platform analytics"
-        subtitle="Live snapshots from matches, funnel progress, near misses, schemes, photos, and kiosk usage."
+        subtitle="Live snapshots from matches, funnel progress, near misses, schemes, photos, and kiosk usage. Zero values usually mean the data has not been generated yet, not that the route is broken."
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Metric label="Total matches" value={formatNumber(overview.totals?.matches)} tone="text-cyan-300" />
-          <Metric label="Near misses" value={formatNumber(overview.totals?.nearMisses)} tone="text-rose-300" />
-          <Metric label="Analyzed profiles" value={formatNumber(nearMiss.analyzedProfiles)} tone="text-amber-300" />
-          <Metric label="Schemes ranked" value={formatNumber(schemes.length)} tone="text-emerald-300" />
+          <Metric
+            label="Total matches"
+            value={formatNumber(overview.totals?.matches)}
+            hint={emptyStateHint("Total matches", overview.totals?.matches)}
+            tone="text-cyan-300"
+          />
+          <Metric
+            label="Near misses"
+            value={formatNumber(overview.totals?.nearMisses)}
+            hint={emptyStateHint("Near misses", overview.totals?.nearMisses)}
+            tone="text-rose-300"
+          />
+          <Metric
+            label="Analyzed profiles"
+            value={formatNumber(nearMiss.analyzedProfiles)}
+            hint={emptyStateHint("Analyzed profiles", nearMiss.analyzedProfiles)}
+            tone="text-amber-300"
+          />
+          <Metric
+            label="Schemes ranked"
+            value={formatNumber(schemes.length)}
+            hint={emptyStateHint("Schemes ranked", schemes.length)}
+            tone="text-emerald-300"
+          />
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
@@ -176,7 +220,7 @@ export default function AdminAnalyticsPage() {
                   />
                 ))
               ) : (
-                <p className="text-sm text-slate-400">No daily match history yet.</p>
+                <p className="text-sm text-slate-400">No daily match history yet. Start a few match runs to see the curve.</p>
               )}
             </div>
           </div>
@@ -194,7 +238,7 @@ export default function AdminAnalyticsPage() {
                   />
                 ))
               ) : (
-                <p className="text-sm text-slate-400">No near-miss breakdown yet.</p>
+                <p className="text-sm text-slate-400">No near-miss breakdown yet. Once users start missing by one rule, this list will fill in.</p>
               )}
             </div>
           </div>
@@ -214,7 +258,7 @@ export default function AdminAnalyticsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-400">No photo stats yet.</p>
+                <p className="text-sm text-slate-400">No photo stats yet. Registration activity will populate this breakdown.</p>
               )}
             </div>
           </div>
@@ -228,13 +272,16 @@ export default function AdminAnalyticsPage() {
           subtitle="The funnel shows progression, while kiosk analytics show operator usage and PDF exports."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {funnel.stages?.map((stage) => (
-              <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
-                <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
-              </div>
-            ))}
-          </div>
+              {funnel.stages?.map((stage) => (
+                <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
+                  <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
+                </div>
+              ))}
+            </div>
+            {!funnel.stages?.length ? (
+              <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
+            ) : null}
 
           <div className="mt-6 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
@@ -247,7 +294,7 @@ export default function AdminAnalyticsPage() {
                 <p className="text-sm font-semibold text-white">Sessions per worker</p>
                 {kioskWorkers.length ? kioskWorkers.map((item) => (
                   <BarRow key={item.key} label={item.key} count={item.count} width={kioskWorkers[0]?.count ? (Number(item.count || 0) / Number(kioskWorkers[0].count || 1)) * 100 : 0} />
-                )) : <p className="text-sm text-slate-400">No kiosk usage yet.</p>}
+                )) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
               </div>
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-white">Top schemes by applications</p>
@@ -261,7 +308,7 @@ export default function AdminAnalyticsPage() {
                       Matches: {formatNumber(scheme.matches)} | Near misses: {formatNumber(scheme.nearMisses)} | Apply clicked rate: {formatPercent(scheme.applyClickedRate)}
                     </p>
                   </div>
-                )) : <p className="text-sm text-slate-400">No scheme analytics yet.</p>}
+                )) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
               </div>
             </div>
           </div>
