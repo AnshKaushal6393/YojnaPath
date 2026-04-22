@@ -163,7 +163,7 @@ export default function AdminSchemesPage() {
       <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 p-6 shadow-2xl shadow-slate-950/30">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.12),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.10),transparent_28%)]" />
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
               Scheme Routes
             </p>
@@ -314,7 +314,7 @@ export default function AdminSchemesPage() {
                 }`}
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-white">{scheme.schemeId}</span>
+                  <span className="break-all font-semibold text-white">{scheme.schemeId}</span>
                   {scheme.reviewReasons.map((reason) => (
                     <Badge key={reason} tone="rose">
                       {reason.replace(/_/g, " ")}
@@ -354,8 +354,8 @@ export default function AdminSchemesPage() {
                   }`}
                 >
                   <span>
-                    <span className="block text-sm font-semibold text-white">{scheme.schemeId}</span>
-                    <span className="mt-1 block text-xs text-slate-400">{scheme.name?.en || "Untitled"}</span>
+                    <span className="block break-all text-sm font-semibold text-white">{scheme.schemeId}</span>
+                    <span className="mt-1 block break-words text-xs text-slate-400">{scheme.name?.en || "Untitled"}</span>
                     <span className="mt-1 block text-xs text-slate-500">
                       Matches: {formatNumber(scheme.matchCount)}
                     </span>
@@ -433,12 +433,14 @@ export default function AdminSchemesPage() {
 
         <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25 xl:sticky xl:top-6 xl:self-start">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
                 Scheme snapshot
               </p>
               <h3 className="mt-2 text-2xl font-semibold text-white">
-                {selectedScheme ? selectedScheme.schemeId : "Select a scheme"}
+                <span className="block break-all">
+                  {selectedScheme ? selectedScheme.schemeId : "Select a scheme"}
+                </span>
               </h3>
               <p className="mt-1 text-sm text-slate-400">
                 Read-only details from the scraper output and review flags.
@@ -450,8 +452,10 @@ export default function AdminSchemesPage() {
           {selectedScheme ? (
             <div className="mt-5 space-y-4">
               <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
-                <p className="text-lg font-semibold text-white">{selectedScheme.name?.en || "Untitled"}</p>
-                <p className="mt-1 text-sm leading-6 text-slate-300">{selectedScheme.name?.hi || "No Hindi title"}</p>
+                <p className="break-words text-lg font-semibold text-white">{selectedScheme.name?.en || "Untitled"}</p>
+                <p className="mt-1 break-words text-sm leading-6 text-slate-300">
+                  {selectedScheme.name?.hi || "No Hindi title"}
+                </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Badge tone={selectedScheme.active ? "emerald" : "rose"}>
                     {selectedScheme.active ? "Active" : "Inactive"}
@@ -469,7 +473,7 @@ export default function AdminSchemesPage() {
                   <div className="mt-3 space-y-2 text-sm leading-6 text-slate-300">
                     <p>Ministry: {selectedScheme.ministry || "Unknown"}</p>
                     <p>Apply mode: {selectedScheme.applyMode || "Unknown"}</p>
-                    <p>Apply URL: {selectedScheme.applyUrl || "Missing"}</p>
+                    <p className="break-words">Apply URL: {selectedScheme.applyUrl || "Missing"}</p>
                     <p>Match count: {formatNumber(selectedScheme.matchCount)}</p>
                     <p>Updated: {formatDateTime(selectedScheme.updatedAt)}</p>
                   </div>
@@ -562,7 +566,7 @@ export default function AdminSchemesPage() {
                   ) : null}
 
                   {selectedScheme.reviewAction?.reviewedAt ? (
-                    <p className="mt-3 text-xs text-slate-400">
+                    <p className="mt-3 break-words text-xs text-slate-400">
                       Last triaged {formatDateTime(selectedScheme.reviewAction.reviewedAt)}
                       {selectedScheme.reviewAction.reviewedBy ? ` by ${selectedScheme.reviewAction.reviewedBy}` : ""}
                     </p>
