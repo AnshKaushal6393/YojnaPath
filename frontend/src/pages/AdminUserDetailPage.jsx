@@ -206,7 +206,8 @@ export default function AdminUserDetailPage() {
                   </p>
                   <div className="mt-2 space-y-1 text-sm text-slate-300">
                     <p>
-                      {user.primaryProfile?.state || "NA"} / {getUserTypeLabel(user.primaryProfile?.userType)}
+                      {user.primaryProfile?.state || "NA"} /{" "}
+                      {getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation)}
                     </p>
                     <p>Gender: {user.primaryProfile?.gender || "NA"}</p>
                   </div>

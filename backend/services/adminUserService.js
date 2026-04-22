@@ -99,6 +99,7 @@ function mapProfileRow(row) {
     gender: row.gender || null,
     caste: row.caste || null,
     occupation: row.occupation || null,
+    userType: row.occupation || null,
     state: row.state || null,
     annualIncome: row.annual_income == null ? null : Number(row.annual_income),
     district: row.district || null,
@@ -224,6 +225,7 @@ async function listAdminUsers(options = {}) {
         relation: row.relation || null,
         state: row.state || null,
         occupation: row.occupation || null,
+        userType: row.occupation || null,
         district: row.district || null,
       },
       stats: {

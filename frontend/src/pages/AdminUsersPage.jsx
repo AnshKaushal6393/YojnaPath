@@ -3,6 +3,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { downloadAdminUsersExport, fetchAdminUsers } from "../lib/adminApi";
 import { formatDateTime, formatNumber } from "../lib/adminUi";
+import { USER_TYPE_OPTIONS } from "../data/profileOptions";
+
+function getUserTypeLabel(userType) {
+  if (!userType) return "Unknown";
+
+  const normalized = userType.toString().toLowerCase().trim();
+  const legacyMap = {
+    shopkeeper: "business",
+    artisan: "business",
+    daily_wage: "worker",
+    retired: "senior",
+    disabled: "disability",
+    migrant_worker: "worker",
+  };
+  const mapped = legacyMap[normalized] || normalized;
+  const match = USER_TYPE_OPTIONS.find((option) => option.key === mapped);
+
+  return match?.label || mapped.charAt(0).toUpperCase() + mapped.slice(1) || "Unknown";
+}
 
 function createEmptyFilters() {
   return {
@@ -150,7 +169,7 @@ export default function AdminUsersPage() {
       ) : null}
 
       <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10">
-        <div className="grid grid-cols-[1.5fr_0.8fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+        <div className="grid grid-cols-[1.4fr_1fr_0.9fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
           <span>User</span>
           <span>State / Type</span>
           <span>Match stats</span>
@@ -168,22 +187,36 @@ export default function AdminUsersPage() {
               key={user.id}
               type="button"
               onClick={() => navigate(`/admin/users/${user.id}`)}
-              className="grid w-full grid-cols-[1.5fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-4 text-left transition hover:bg-white/5"
+              className="grid w-full grid-cols-[1.4fr_1fr_0.9fr_0.8fr] gap-3 px-4 py-4 text-left transition hover:bg-white/5"
             >
               <span>
                 <span className="block text-sm font-semibold text-white">{user.name || "Unknown"}</span>
                 <span className="mt-1 block text-xs text-slate-400">{user.phone}</span>
+                {user.primaryProfile?.profileName ? (
+                  <span className="mt-1 block text-xs text-slate-500">
+                    Profile: {user.primaryProfile.profileName}
+                  </span>
+                ) : null}
                 <span className="mt-1 block text-xs text-slate-500">
                   {user.photoUrl ? "Has account photo" : "Photo may live on a family profile"}
                 </span>
               </span>
               <span className="text-sm text-slate-300">
-                {user.primaryProfile?.state || "NA"} / {user.primaryProfile?.occupation || "unknown"}
+                <span className="block">{user.primaryProfile?.state || "NA"}</span>
+                <span className="mt-1 block">{getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation)}</span>
+                <span className="mt-2 block text-xs text-slate-500">
+                  {user.onboardingDone ? "Onboarding complete" : "Onboarding pending"}
+                </span>
               </span>
               <span className="text-sm text-slate-300">
                 {formatNumber(user.stats?.matchRuns)} runs / {formatNumber(user.stats?.totalMatches)} schemes
               </span>
-              <span className="text-sm text-slate-300">{formatDateTime(user.lastLogin)}</span>
+              <span className="text-sm text-slate-300">
+                <span className="block">{formatDateTime(user.lastLogin)}</span>
+                <span className="mt-1 block text-xs text-slate-500">
+                  {user.registrationCompletedAt ? "Registered" : "Registration pending"}
+                </span>
+              </span>
             </button>
           ))}
         </div>
