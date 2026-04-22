@@ -189,6 +189,7 @@ async function listAdminUsers(options = {}) {
           u.last_login,
           rp.profile_name,
           rp.relation,
+          rp.photo_url AS profile_photo_url,
           rp.state,
           rp.occupation,
           rp.district,
@@ -245,6 +246,7 @@ async function listAdminUsers(options = {}) {
       phone: row.phone,
       name: row.name || row.profile_name || "Unknown",
       photoUrl: row.photo_url || null,
+      displayPhotoUrl: row.photo_url || row.profile_photo_url || null,
       photoType: row.photo_type || "none",
       onboardingDone: Boolean(row.onboarding_done),
       lang: row.lang || "hi",
@@ -254,6 +256,16 @@ async function listAdminUsers(options = {}) {
       primaryProfile: {
         profileName: row.profile_name || null,
         relation: row.relation || null,
+        photoUrl: row.profile_photo_url || null,
+        state: row.state || null,
+        occupation: row.occupation || null,
+        userType: row.occupation || null,
+        district: row.district || null,
+      },
+      displayProfile: {
+        profileName: row.profile_name || null,
+        relation: row.relation || null,
+        photoUrl: row.profile_photo_url || null,
         state: row.state || null,
         occupation: row.occupation || null,
         userType: row.occupation || null,
@@ -418,12 +430,14 @@ async function getAdminUserById(userId) {
   const displayProfile = pickDisplayProfile(profiles) || primaryProfile;
   console.log(`[ADMIN] Selected primaryProfile for ${userId}:`, primaryProfile ? {name: primaryProfile.profileName, state: primaryProfile.state, occupation: primaryProfile.occupation} : 'none');
   const matchStats = matchSummary.rows[0] || {};
+  const displayPhotoUrl = getPreferredPhotoUrl(user, profiles);
 
   return {
     id: user.id,
     phone: user.phone,
     name: user.name || primaryProfile?.profileName || "Unknown",
-    photoUrl: getPreferredPhotoUrl(user, profiles),
+    photoUrl: displayPhotoUrl,
+    displayPhotoUrl,
     photoType: user.photo_type || "none",
     onboardingDone: Boolean(user.onboarding_done),
     lang: user.lang || "hi",
@@ -438,6 +452,7 @@ async function getAdminUserById(userId) {
     },
     primaryProfile,
     displayProfile,
+    displayPhotoUrl,
     profiles,
     savedSchemes: savedSchemesResult.rows.map((row) => ({
       schemeId: row.scheme_id,

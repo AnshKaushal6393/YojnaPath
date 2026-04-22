@@ -57,6 +57,10 @@ export function getUserDisplayPhoto(user) {
     return "";
   }
 
+  if (user.displayPhotoUrl) {
+    return user.displayPhotoUrl;
+  }
+
   if (user.photoUrl) {
     return user.photoUrl;
   }
