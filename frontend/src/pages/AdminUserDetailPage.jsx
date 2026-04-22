@@ -122,6 +122,7 @@ export default function AdminUserDetailPage() {
   const displayPhotoUrl = getUserDisplayPhoto(user);
   const matchStats = summarizeMatchStats(user, matches);
   const matchSummary = user?.matchSummary || {};
+  const visibleProfile = user?.displayProfile || user?.primaryProfile || null;
   const hasRecentMatchLogs = Boolean(user?.recentMatches?.length);
   const hasMatchSummary = Boolean(
     matchSummary.matchRuns || matchSummary.totalMatches || matchSummary.totalNearMisses
@@ -220,14 +221,21 @@ export default function AdminUserDetailPage() {
                 <div className="rounded-[18px] bg-slate-950/75 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Primary profile</p>
                   <p className="mt-3 text-sm text-slate-200">
-                    {user.primaryProfile?.profileName || "Unavailable"}
+                    {visibleProfile?.profileName || "Unavailable"}
                   </p>
                   <div className="mt-2 space-y-1 text-sm text-slate-300">
                     <p>
-                      {user.primaryProfile?.state || "NA"} /{" "}
-                      {getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation)}
+                      {visibleProfile?.state || "NA"} /{" "}
+                      {getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation)}
                     </p>
-                    <p>Gender: {user.primaryProfile?.gender || "NA"}</p>
+                    <p>Gender: {visibleProfile?.gender || "NA"}</p>
+                    {user.primaryProfile?.id &&
+                    visibleProfile?.id &&
+                    user.primaryProfile.id !== visibleProfile.id ? (
+                      <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                        Visible profile differs from primary profile
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>

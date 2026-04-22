@@ -112,6 +112,37 @@ function mapProfileRow(row) {
   };
 }
 
+function getProfileCompletenessScore(profile) {
+  if (!profile) {
+    return -1;
+  }
+
+  return (
+    (profile.isPrimary ? 1000 : 0) +
+    (profile.state ? 100 : 0) +
+    (profile.occupation ? 100 : 0) +
+    (profile.photoUrl ? 10 : 0) +
+    (profile.gender ? 5 : 0) +
+    (profile.caste ? 5 : 0) +
+    (profile.age != null ? 2 : 0)
+  );
+}
+
+function pickDisplayProfile(profiles = []) {
+  return [...profiles].sort((left, right) => {
+    const scoreDifference = getProfileCompletenessScore(right) - getProfileCompletenessScore(left);
+    if (scoreDifference !== 0) {
+      return scoreDifference;
+    }
+
+    if (left.isPrimary !== right.isPrimary) {
+      return left.isPrimary ? -1 : 1;
+    }
+
+    return String(right.updatedAt || "").localeCompare(String(left.updatedAt || ""));
+  })[0] || null;
+}
+
 function getPreferredPhotoUrl(user, profiles = []) {
   return (
     user?.photo_url ||
@@ -384,6 +415,7 @@ async function getAdminUserById(userId) {
   const profiles = profilesResult.rows.map(mapProfileRow);
   console.log(`[ADMIN] User ${userId} has ${profiles.length} profiles:`, profiles.map(p => ({id: p.id, name: p.profileName, primary: p.isPrimary, state: p.state, occupation: p.occupation})));
   const primaryProfile = profiles.find((profile) => profile.isPrimary) || profiles[0] || null;
+  const displayProfile = pickDisplayProfile(profiles) || primaryProfile;
   console.log(`[ADMIN] Selected primaryProfile for ${userId}:`, primaryProfile ? {name: primaryProfile.profileName, state: primaryProfile.state, occupation: primaryProfile.occupation} : 'none');
   const matchStats = matchSummary.rows[0] || {};
 
@@ -405,6 +437,7 @@ async function getAdminUserById(userId) {
       totalProfiles: profiles.length,
     },
     primaryProfile,
+    displayProfile,
     profiles,
     savedSchemes: savedSchemesResult.rows.map((row) => ({
       schemeId: row.scheme_id,
@@ -448,7 +481,7 @@ async function getAdminUserLiveMatches(userId) {
     };
   }
 
-  const sourceProfile = user.primaryProfile;
+  const sourceProfile = user.displayProfile || user.primaryProfile;
   if (!sourceProfile?.state || !sourceProfile?.occupation) {
     return {
       userId,
