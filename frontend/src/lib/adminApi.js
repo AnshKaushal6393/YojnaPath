@@ -59,6 +59,42 @@ export async function fetchAdminFunnel() {
   });
 }
 
+export async function fetchAdminAnalyticsOverview() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/overview", { token });
+  });
+}
+
+export async function fetchAdminAnalyticsFunnel() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/funnel", { token });
+  });
+}
+
+export async function fetchAdminAnalyticsNearMiss() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/nearmiss", { token });
+  });
+}
+
+export async function fetchAdminAnalyticsSchemes() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/schemes", { token });
+  });
+}
+
+export async function fetchAdminAnalyticsPhoto() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/photo", { token });
+  });
+}
+
+export async function fetchAdminAnalyticsKiosk() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/analytics/kiosk", { token });
+  });
+}
+
 function buildQueryString(params = {}) {
   const searchParams = new URLSearchParams();
 

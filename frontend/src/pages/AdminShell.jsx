@@ -44,6 +44,9 @@ export default function AdminShell() {
             <NavLink to="/admin/users" className={getNavClassName}>
               Users
             </NavLink>
+            <NavLink to="/admin/analytics" className={getNavClassName}>
+              Analytics
+            </NavLink>
             <NavLink to="/admin/schemes" className={getNavClassName}>
               Schemes
             </NavLink>
