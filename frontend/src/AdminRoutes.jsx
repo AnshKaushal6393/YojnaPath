@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { isAdminAuthenticated } from "./lib/adminAuthStorage";
+import { clearAdminToken, getAdminToken } from "./lib/adminAuthStorage";
+import { fetchCurrentAdmin } from "./lib/adminApi";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminShell from "./pages/AdminShell";
 
@@ -10,12 +12,36 @@ const AdminSchemesPage = lazy(() => import("./pages/AdminSchemesPage"));
 const AdminUserDetailPage = lazy(() => import("./pages/AdminUserDetailPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
 
-function AdminProtectedRoute() {
-  return isAdminAuthenticated() ? <Outlet /> : <Navigate to="/admin/login" replace />;
-}
+function AdminAccessGate({ requireAuth }) {
+  const token = getAdminToken();
+  const adminQuery = useQuery({
+    queryKey: ["admin-session"],
+    queryFn: fetchCurrentAdmin,
+    enabled: Boolean(token),
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
-function AdminPublicRoute() {
-  return isAdminAuthenticated() ? <Navigate to="/admin" replace /> : <Outlet />;
+  if (!token) {
+    return requireAuth ? <Navigate to="/admin/login" replace /> : <Outlet />;
+  }
+
+  if (adminQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 px-6 py-10 text-slate-200">
+        <div className="mx-auto max-w-7xl rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm">
+          Checking admin session...
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminQuery.data) {
+    clearAdminToken();
+    return requireAuth ? <Navigate to="/admin/login" replace /> : <Outlet />;
+  }
+
+  return requireAuth ? <Outlet /> : <Navigate to="/admin" replace />;
 }
 
 export default function AdminRoutes() {
@@ -30,11 +56,11 @@ export default function AdminRoutes() {
       }
     >
       <Routes>
-        <Route element={<AdminPublicRoute />}>
+        <Route element={<AdminAccessGate requireAuth={false} />}>
           <Route path="/admin/login" element={<AdminLoginPage />} />
         </Route>
 
-        <Route element={<AdminProtectedRoute />}>
+        <Route element={<AdminAccessGate requireAuth />}>
           <Route path="/admin" element={<AdminShell />}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
