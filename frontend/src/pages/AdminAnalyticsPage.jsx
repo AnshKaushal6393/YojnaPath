@@ -6,6 +6,9 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Funnel,
+  FunnelChart,
+  LabelList,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -532,15 +535,14 @@ export default function AdminAnalyticsPage() {
                 ) : null}
               </div>
               {funnelChartData.length ? (
-                <div className="mt-5 h-[280px]">
+                <div className="mt-5 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={funnelChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} vertical={false} />
-                      <XAxis dataKey="label" tick={sharedAxisTick} interval={0} angle={-28} textAnchor="end" height={46} />
-                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                    <FunnelChart>
                       <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Stages" />} />
-                      <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#f59e0b" />
-                    </BarChart>
+                      <Funnel dataKey="value" data={funnelChartData} isAnimationActive>
+                        <LabelList position="right" dataKey="label" fill="#e2e8f0" stroke="none" />
+                      </Funnel>
+                    </FunnelChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
