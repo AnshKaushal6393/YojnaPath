@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AdminRoutes from "./AdminRoutes";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import { isAuthenticated } from "./utils/auth";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -38,6 +39,7 @@ export default function App() {
       }
       >
       <Routes>
+        <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
 
         <Route element={<PublicAuthRoute />}>

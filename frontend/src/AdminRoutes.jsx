@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { clearAdminToken, getAdminToken } from "./lib/adminAuthStorage";
 import { fetchCurrentAdmin } from "./lib/adminApi";
-import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminShell from "./pages/AdminShell";
 
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
@@ -54,12 +53,8 @@ export default function AdminRoutes() {
           </div>
         </div>
       }
-    >
+      >
       <Routes>
-        <Route element={<AdminAccessGate requireAuth={false} />}>
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-        </Route>
-
         <Route element={<AdminAccessGate requireAuth />}>
           <Route path="/admin" element={<AdminShell />}>
             <Route index element={<AdminDashboardPage />} />
