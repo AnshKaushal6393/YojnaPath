@@ -228,6 +228,30 @@ export default function AdminAnalyticsPage() {
     },
     { label: "-", count: 0 },
   );
+  const matchChartData = visibleMatchSeries.map((entry) => ({
+    label: entry.day,
+    value: Number(entry.count || 0),
+  }));
+  const nearMissChartData = visibleNearMissCriteria.map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+  const photoChartData = visiblePhotoBreakdown.map((item) => ({
+    label: item.label,
+    value: Number(item.count || 0),
+  }));
+  const funnelChartData = visibleFunnelStages.map((stage) => ({
+    label: stage.label,
+    value: Number(stage.count || 0),
+  }));
+  const kioskWorkerChartData = visibleKioskWorkers.map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+  const schemeChartData = visibleTopSchemes.map((scheme) => ({
+    label: scheme.name,
+    value: Number(scheme.applications || 0),
+  }));
   const lastUpdated = [
     overview.generatedAt,
     funnel.generatedAt,
@@ -345,15 +369,18 @@ export default function AdminAnalyticsPage() {
             </div>
 
             <div className="mt-5 space-y-3">
-              {matchSeries.length ? (
-                visibleMatchSeries.map((entry) => (
-                  <BarRow
-                    key={entry.day}
-                    label={entry.day}
-                    count={entry.count}
-                    width={maxDailyMatches ? (Number(entry.count || 0) / maxDailyMatches) * 100 : 0}
-                  />
-                ))
+              {matchChartData.length ? (
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={matchChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fill: "#cbd5e1", fontSize: 11 }} interval={0} angle={-35} textAnchor="end" height={50} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                      <Tooltip content={<RechartsTooltip label="Matches" />} />
+                      <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#06b6d4" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-sm text-slate-400">No daily match history yet. Start a few match runs to see the curve.</p>
               )}
@@ -390,15 +417,18 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
             <div className="mt-5 space-y-3">
-              {topNearMissCriteria.length ? (
-                visibleNearMissCriteria.map((item) => (
-                  <BarRow
-                    key={item.key}
-                    label={item.key.replace(/_/g, " ")}
-                    count={item.count}
-                    width={topNearMissCriteria[0]?.count ? (Number(item.count || 0) / Number(topNearMissCriteria[0].count || 1)) * 100 : 0}
-                  />
-                ))
+              {nearMissChartData.length ? (
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={nearMissChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                      <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="label" width={96} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
+                      <Tooltip content={<RechartsTooltip label="Blockers" />} />
+                      <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-sm text-slate-400">No near-miss breakdown yet. Once users start missing by one rule, this list will fill in.</p>
               )}
@@ -433,18 +463,31 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
             <div className="mt-5 space-y-3">
-              {photoBreakdown.length ? (
-                visiblePhotoBreakdown.map((item) => (
-                  <div key={item.key} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-sm text-slate-300">{item.label}</span>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-white">{formatNumber(item.count)} photos</p>
-                        <p className="text-xs text-slate-400">{formatPercent(item.pct)} of total</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
+              {photoChartData.length ? (
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={photoChartData}
+                        dataKey="value"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={56}
+                        outerRadius={92}
+                        paddingAngle={3}
+                      >
+                        {photoChartData.map((entry, index) => (
+                          <Cell
+                            key={entry.label}
+                            fill={["#22c55e", "#06b6d4", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6"][index % 6]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<RechartsTooltip label="Photos" />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
                 <p className="text-sm text-slate-400">No photo stats yet. Registration activity will populate this breakdown.</p>
               )}
