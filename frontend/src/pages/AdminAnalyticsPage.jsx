@@ -79,6 +79,8 @@ function BarRow({ label, count, width, suffix = "" }) {
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
   const [showAllMatchDays, setShowAllMatchDays] = useState(false);
+  const [showAllNearMisses, setShowAllNearMisses] = useState(false);
+  const [showAllPhotoBreakdown, setShowAllPhotoBreakdown] = useState(false);
 
   const overviewQuery = useQuery({
     queryKey: ["admin-analytics-overview"],
@@ -156,6 +158,16 @@ export default function AdminAnalyticsPage() {
   const topSchemes = (schemes || []).slice(0, 8);
   const photoBreakdown = photo.breakdown || [];
   const kioskWorkers = kiosk.sessionsByWorker || [];
+  const visibleNearMissCriteria = showAllNearMisses ? topNearMissCriteria : topNearMissCriteria.slice(0, 5);
+  const visiblePhotoBreakdown = showAllPhotoBreakdown ? photoBreakdown : photoBreakdown.slice(0, 4);
+  const photoTotal = photoBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0);
+  const dominantPhoto = photoBreakdown.reduce(
+    (best, item) => {
+      const count = Number(item.count || 0);
+      return count > best.count ? { label: item.label, count } : best;
+    },
+    { label: "-", count: 0 },
+  );
 
   const isLoading =
     overviewQuery.isLoading ||
@@ -269,10 +281,34 @@ export default function AdminAnalyticsPage() {
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Top near-miss blockers</p>
-            <div className="mt-5 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Top near-miss blockers</p>
+                <p className="mt-2 text-sm text-slate-400">The most common blockers users are hitting before a full match.</p>
+              </div>
+              {topNearMissCriteria.length > 5 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllNearMisses((value) => !value)}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                >
+                  {showAllNearMisses ? "Show less" : "Show all"}
+                </button>
+              ) : null}
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Analyzed profiles</p>
+                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(nearMiss.analyzedProfiles)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Top blocker</p>
+                <p className="mt-2 truncate text-lg font-bold text-rose-300">{topNearMissCriteria[0]?.key ? topNearMissCriteria[0].key.replace(/_/g, " ") : "-"}</p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
               {topNearMissCriteria.length ? (
-                topNearMissCriteria.map((item) => (
+                visibleNearMissCriteria.map((item) => (
                   <BarRow
                     key={item.key}
                     label={item.key.replace(/_/g, " ")}
@@ -287,10 +323,34 @@ export default function AdminAnalyticsPage() {
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Photo breakdown</p>
-            <div className="mt-5 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Photo breakdown</p>
+                <p className="mt-2 text-sm text-slate-400">A compact view of how users are adding profile photos.</p>
+              </div>
+              {photoBreakdown.length > 4 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllPhotoBreakdown((value) => !value)}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                >
+                  {showAllPhotoBreakdown ? "Show less" : "Show all"}
+                </button>
+              ) : null}
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Total photos</p>
+                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(photoTotal)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Most used</p>
+                <p className="mt-2 truncate text-lg font-bold text-amber-300">{dominantPhoto.label}</p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-3">
               {photoBreakdown.length ? (
-                photoBreakdown.map((item) => (
+                visiblePhotoBreakdown.map((item) => (
                   <div key={item.key} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-sm text-slate-300">{item.label}</span>
