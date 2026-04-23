@@ -1,11 +1,11 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { isAdminAuthenticated } from "./lib/adminAuthStorage";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminShell from "./pages/AdminShell";
 
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const AdminAnalyticsPage = lazy(() => import("./pages/AdminAnalyticsPage"));
-const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
-const AdminShell = lazy(() => import("./pages/AdminShell"));
 const AdminSchemesPage = lazy(() => import("./pages/AdminSchemesPage"));
 const AdminUserDetailPage = lazy(() => import("./pages/AdminUserDetailPage"));
 const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
