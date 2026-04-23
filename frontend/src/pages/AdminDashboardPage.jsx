@@ -241,20 +241,20 @@ export default function AdminDashboardPage() {
 
       {stats ? (
         <>
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {metricCards.map((card) => (
               <article
                 key={card.label}
-                className="rounded-[24px] border border-white/10 bg-white/[0.06] p-5 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur"
+                className="min-h-[132px] rounded-[22px] border border-white/10 bg-white/[0.06] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                   {card.label}
                 </p>
-                <p className={`mt-4 text-4xl font-bold ${card.accent}`}>{card.value}</p>
+                <p className={`mt-3 text-3xl font-bold leading-none ${card.accent}`}>{card.value}</p>
                 {card.label === "System health" ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                         systemHealth.postgresConnected
                           ? "bg-emerald-400/10 text-emerald-200"
                           : "bg-amber-400/10 text-amber-200"
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
                       {systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"}
                     </span>
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                         systemHealth.mongoConnected
                           ? "bg-cyan-400/10 text-cyan-200"
                           : "bg-rose-400/10 text-rose-200"
@@ -273,10 +273,10 @@ export default function AdminDashboardPage() {
                     </span>
                   </div>
                 ) : card.hint ? (
-                  <p className="mt-2 text-xs text-slate-400">{card.hint}</p>
+                  <p className="mt-2 text-[11px] leading-5 text-slate-400">{card.hint}</p>
                 ) : null}
                 {card.label === "Total users" && overview ? (
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-[11px] text-slate-400">
                     Profiles: {formatNumber(overview.counts?.profiles)}
                   </p>
                 ) : null}
