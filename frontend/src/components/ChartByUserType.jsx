@@ -8,6 +8,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import {
+  sharedAxisTick,
+  sharedChartCardClass,
+  sharedChartMargins,
+  sharedGridStroke,
+  sharedTooltipProps,
+} from "./rechartsTheme";
 
 function formatLabel(value) {
   return String(value || "")
@@ -33,7 +40,7 @@ export default function ChartByUserType({ values }) {
   const data = toEntries(values);
 
   return (
-    <section className="impact-chart-card">
+    <section className={sharedChartCardClass}>
       <div className="section-heading">
         <h2 className="type-h2">{t("impact.charts.userTypeTitle")}</h2>
         <p className="type-caption">{t("impact.charts.userTypeBody")}</p>
@@ -42,15 +49,11 @@ export default function ChartByUserType({ values }) {
       {data.length ? (
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ top: 12, right: 24, left: 8, bottom: 12 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.16)" horizontal={false} />
+            <BarChart data={data} layout="vertical" margin={sharedChartMargins}>
+              <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
               <XAxis type="number" hide />
-              <YAxis type="category" dataKey="label" width={96} tick={{ fill: "#cbd5e1", fontSize: 12 }} />
-              <Tooltip
-                cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
-                contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14 }}
-                labelStyle={{ color: "#e2e8f0" }}
-              />
+              <YAxis type="category" dataKey="label" width={96} tick={sharedAxisTick} />
+              <Tooltip {...sharedTooltipProps} />
               <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#06b6d4" />
             </BarChart>
           </ResponsiveContainer>
