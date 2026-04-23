@@ -535,16 +535,45 @@ export default function AdminAnalyticsPage() {
                 ) : null}
               </div>
               {funnelChartData.length ? (
-                <div className="mt-5 h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <FunnelChart>
-                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Stages" />} />
-                      <Funnel dataKey="value" data={funnelChartData} isAnimationActive>
-                        <LabelList position="right" dataKey="label" fill="#e2e8f0" stroke="none" />
-                      </Funnel>
-                    </FunnelChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="mt-5 h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <FunnelChart>
+                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Stages" />} />
+                        <Funnel dataKey="value" data={funnelChartData} isAnimationActive>
+                          <LabelList position="right" dataKey="label" fill="#e2e8f0" stroke="none" />
+                        </Funnel>
+                      </FunnelChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {funnelStages.map((stage, index) => {
+                      const count = Number(stage.count || 0);
+                      const previousCount = index === 0 ? count : Number(funnelStages[index - 1]?.count || 0);
+                      const retention = index === 0 || previousCount <= 0 ? 100 : (count / previousCount) * 100;
+
+                      return (
+                        <div
+                          key={stage.key || stage.label || index}
+                          className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-white">{stage.label}</p>
+                              <p className="mt-1 text-xs text-slate-400">
+                                {index === 0 ? "Starting stage" : `${formatPercent(retention)} retained from previous stage`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-white">{formatNumber(count)}</p>
+                              <p className="text-xs text-slate-400">users</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
               )}

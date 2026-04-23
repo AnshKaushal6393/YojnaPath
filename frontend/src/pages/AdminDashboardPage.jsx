@@ -294,21 +294,50 @@ export default function AdminDashboardPage() {
                 Track where users continue and where they drop off after login.
               </p>
               {funnelStages.length ? (
-                <div className="mt-6 h-[260px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <FunnelChart>
-                      <Tooltip />
-                      <Funnel dataKey="count" data={funnelStages} isAnimationActive>
-                        {funnelStages.map((stage, index) => (
-                          <Cell
-                            key={stage.key || stage.label || index}
-                            fill={index === funnelStages.length - 1 ? "#06b6d4" : "#f59e0b"}
-                          />
-                        ))}
-                      </Funnel>
-                    </FunnelChart>
-                  </ResponsiveContainer>
-                </div>
+                <>
+                  <div className="mt-6 h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <FunnelChart>
+                        <Tooltip />
+                        <Funnel dataKey="count" data={funnelStages} isAnimationActive>
+                          {funnelStages.map((stage, index) => (
+                            <Cell
+                              key={stage.key || stage.label || index}
+                              fill={index === funnelStages.length - 1 ? "#06b6d4" : "#f59e0b"}
+                            />
+                          ))}
+                        </Funnel>
+                      </FunnelChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-5 space-y-3">
+                    {funnelStages.map((stage, index) => {
+                      const count = Number(stage.count || 0);
+                      const previousCount = index === 0 ? count : Number(funnelStages[index - 1]?.count || 0);
+                      const retention = index === 0 || previousCount <= 0 ? 100 : (count / previousCount) * 100;
+
+                      return (
+                        <div
+                          key={stage.key || stage.label || index}
+                          className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div>
+                              <p className="text-sm font-semibold text-white">{stage.label}</p>
+                              <p className="mt-1 text-xs text-slate-400">
+                                {index === 0 ? "Starting stage" : `${formatPercent(retention)} retained from previous stage`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-white">{formatNumber(count)}</p>
+                              <p className="text-xs text-slate-400">users</p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
               ) : (
                 <div className="mt-6 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
                   No funnel data yet.
