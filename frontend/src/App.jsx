@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import AdminRoutes from "./AdminRoutes";
 import { isAuthenticated } from "./utils/auth";
 
-const AdminRoutes = lazy(() => import("./AdminRoutes"));
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const KioskPage = lazy(() => import("./pages/KioskPage"));
