@@ -11,10 +11,20 @@ import {
 } from "../lib/adminApi";
 import { formatDateTime, formatNumber, formatPercent } from "../lib/adminUi";
 
-function Section({ eyebrow, title, subtitle, children }) {
+function Section({ eyebrow, title, subtitle, children, accent = false, badge = null }) {
   return (
-    <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">{eyebrow}</p>
+    <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25">
+      {accent ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400" />
+      ) : null}
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">{eyebrow}</p>
+        {badge ? (
+          <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+            {badge}
+          </span>
+        ) : null}
+      </div>
       <h2 className="mt-3 text-2xl font-semibold text-white">{title}</h2>
       {subtitle ? <p className="mt-2 text-sm leading-6 text-slate-400">{subtitle}</p> : null}
       <div className="mt-6">{children}</div>
@@ -217,6 +227,8 @@ export default function AdminAnalyticsPage() {
         eyebrow="Analytics Routes"
         title="Platform analytics"
         subtitle="Live snapshots from matches, funnel progress, near misses, schemes, photos, and kiosk usage. Zero values usually mean the data has not been generated yet, not that the route is broken."
+        accent
+        badge="Live data"
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Metric
