@@ -342,7 +342,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+          <div className={sharedChartPanelClass}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Matches by day</p>
@@ -380,10 +380,10 @@ export default function AdminAnalyticsPage() {
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={matchChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" vertical={false} />
-                      <XAxis dataKey="label" tick={{ fill: "#cbd5e1", fontSize: 11 }} interval={0} angle={-35} textAnchor="end" height={50} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} vertical={false} />
+                      <XAxis dataKey="label" tick={sharedAxisTick} interval={0} angle={-35} textAnchor="end" height={50} />
                       <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip content={<RechartsTooltip label="Matches" />} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Matches" />} />
                       <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#06b6d4" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -394,7 +394,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+          <div className={sharedChartPanelClass}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Top near-miss blockers</p>
@@ -428,10 +428,10 @@ export default function AdminAnalyticsPage() {
                 <div className="h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={nearMissChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
                       <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="label" width={96} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
-                      <Tooltip content={<RechartsTooltip label="Blockers" />} />
+                      <YAxis type="category" dataKey="label" width={96} tick={sharedAxisTick} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Blockers" />} />
                       <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#ef4444" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -442,7 +442,7 @@ export default function AdminAnalyticsPage() {
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+          <div className={sharedChartPanelClass}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Photo breakdown</p>
@@ -487,11 +487,11 @@ export default function AdminAnalyticsPage() {
                         {photoChartData.map((entry, index) => (
                           <Cell
                             key={entry.label}
-                            fill={["#22c55e", "#06b6d4", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6"][index % 6]}
+                            fill={sharedPieColors[index % sharedPieColors.length]}
                           />
                         ))}
                       </Pie>
-                      <Tooltip content={<RechartsTooltip label="Photos" />} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Photos" />} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -515,7 +515,7 @@ export default function AdminAnalyticsPage() {
             <Metric label="Peak stage" value={formatNumber(funnelPeak.count)} hint={funnelPeak.label} tone="text-amber-300" />
           </div>
           <div className="mt-5 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-            <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+            <div className={sharedChartPanelClass}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Registration funnel</p>
@@ -535,10 +535,10 @@ export default function AdminAnalyticsPage() {
                 <div className="mt-5 h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={funnelChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" vertical={false} />
-                      <XAxis dataKey="label" tick={{ fill: "#cbd5e1", fontSize: 11 }} interval={0} angle={-28} textAnchor="end" height={46} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} vertical={false} />
+                      <XAxis dataKey="label" tick={sharedAxisTick} interval={0} angle={-28} textAnchor="end" height={46} />
                       <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                      <Tooltip content={<RechartsTooltip label="Stages" />} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Stages" />} />
                       <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#f59e0b" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -548,7 +548,7 @@ export default function AdminAnalyticsPage() {
               )}
             </div>
 
-            <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+            <div className={sharedChartPanelClass}>
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
@@ -577,10 +577,10 @@ export default function AdminAnalyticsPage() {
                   <div className="h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={kioskWorkerChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
                         <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                        <YAxis type="category" dataKey="label" width={92} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
-                        <Tooltip content={<RechartsTooltip label="Sessions" />} />
+                        <YAxis type="category" dataKey="label" width={92} tick={sharedAxisTick} />
+                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Sessions" />} />
                         <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#22c55e" />
                       </BarChart>
                     </ResponsiveContainer>
@@ -604,10 +604,10 @@ export default function AdminAnalyticsPage() {
                   <div className="h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={schemeChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
                         <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                        <YAxis type="category" dataKey="label" width={96} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
-                        <Tooltip content={<RechartsTooltip label="Applications" />} />
+                        <YAxis type="category" dataKey="label" width={96} tick={sharedAxisTick} />
+                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Applications" />} />
                         <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#a855f7" />
                       </BarChart>
                     </ResponsiveContainer>
@@ -622,3 +622,5 @@ export default function AdminAnalyticsPage() {
     </section>
   );
 }
+
+
