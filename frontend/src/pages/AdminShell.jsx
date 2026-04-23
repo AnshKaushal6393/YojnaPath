@@ -2,6 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { fetchCurrentAdmin } from "../lib/adminApi";
 import { clearAdminToken } from "../lib/adminAuthStorage";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 
 function getNavClassName({ isActive }) {
   return `rounded-2xl px-3.5 py-2.5 text-xs font-semibold transition ${
@@ -26,7 +29,7 @@ export default function AdminShell() {
   return (
     <main className="admin-shell min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)] px-4 py-8 text-slate-50">
       <div className="mx-auto w-full max-w-[1600px]">
-        <div className="mb-8 rounded-[30px] border border-white/10 bg-white/6 px-5 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur">
+        <Card className="mb-8 px-5 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
@@ -34,9 +37,9 @@ export default function AdminShell() {
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <h1 className="text-2xl font-semibold text-white md:text-[30px]">Control center</h1>
-                <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                <Badge variant="success" className="uppercase tracking-[0.18em]">
                   Live dashboard
-                </span>
+                </Badge>
               </div>
               <p className="mt-2 text-sm text-slate-300">
                 {adminQuery.data?.email ? `Signed in as ${adminQuery.data.email}` : "Managing platform operations"}
@@ -56,18 +59,19 @@ export default function AdminShell() {
               <NavLink to="/admin/schemes" className={getNavClassName}>
                 Schemes
               </NavLink>
-              <button
+              <Button
                 type="button"
-                className="rounded-2xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-xs font-semibold text-white transition hover:bg-white/10"
+                variant="secondary"
+                size="sm"
                 onClick={handleLogout}
               >
                 Log out
-              </button>
+              </Button>
             </div>
           </div>
 
           <Outlet />
-        </div>
+        </Card>
       </div>
     </main>
   );

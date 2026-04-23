@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginAdmin } from "../lib/adminApi";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -32,21 +36,22 @@ export default function AdminLoginPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50">
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[420px] items-center">
-        <div className="w-full rounded-[28px] border border-white/10 bg-white/5 p-6 shadow-[0_24px_60px_rgba(15,23,42,0.35)] backdrop-blur">
-          <div className="mb-8 space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
+        <Card className="w-full p-0 shadow-[0_24px_60px_rgba(15,23,42,0.35)]">
+          <CardHeader className="space-y-3 px-6 pt-6">
+            <Badge variant="success" className="w-fit uppercase tracking-[0.18em]">
               Super Admin
-            </p>
-            <h1 className="text-[28px] font-bold leading-tight text-white">Admin sign in</h1>
-            <p className="text-sm leading-6 text-slate-300">
+            </Badge>
+            <CardTitle className="text-[28px] leading-tight">Admin sign in</CardTitle>
+            <CardDescription>
               Use your email and password to access the YojnaPath control panel.
-            </p>
-          </div>
+            </CardDescription>
+          </CardHeader>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <CardContent className="pt-4">
+            <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block space-y-2">
               <span className="text-sm font-medium text-slate-200">Email</span>
-              <input
+              <Input
                 type="email"
                 autoComplete="email"
                 value={email}
@@ -54,14 +59,13 @@ export default function AdminLoginPage() {
                   setEmail(event.target.value);
                   setError("");
                 }}
-                className="h-14 w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 text-base text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="admin@yojnapath.in"
               />
             </label>
 
             <label className="block space-y-2">
               <span className="text-sm font-medium text-slate-200">Password</span>
-              <input
+              <Input
                 type="password"
                 autoComplete="current-password"
                 value={password}
@@ -69,7 +73,6 @@ export default function AdminLoginPage() {
                   setPassword(event.target.value);
                   setError("");
                 }}
-                className="h-14 w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 text-base text-white outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20"
                 placeholder="Enter password"
               />
             </label>
@@ -80,15 +83,16 @@ export default function AdminLoginPage() {
               </div>
             ) : null}
 
-            <button
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-500 px-4 text-base font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-emerald-300"
+              className="h-14 w-full text-base"
             >
               {isSubmitting ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
-        </div>
+            </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
