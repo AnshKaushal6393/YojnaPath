@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
   fetchAdminAnalyticsFunnel,
   fetchAdminAnalyticsKiosk,
   fetchAdminAnalyticsNearMiss,
@@ -82,6 +94,29 @@ function BarRow({ label, count, width, suffix = "" }) {
           style={{ width: `${Math.max(width, 6)}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+function formatChartLabel(value) {
+  return String(value || "Unknown")
+    .replace(/[_\s]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function RechartsTooltip({ active, payload, label, suffix = "" }) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-slate-950/95 px-3 py-2 shadow-xl">
+      <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-white">
+        {formatNumber(payload[0]?.value)}
+        {suffix}
+      </p>
     </div>
   );
 }

@@ -13,17 +13,14 @@ import {
   formatPercent,
   getPhotoCompletion,
 } from "../lib/adminUi";
-
-const USER_TYPE_COLORS = [
-  "#22c55e",
-  "#06b6d4",
-  "#f59e0b",
-  "#ef4444",
-  "#a855f7",
-  "#14b8a6",
-  "#3b82f6",
-  "#f97316",
-];
+import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
+const USER_TYPE_COLORS = ["#22c55e", "#06b6d4", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6", "#3b82f6", "#f97316"];
 
 function formatGroupLabel(value) {
   return String(value || "unknown")
@@ -34,8 +31,15 @@ function formatGroupLabel(value) {
 
 function UserTypePie({ data }) {
   const total = data.reduce((sum, item) => sum + Number(item.count || 0), 0);
+  const chartData = data
+    .slice(0, 6)
+    .map((item) => ({
+      name: formatGroupLabel(item.key),
+      value: Number(item.count || 0),
+    }))
+    .filter((item) => item.value > 0);
 
-  if (!data.length || total <= 0) {
+  if (!chartData.length || total <= 0) {
     return (
       <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
         <p className="text-sm font-semibold text-white">User type mix</p>
@@ -43,35 +47,6 @@ function UserTypePie({ data }) {
       </div>
     );
   }
-
-  const topItems = data.slice(0, 5);
-  const otherCount = data.slice(5).reduce((sum, item) => sum + Number(item.count || 0), 0);
-  const chartItems = otherCount > 0
-    ? [...topItems, { key: "other", count: otherCount }]
-    : topItems;
-
-  let angle = 0;
-  const segments = chartItems.map((item, index) => {
-    const count = Number(item.count || 0);
-    const slice = (count / total) * 360;
-    const start = angle;
-    angle += slice;
-    return {
-      key: item.key,
-      label: item.key,
-      count,
-      pct: (count / total) * 100,
-      color: USER_TYPE_COLORS[index % USER_TYPE_COLORS.length],
-      start,
-      end: angle,
-    };
-  });
-
-  const gradient = segments.length
-    ? `conic-gradient(${segments
-        .map((segment) => `${segment.color} ${segment.start}deg ${segment.end}deg`)
-        .join(", ")})`
-    : "conic-gradient(#22c55e 0deg 360deg)";
 
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
@@ -87,39 +62,49 @@ function UserTypePie({ data }) {
         </span>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[190px_1fr] lg:items-center">
-        <div className="mx-auto flex h-[190px] w-[190px] items-center justify-center rounded-full border border-white/10 bg-slate-950/70 p-4">
-          <div
-            className="relative h-full w-full rounded-full"
-            style={{ background: gradient }}
-            aria-label="User type pie chart"
-          >
-            <div className="absolute inset-[22%] rounded-full border border-white/10 bg-slate-950/95" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total</p>
-                <p className="mt-1 text-3xl font-bold text-white">{formatNumber(total)}</p>
-              </div>
-            </div>
-          </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
+        <div className="mx-auto h-[220px] w-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={62}
+                outerRadius={94}
+                paddingAngle={3}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={entry.name} fill={USER_TYPE_COLORS[index % USER_TYPE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14 }}
+                labelStyle={{ color: "#e2e8f0" }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
-
         <div className="space-y-3">
-          {segments.map((segment) => (
+          {chartData.map((segment, index) => {
+            const pct = (segment.value / total) * 100;
+            return (
             <div key={segment.key} className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-slate-950/70 px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span
                   className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: segment.color }}
+                  style={{ backgroundColor: USER_TYPE_COLORS[index % USER_TYPE_COLORS.length] }}
                 />
-                <span className="truncate text-sm text-slate-200">{formatGroupLabel(segment.label)}</span>
+                <span className="truncate text-sm text-slate-200">{segment.name}</span>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-white">{formatNumber(segment.count)} users</p>
-                <p className="text-xs text-slate-400">{formatPercent(segment.pct)} of total</p>
+                <p className="text-sm font-semibold text-white">{formatNumber(segment.value)} users</p>
+                <p className="text-xs text-slate-400">{formatPercent(pct)} of total</p>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </div>
@@ -228,7 +213,7 @@ export default function AdminDashboardPage() {
       accent: "text-lime-300",
       visible: Number(stats?.totalUsers || 0) > 0,
     },
-        {
+    {
       label: "System health",
       value: systemHealth.label || "Healthy",
       accent: systemHealth.status === "healthy" ? "text-emerald-300" : "text-amber-300",
