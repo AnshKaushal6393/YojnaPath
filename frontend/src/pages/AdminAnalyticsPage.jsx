@@ -348,7 +348,10 @@ export default function AdminAnalyticsPage() {
               </div>
               <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Top blocker</p>
-                <p className="mt-2 truncate text-lg font-bold text-rose-300">{topNearMissCriteria[0]?.key ? topNearMissCriteria[0].key.replace(/_/g, " ") : "-"}</p>
+                <p className="mt-2 text-2xl font-bold text-rose-300">{formatNumber(topNearMissCriteria[0]?.count)}</p>
+                <p className="text-xs text-slate-400">
+                  {topNearMissCriteria[0]?.key ? topNearMissCriteria[0].key.replace(/_/g, " ") : "No blocker yet"}
+                </p>
               </div>
             </div>
             <div className="mt-5 space-y-3">
@@ -390,7 +393,8 @@ export default function AdminAnalyticsPage() {
               </div>
               <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Most used</p>
-                <p className="mt-2 truncate text-lg font-bold text-amber-300">{dominantPhoto.label}</p>
+                <p className="mt-2 text-2xl font-bold text-amber-300">{formatNumber(dominantPhoto.count)}</p>
+                <p className="text-xs text-slate-400">{dominantPhoto.label}</p>
               </div>
             </div>
             <div className="mt-5 space-y-3">
@@ -423,7 +427,7 @@ export default function AdminAnalyticsPage() {
           <div className="grid gap-4 md:grid-cols-3">
             <Metric label="Funnel stages" value={formatNumber(funnelStages.length)} tone="text-cyan-300" />
             <Metric label="Stage total" value={formatNumber(funnelTotal)} tone="text-emerald-300" />
-            <Metric label="Largest stage" value={funnelPeak.label} tone="text-amber-300" />
+            <Metric label="Peak stage" value={formatNumber(funnelPeak.count)} hint={funnelPeak.label} tone="text-amber-300" />
           </div>
           <div className="mt-5 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
             <div className="flex items-start justify-between gap-4">
