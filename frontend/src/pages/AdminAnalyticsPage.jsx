@@ -22,6 +22,13 @@ import {
   fetchAdminAnalyticsSchemes,
 } from "../lib/adminApi";
 import { formatDateTime, formatNumber, formatPercent } from "../lib/adminUi";
+import {
+  sharedAxisTick,
+  sharedChartPanelClass,
+  sharedGridStroke,
+  sharedPieColors,
+  sharedTooltipProps,
+} from "../components/rechartsTheme";
 
 function Section({ eyebrow, title, subtitle, children, accent = false, badge = null }) {
   return (

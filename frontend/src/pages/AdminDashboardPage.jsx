@@ -20,7 +20,11 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-const USER_TYPE_COLORS = ["#22c55e", "#06b6d4", "#f59e0b", "#ef4444", "#a855f7", "#14b8a6", "#3b82f6", "#f97316"];
+import {
+  sharedChartCardClass,
+  sharedPieColors,
+  sharedTooltipProps,
+} from "../components/rechartsTheme";
 
 function formatGroupLabel(value) {
   return String(value || "unknown")
@@ -49,7 +53,7 @@ function UserTypePie({ data }) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+    <div className={`${sharedChartCardClass} relative overflow-hidden`}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400" />
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -77,13 +81,10 @@ function UserTypePie({ data }) {
                 paddingAngle={3}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={entry.name} fill={USER_TYPE_COLORS[index % USER_TYPE_COLORS.length]} />
+                  <Cell key={entry.name} fill={sharedPieColors[index % sharedPieColors.length]} />
                 ))}
               </Pie>
-              <Tooltip
-                contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 14 }}
-                labelStyle={{ color: "#e2e8f0" }}
-              />
+              <Tooltip {...sharedTooltipProps} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -95,7 +96,7 @@ function UserTypePie({ data }) {
               <div className="flex min-w-0 items-center gap-3">
                 <span
                   className="h-3 w-3 shrink-0 rounded-full"
-                  style={{ backgroundColor: USER_TYPE_COLORS[index % USER_TYPE_COLORS.length] }}
+                  style={{ backgroundColor: sharedPieColors[index % sharedPieColors.length] }}
                 />
                 <span className="truncate text-sm text-slate-200">{segment.name}</span>
               </div>
