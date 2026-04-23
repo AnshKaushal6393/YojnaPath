@@ -399,9 +399,10 @@ export default function AdminAnalyticsPage() {
                   <div key={item.key} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
                     <div className="flex items-center justify-between gap-4">
                       <span className="text-sm text-slate-300">{item.label}</span>
-                      <span className="text-sm font-semibold text-white">
-                        {formatNumber(item.count)} {formatPercent(item.pct)}
-                      </span>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-white">{formatNumber(item.count)} photos</p>
+                        <p className="text-xs text-slate-400">{formatPercent(item.pct)} of total</p>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -415,7 +416,7 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <Section
-          eyebrow="3.4 Analytics Routes"
+          eyebrow="Operational Analytics"
           title="Funnel and kiosk analytics"
           subtitle="The funnel shows progression, while kiosk analytics show operator usage and PDF exports."
         >
@@ -508,33 +509,6 @@ export default function AdminAnalyticsPage() {
                 )) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
               </div>
             </div>
-          </div>
-        </Section>
-
-        <Section
-          eyebrow="Route Summary"
-          title="What each route is for"
-          subtitle="Useful when you want a quick reference while the analytics page is open."
-        >
-          <div className="grid gap-3 md:grid-cols-2">
-            {[
-              ["GET /admin/analytics/overview", "Match counts by day, user types, states, languages"],
-              ["GET /admin/analytics/funnel", "Registration funnel drop-off at each step"],
-              ["GET /admin/analytics/nearmiss", "Top blocker criteria and the schemes they affect most"],
-              ["GET /admin/analytics/schemes", "Per-scheme stats: match count, near-miss count, apply-clicked rate"],
-              ["GET /admin/analytics/photo", "Photo type breakdown: camera/upload/generated/none"],
-              ["GET /admin/analytics/kiosk", "Kiosk session stats, PDF downloads, and user types served"],
-            ].map(([route, desc]) => (
-              <div key={route} className="rounded-[20px] border border-white/8 bg-slate-950/70 px-4 py-4">
-                <div className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400" />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-emerald-100">{route}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-300">{desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </Section>
       </div>
