@@ -81,6 +81,9 @@ export default function AdminAnalyticsPage() {
   const [showAllMatchDays, setShowAllMatchDays] = useState(false);
   const [showAllNearMisses, setShowAllNearMisses] = useState(false);
   const [showAllPhotoBreakdown, setShowAllPhotoBreakdown] = useState(false);
+  const [showAllFunnelStages, setShowAllFunnelStages] = useState(false);
+  const [showAllKioskWorkers, setShowAllKioskWorkers] = useState(false);
+  const [showAllTopSchemes, setShowAllTopSchemes] = useState(false);
 
   const overviewQuery = useQuery({
     queryKey: ["admin-analytics-overview"],
@@ -160,11 +163,23 @@ export default function AdminAnalyticsPage() {
   const kioskWorkers = kiosk.sessionsByWorker || [];
   const visibleNearMissCriteria = showAllNearMisses ? topNearMissCriteria : topNearMissCriteria.slice(0, 5);
   const visiblePhotoBreakdown = showAllPhotoBreakdown ? photoBreakdown : photoBreakdown.slice(0, 4);
+  const visibleFunnelStages = showAllFunnelStages ? funnel.stages || [] : (funnel.stages || []).slice(0, 4);
+  const visibleKioskWorkers = showAllKioskWorkers ? kioskWorkers : kioskWorkers.slice(0, 4);
+  const visibleTopSchemes = showAllTopSchemes ? topSchemes : topSchemes.slice(0, 4);
   const photoTotal = photoBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0);
   const dominantPhoto = photoBreakdown.reduce(
     (best, item) => {
       const count = Number(item.count || 0);
       return count > best.count ? { label: item.label, count } : best;
+    },
+    { label: "-", count: 0 },
+  );
+  const funnelStages = funnel.stages || [];
+  const funnelTotal = funnelStages.reduce((sum, stage) => sum + Number(stage.count || 0), 0);
+  const funnelPeak = funnelStages.reduce(
+    (best, stage) => {
+      const count = Number(stage.count || 0);
+      return count > best.count ? { label: stage.label, count } : best;
     },
     { label: "-", count: 0 },
   );
@@ -374,34 +389,83 @@ export default function AdminAnalyticsPage() {
           title="Funnel and kiosk analytics"
           subtitle="The funnel shows progression, while kiosk analytics show operator usage and PDF exports."
         >
-          <div className="grid gap-4 md:grid-cols-2">
-              {funnel.stages?.map((stage) => (
+          <div className="grid gap-4 md:grid-cols-3">
+            <Metric label="Funnel stages" value={formatNumber(funnelStages.length)} tone="text-cyan-300" />
+            <Metric label="Stage total" value={formatNumber(funnelTotal)} tone="text-emerald-300" />
+            <Metric label="Largest stage" value={funnelPeak.label} tone="text-amber-300" />
+          </div>
+          <div className="mt-5 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Registration funnel</p>
+                <p className="mt-2 text-sm text-slate-400">A compact stage-by-stage view of registration progress.</p>
+              </div>
+              {funnelStages.length > 4 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllFunnelStages((value) => !value)}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                >
+                  {showAllFunnelStages ? "Show less" : "Show all"}
+                </button>
+              ) : null}
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {visibleFunnelStages.map((stage) => (
                 <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
                   <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
                 </div>
               ))}
             </div>
-            {!funnel.stages?.length ? (
+            {!funnelStages.length ? (
               <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
             ) : null}
+          </div>
 
           <div className="mt-6 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
+                <p className="mt-2 text-sm text-slate-400">Sessions, downloads, and the operators using the kiosk most often.</p>
+              </div>
+            </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <Metric label="Sessions" value={formatNumber(kiosk.totalSessions)} tone="text-cyan-300" />
               <Metric label="PDF downloads" value={formatNumber(kiosk.totalPdfDownloads)} tone="text-amber-300" />
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-white">Sessions per worker</p>
-                {kioskWorkers.length ? kioskWorkers.map((item) => (
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-semibold text-white">Sessions per worker</p>
+                  {kioskWorkers.length > 4 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllKioskWorkers((value) => !value)}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                    >
+                      {showAllKioskWorkers ? "Show less" : "Show all"}
+                    </button>
+                  ) : null}
+                </div>
+                {kioskWorkers.length ? visibleKioskWorkers.map((item) => (
                   <BarRow key={item.key} label={item.key} count={item.count} width={kioskWorkers[0]?.count ? (Number(item.count || 0) / Number(kioskWorkers[0].count || 1)) * 100 : 0} />
                 )) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
               </div>
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-white">Top schemes by applications</p>
-                {topSchemes.length ? topSchemes.map((scheme) => (
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-semibold text-white">Top schemes by applications</p>
+                  {topSchemes.length > 4 ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTopSchemes((value) => !value)}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                    >
+                      {showAllTopSchemes ? "Show less" : "Show all"}
+                    </button>
+                  ) : null}
+                </div>
+                {topSchemes.length ? visibleTopSchemes.map((scheme) => (
                   <div key={scheme.schemeId} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
                     <div className="flex items-center justify-between gap-4">
                       <span className="truncate text-sm text-slate-200">{scheme.name}</span>
