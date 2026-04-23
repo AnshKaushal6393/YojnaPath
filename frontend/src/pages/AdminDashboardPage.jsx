@@ -74,13 +74,17 @@ function UserTypePie({ data }) {
     : "conic-gradient(#22c55e 0deg 360deg)";
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400" />
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">User mix</p>
           <h2 className="mt-2 text-2xl font-semibold text-white">User type pie</h2>
           <p className="mt-2 text-sm text-slate-400">Breakdown of profile occupations from the current dataset.</p>
         </div>
+        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+          Live snapshot
+        </span>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[190px_1fr] lg:items-center">
@@ -224,12 +228,12 @@ export default function AdminDashboardPage() {
       accent: "text-lime-300",
       visible: Number(stats?.totalUsers || 0) > 0,
     },
-    {
+        {
       label: "System health",
       value: systemHealth.label || "Healthy",
       accent: systemHealth.status === "healthy" ? "text-emerald-300" : "text-amber-300",
       visible: true,
-      hint: `${systemHealth.postgresConnected ? "Postgres" : "Postgres offline"} · ${systemHealth.mongoConnected ? "Mongo" : "Mongo offline"}`,
+      hint: `${systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"} | ${systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}`,
     },
   ].filter((card) => card.visible);
 
@@ -259,7 +263,28 @@ export default function AdminDashboardPage() {
                   {card.label}
                 </p>
                 <p className={`mt-4 text-4xl font-bold ${card.accent}`}>{card.value}</p>
-                {card.hint ? (
+                {card.label === "System health" ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        systemHealth.postgresConnected
+                          ? "bg-emerald-400/10 text-emerald-200"
+                          : "bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      {systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        systemHealth.mongoConnected
+                          ? "bg-cyan-400/10 text-cyan-200"
+                          : "bg-rose-400/10 text-rose-200"
+                      }`}
+                    >
+                      {systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}
+                    </span>
+                  </div>
+                ) : card.hint ? (
                   <p className="mt-2 text-xs text-slate-400">{card.hint}</p>
                 ) : null}
                 {card.label === "Total users" && overview ? (
@@ -387,3 +412,5 @@ export default function AdminDashboardPage() {
     </>
   );
 }
+
+
