@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { registerSW } from "virtual:pwa-register";
 import "./i18n";
 import App from "./App";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -37,7 +38,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <RouteErrorBoundary>
+          <App />
+        </RouteErrorBoundary>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>
