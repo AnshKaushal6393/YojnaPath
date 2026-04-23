@@ -418,7 +418,7 @@ export default function AdminAnalyticsPage() {
         </div>
       </Section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <div className="space-y-6">
         <Section
           eyebrow="Operational Analytics"
           title="Funnel and kiosk analytics"
@@ -429,88 +429,90 @@ export default function AdminAnalyticsPage() {
             <Metric label="Stage total" value={formatNumber(funnelTotal)} tone="text-emerald-300" />
             <Metric label="Peak stage" value={formatNumber(funnelPeak.count)} hint={funnelPeak.label} tone="text-amber-300" />
           </div>
-          <div className="mt-5 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Registration funnel</p>
-                <p className="mt-2 text-sm text-slate-400">A compact stage-by-stage view of registration progress.</p>
+          <div className="mt-5 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Registration funnel</p>
+                  <p className="mt-2 text-sm text-slate-400">A compact stage-by-stage view of registration progress.</p>
+                </div>
+                {funnelStages.length > 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllFunnelStages((value) => !value)}
+                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                  >
+                    {showAllFunnelStages ? "Show less" : "Show all"}
+                  </button>
+                ) : null}
               </div>
-              {funnelStages.length > 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAllFunnelStages((value) => !value)}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                >
-                  {showAllFunnelStages ? "Show less" : "Show all"}
-                </button>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {visibleFunnelStages.map((stage) => (
+                  <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
+                    <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
+                  </div>
+                ))}
+              </div>
+              {!funnelStages.length ? (
+                <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
               ) : null}
             </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {visibleFunnelStages.map((stage) => (
-                <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
-                  <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
-                </div>
-              ))}
-            </div>
-            {!funnelStages.length ? (
-              <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
-            ) : null}
-          </div>
 
-          <div className="mt-6 rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
-                <p className="mt-2 text-sm text-slate-400">Sessions, downloads, and the operators using the kiosk most often.</p>
-              </div>
-            </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <Metric label="Sessions" value={formatNumber(kiosk.totalSessions)} tone="text-cyan-300" />
-              <Metric label="PDF downloads" value={formatNumber(kiosk.totalPdfDownloads)} tone="text-amber-300" />
-            </div>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold text-white">Sessions per worker</p>
-                  {kioskWorkers.length > 4 ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllKioskWorkers((value) => !value)}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                    >
-                      {showAllKioskWorkers ? "Show less" : "Show all"}
-                    </button>
-                  ) : null}
+            <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
+                  <p className="mt-2 text-sm text-slate-400">Sessions, downloads, and the operators using the kiosk most often.</p>
                 </div>
-                {kioskWorkers.length ? visibleKioskWorkers.map((item) => (
-                  <BarRow key={item.key} label={item.key} count={item.count} width={kioskWorkers[0]?.count ? (Number(item.count || 0) / Number(kioskWorkers[0].count || 1)) * 100 : 0} />
-                )) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold text-white">Top schemes by applications</p>
-                  {topSchemes.length > 4 ? (
-                    <button
-                      type="button"
-                      onClick={() => setShowAllTopSchemes((value) => !value)}
-                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                    >
-                      {showAllTopSchemes ? "Show less" : "Show all"}
-                    </button>
-                  ) : null}
-                </div>
-                {topSchemes.length ? visibleTopSchemes.map((scheme) => (
-                  <div key={scheme.schemeId} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="truncate text-sm text-slate-200">{scheme.name}</span>
-                      <span className="text-sm font-semibold text-white">{formatNumber(scheme.applications)}</span>
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                      Matches: {formatNumber(scheme.matches)} | Near misses: {formatNumber(scheme.nearMisses)} | Apply clicked rate: {formatPercent(scheme.applyClickedRate)}
-                    </p>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <Metric label="Sessions" value={formatNumber(kiosk.totalSessions)} tone="text-cyan-300" />
+                <Metric label="PDF downloads" value={formatNumber(kiosk.totalPdfDownloads)} tone="text-amber-300" />
+              </div>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-white">Sessions per worker</p>
+                    {kioskWorkers.length > 4 ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllKioskWorkers((value) => !value)}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                      >
+                        {showAllKioskWorkers ? "Show less" : "Show all"}
+                      </button>
+                    ) : null}
                   </div>
-                )) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
+                  {kioskWorkers.length ? visibleKioskWorkers.map((item) => (
+                    <BarRow key={item.key} label={item.key} count={item.count} width={kioskWorkers[0]?.count ? (Number(item.count || 0) / Number(kioskWorkers[0].count || 1)) * 100 : 0} />
+                  )) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold text-white">Top schemes by applications</p>
+                    {topSchemes.length > 4 ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllTopSchemes((value) => !value)}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                      >
+                        {showAllTopSchemes ? "Show less" : "Show all"}
+                      </button>
+                    ) : null}
+                  </div>
+                  {topSchemes.length ? visibleTopSchemes.map((scheme) => (
+                    <div key={scheme.schemeId} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="truncate text-sm text-slate-200">{scheme.name}</span>
+                        <span className="text-sm font-semibold text-white">{formatNumber(scheme.applications)}</span>
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500">
+                        Matches: {formatNumber(scheme.matches)} | Near misses: {formatNumber(scheme.nearMisses)} | Apply clicked rate: {formatPercent(scheme.applyClickedRate)}
+                      </p>
+                    </div>
+                  )) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
+                </div>
               </div>
             </div>
           </div>
