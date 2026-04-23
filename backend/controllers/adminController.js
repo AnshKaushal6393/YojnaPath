@@ -54,6 +54,8 @@ async function getUsers(req, res) {
     userType: normalizeOptionalString(req.query?.userType),
     search: normalizeOptionalString(req.query?.search),
     hasPhoto: req.query?.hasPhoto,
+    sortBy: normalizeOptionalString(req.query?.sortBy),
+    sortDir: normalizeOptionalString(req.query?.sortDir),
   });
 
   return res.json(payload);

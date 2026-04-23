@@ -24,9 +24,9 @@ export default function AdminShell() {
   }
 
   return (
-    <main className="admin-shell min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.18),_transparent_28%),linear-gradient(180deg,_#020617_0%,_#0f172a_48%,_#111827_100%)] px-4 py-8 text-slate-50">
+    <main className="admin-shell min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)] px-4 py-8 text-slate-50">
       <div className="mx-auto w-full max-w-[1600px]">
-        <div className="mb-8 rounded-[30px] border border-white/10 bg-white/[0.06] px-5 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur">
+        <div className="mb-8 rounded-[30px] border border-white/10 bg-white/6 px-5 py-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">

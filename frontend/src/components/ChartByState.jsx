@@ -38,7 +38,7 @@ export default function ChartByState({ values }) {
       </div>
 
       {data.length ? (
-        <div className="h-[320px]">
+        <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={sharedChartMargins}>
               <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />

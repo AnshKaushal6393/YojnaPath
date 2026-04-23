@@ -30,6 +30,21 @@ function normalizeBooleanFilter(value) {
   return null;
 }
 
+function normalizeSortField(value) {
+  const normalized = String(value || "").trim();
+  return normalized || "createdAt";
+}
+
+function normalizeSortDirection(value, fallback = "desc") {
+  const normalized = String(value || "").trim().toLowerCase();
+
+  if (normalized === "asc" || normalized === "desc") {
+    return normalized;
+  }
+
+  return fallback;
+}
+
 function normalizeOptionalString(value) {
   if (value == null) {
     return null;
@@ -184,6 +199,22 @@ async function listAdminUsers(options = {}) {
   const userType = normalizeOptionalString(options.userType)?.toLowerCase() || null;
   const search = normalizeOptionalString(options.search) || null;
   const hasPhoto = normalizeBooleanFilter(options.hasPhoto);
+  const sortBy = normalizeSortField(options.sortBy);
+  const sortDir = normalizeSortDirection(options.sortDir);
+
+  const sortConfig = {
+    createdAt: { column: "u.created_at", defaultDir: "desc" },
+    lastLogin: { column: "u.last_login", defaultDir: "desc" },
+    name: { column: "COALESCE(u.name, rp.profile_name, '')", defaultDir: "asc" },
+    state: { column: "COALESCE(rp.state, '')", defaultDir: "asc" },
+    userType: { column: "COALESCE(rp.occupation, '')", defaultDir: "asc" },
+    matchRuns: { column: "COALESCE(match_summary.match_runs, 0)", defaultDir: "desc" },
+    totalMatches: { column: "COALESCE(match_summary.total_matches, 0)", defaultDir: "desc" },
+    totalNearMisses: { column: "COALESCE(match_summary.total_near_misses, 0)", defaultDir: "desc" },
+    hasPhoto: { column: "CASE WHEN u.photo_url IS NOT NULL THEN 1 ELSE 0 END", defaultDir: "desc" },
+  };
+  const activeSort = sortConfig[sortBy] || sortConfig.createdAt;
+  const effectiveSortDir = sortDir || activeSort.defaultDir;
 
   const pool = getPool();
   const result = await pool.query(
@@ -248,7 +279,7 @@ async function listAdminUsers(options = {}) {
       )
       SELECT *
       FROM matched_users
-      ORDER BY created_at DESC, id ASC
+      ORDER BY ${activeSort.column} ${effectiveSortDir.toUpperCase()}, id ASC
       LIMIT $5
       OFFSET $6
     `,
@@ -263,6 +294,8 @@ async function listAdminUsers(options = {}) {
     limit,
     total,
     totalPages: total > 0 ? Math.ceil(total / limit) : 0,
+    sortBy,
+    sortDir: effectiveSortDir,
     users: rows.map((row) => ({
       id: row.id,
       phone: row.phone,

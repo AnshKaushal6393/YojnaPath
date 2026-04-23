@@ -65,7 +65,7 @@ export default class RouteErrorBoundary extends React.Component {
               </p>
               <div className="mt-4 rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-300">
                 <p className="font-semibold text-white">Error details</p>
-                <p className="mt-2 break-words text-slate-400">
+                <p className="mt-2 wrap-break-word text-slate-400">
                   {error?.message || "Unknown error"}
                 </p>
               </div>
