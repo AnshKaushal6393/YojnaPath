@@ -15,6 +15,8 @@ import {
 } from "../lib/adminUi";
 import {
   Cell,
+  Funnel,
+  FunnelChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -291,45 +293,27 @@ export default function AdminDashboardPage() {
               <p className="mt-2 text-sm text-slate-400">
                 Track where users continue and where they drop off after login.
               </p>
-              <div className="mt-6 space-y-4">
-                {funnelStages.length ? (
-                  funnelStages.map((stage, index) => {
-                    const width = funnelMaxCount
-                      ? Math.max((Number(stage.count || 0) / funnelMaxCount) * 100, 8)
-                      : 0;
-                    const previousCount =
-                      index === 0 ? Number(stage.count || 0) : Number(funnelStages[index - 1]?.count || 0);
-                    const conversion =
-                      index === 0 || previousCount <= 0
-                        ? 100
-                        : (Number(stage.count || 0) / previousCount) * 100;
-
-                    return (
-                      <div key={stage.key} className="space-y-2">
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="text-sm text-slate-300">{stage.label}</span>
-                          <div className="text-right">
-                            <span className="text-sm font-semibold text-white">
-                              {formatNumber(stage.count)}
-                            </span>
-                            <p className="text-xs text-slate-400">{formatPercent(conversion)} retained</p>
-                          </div>
-                        </div>
-                        <div className="h-3 rounded-full bg-slate-900/70">
-                          <div
-                            className="h-3 rounded-full bg-gradient-to-r from-amber-400 to-emerald-400"
-                            style={{ width: `${width}%` }}
+              {funnelStages.length ? (
+                <div className="mt-6 h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <FunnelChart>
+                      <Tooltip />
+                      <Funnel dataKey="count" data={funnelStages} isAnimationActive>
+                        {funnelStages.map((stage, index) => (
+                          <Cell
+                            key={stage.key || stage.label || index}
+                            fill={index === funnelStages.length - 1 ? "#06b6d4" : "#f59e0b"}
                           />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No funnel data yet.
-                  </div>
-                )}
-              </div>
+                        ))}
+                      </Funnel>
+                    </FunnelChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="mt-6 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
+                  No funnel data yet.
+                </div>
+              )}
             </article>
           </section>
 
