@@ -25,9 +25,9 @@ function Section({ eyebrow, title, subtitle, children, accent = false, badge = n
           </span>
         ) : null}
       </div>
-      <h2 className="mt-3 text-2xl font-semibold text-white">{title}</h2>
+      <h2 className="mt-2 text-2xl font-semibold text-white">{title}</h2>
       {subtitle ? <p className="mt-2 text-sm leading-6 text-slate-400">{subtitle}</p> : null}
-      <div className="mt-6">{children}</div>
+      <div className="mt-5">{children}</div>
     </section>
   );
 }
@@ -193,6 +193,17 @@ export default function AdminAnalyticsPage() {
     },
     { label: "-", count: 0 },
   );
+  const lastUpdated = [
+    overview.generatedAt,
+    funnel.generatedAt,
+    nearMiss.generatedAt,
+    schemesQuery.data?.generatedAt,
+    photo.generatedAt,
+    kiosk.generatedAt,
+  ]
+    .filter(Boolean)
+    .sort()
+    .pop();
 
   const isLoading =
     overviewQuery.isLoading ||
@@ -230,6 +241,13 @@ export default function AdminAnalyticsPage() {
         accent
         badge="Live data"
       >
+        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium uppercase tracking-[0.18em] text-slate-300">
+            Auto refreshed
+          </span>
+          <span>{lastUpdated ? `Last updated ${formatDateTime(lastUpdated)}` : "Last updated: unknown"}</span>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Metric
             label="Total matches"
@@ -498,7 +516,7 @@ export default function AdminAnalyticsPage() {
           title="What each route is for"
           subtitle="Useful when you want a quick reference while the analytics page is open."
         >
-          <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
             {[
               ["GET /admin/analytics/overview", "Match counts by day, user types, states, languages"],
               ["GET /admin/analytics/funnel", "Registration funnel drop-off at each step"],
@@ -508,8 +526,13 @@ export default function AdminAnalyticsPage() {
               ["GET /admin/analytics/kiosk", "Kiosk session stats, PDF downloads, and user types served"],
             ].map(([route, desc]) => (
               <div key={route} className="rounded-[20px] border border-white/8 bg-slate-950/70 px-4 py-4">
-                <p className="text-sm font-semibold text-emerald-100">{route}</p>
-                <p className="mt-2 text-sm leading-6 text-slate-300">{desc}</p>
+                <div className="flex items-start gap-3">
+                  <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-emerald-100">{route}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-300">{desc}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
