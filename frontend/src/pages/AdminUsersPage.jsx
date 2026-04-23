@@ -250,18 +250,27 @@ export default function AdminUsersPage() {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <Input
             type="search"
+            id="admin-users-search"
+            name="search"
             value={filters.search}
             onChange={(event) => handleFilterChange("search", event.target.value)}
             placeholder="Search by name, phone, or profile name"
           />
           <Input
             type="text"
+            id="admin-users-state"
+            name="state"
             value={filters.state}
             onChange={(event) => handleFilterChange("state", event.target.value.toUpperCase())}
             placeholder="Filter by state"
             maxLength={10}
           />
-          <Select value={filters.userType} onChange={(event) => handleFilterChange("userType", event.target.value)}>
+          <Select
+            id="admin-users-type"
+            name="userType"
+            value={filters.userType}
+            onChange={(event) => handleFilterChange("userType", event.target.value)}
+          >
             <option value="">All user types</option>
             <option value="farmer">farmer</option>
             <option value="business">business</option>
@@ -279,7 +288,12 @@ export default function AdminUsersPage() {
             <option value="disabled">disabled</option>
             <option value="migrant_worker">migrant_worker</option>
           </Select>
-          <Select value={filters.hasPhoto} onChange={(event) => handleFilterChange("hasPhoto", event.target.value)}>
+          <Select
+            id="admin-users-photo"
+            name="hasPhoto"
+            value={filters.hasPhoto}
+            onChange={(event) => handleFilterChange("hasPhoto", event.target.value)}
+          >
             <option value="">All photos</option>
             <option value="true">Has photo</option>
             <option value="false">No photo</option>

@@ -203,15 +203,15 @@ async function listAdminUsers(options = {}) {
   const sortDir = normalizeSortDirection(options.sortDir);
 
   const sortConfig = {
-    createdAt: { column: "u.created_at", defaultDir: "desc" },
-    lastLogin: { column: "u.last_login", defaultDir: "desc" },
-    name: { column: "COALESCE(u.name, rp.profile_name, '')", defaultDir: "asc" },
-    state: { column: "COALESCE(rp.state, '')", defaultDir: "asc" },
-    userType: { column: "COALESCE(rp.occupation, '')", defaultDir: "asc" },
-    matchRuns: { column: "COALESCE(match_summary.match_runs, 0)", defaultDir: "desc" },
-    totalMatches: { column: "COALESCE(match_summary.total_matches, 0)", defaultDir: "desc" },
-    totalNearMisses: { column: "COALESCE(match_summary.total_near_misses, 0)", defaultDir: "desc" },
-    hasPhoto: { column: "CASE WHEN u.photo_url IS NOT NULL THEN 1 ELSE 0 END", defaultDir: "desc" },
+    createdAt: { column: "sort_created_at", defaultDir: "desc" },
+    lastLogin: { column: "sort_last_login", defaultDir: "desc" },
+    name: { column: "sort_name", defaultDir: "asc" },
+    state: { column: "sort_state", defaultDir: "asc" },
+    userType: { column: "sort_user_type", defaultDir: "asc" },
+    matchRuns: { column: "sort_match_runs", defaultDir: "desc" },
+    totalMatches: { column: "sort_total_matches", defaultDir: "desc" },
+    totalNearMisses: { column: "sort_total_near_misses", defaultDir: "desc" },
+    hasPhoto: { column: "sort_has_photo", defaultDir: "desc" },
   };
   const activeSort = sortConfig[sortBy] || sortConfig.createdAt;
   const effectiveSortDir = sortDir || activeSort.defaultDir;
@@ -249,6 +249,15 @@ async function listAdminUsers(options = {}) {
           COALESCE(match_summary.match_runs, 0)::INT AS match_runs,
           COALESCE(match_summary.total_matches, 0)::INT AS total_matches,
           COALESCE(match_summary.total_near_misses, 0)::INT AS total_near_misses,
+          u.created_at AS sort_created_at,
+          u.last_login AS sort_last_login,
+          COALESCE(u.name, rp.profile_name, '') AS sort_name,
+          COALESCE(rp.state, '') AS sort_state,
+          COALESCE(rp.occupation, '') AS sort_user_type,
+          COALESCE(match_summary.match_runs, 0)::INT AS sort_match_runs,
+          COALESCE(match_summary.total_matches, 0)::INT AS sort_total_matches,
+          COALESCE(match_summary.total_near_misses, 0)::INT AS sort_total_near_misses,
+          CASE WHEN u.photo_url IS NOT NULL THEN 1 ELSE 0 END AS sort_has_photo,
           COUNT(*) OVER ()::INT AS total_count
         FROM users u
         LEFT JOIN ranked_profiles rp
