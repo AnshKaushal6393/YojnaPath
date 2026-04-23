@@ -241,7 +241,7 @@ export default function AdminDashboardPage() {
 
       {stats ? (
         <>
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {metricCards.map((card) => (
               <article
                 key={card.label}
@@ -284,7 +284,7 @@ export default function AdminDashboardPage() {
             ))}
           </section>
 
-          <section className="mt-6 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+          <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
                 Registration Funnel
@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
                 Track where users continue and where they drop off after login.
               </p>
               {funnelStages.length ? (
-                <div className="mt-6 h-[320px]">
+                <div className="mt-6 h-[260px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <FunnelChart>
                       <Tooltip />
@@ -314,6 +314,65 @@ export default function AdminDashboardPage() {
                   No funnel data yet.
                 </div>
               )}
+            </article>
+
+            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                Operational snapshot
+              </p>
+              <h2 className="mt-3 text-2xl font-semibold text-white">Quick status</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                A compact overview of system state and the current data pulse.
+              </p>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Last updated</p>
+                  <p className="mt-3 text-lg font-semibold text-white">
+                    {lastUpdated ? formatDateTime(lastUpdated) : "No updates yet"}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Data is pulled from the latest admin analytics payload.
+                  </p>
+                </div>
+
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">System health</p>
+                  <p className="mt-3 text-2xl font-semibold text-emerald-300">
+                    {systemHealth.label || "Healthy"}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        systemHealth.postgresConnected
+                          ? "bg-emerald-400/10 text-emerald-200"
+                          : "bg-amber-400/10 text-amber-200"
+                      }`}
+                    >
+                      {systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        systemHealth.mongoConnected
+                          ? "bg-cyan-400/10 text-cyan-200"
+                          : "bg-rose-400/10 text-rose-200"
+                      }`}
+                    >
+                      {systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5 sm:col-span-2 xl:col-span-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Data pulse</p>
+                  <p className="mt-3 text-lg font-semibold text-white">
+                    {formatNumber(stats?.totalUsers)} users, {formatNumber(stats?.activeSchemes)} active schemes
+                  </p>
+                  <p className="mt-2 text-sm text-slate-400">
+                    Photo completion sits at {formatPercent(photoCompletion)} and activity updates every 30 seconds.
+                  </p>
+                </div>
+              </div>
             </article>
           </section>
 
