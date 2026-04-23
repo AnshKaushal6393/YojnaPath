@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -78,6 +78,7 @@ function BarRow({ label, count, width, suffix = "" }) {
 
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
+  const [showAllMatchDays, setShowAllMatchDays] = useState(false);
 
   const overviewQuery = useQuery({
     queryKey: ["admin-analytics-overview"],
@@ -140,6 +141,17 @@ export default function AdminAnalyticsPage() {
 
   const matchSeries = overview.matchesByDay || [];
   const maxDailyMatches = Math.max(...matchSeries.map((entry) => Number(entry.count || 0)), 0);
+  const visibleMatchSeries = showAllMatchDays ? matchSeries : matchSeries.slice(0, 7);
+  const matchTotal = matchSeries.reduce((sum, entry) => sum + Number(entry.count || 0), 0);
+  const matchDays = matchSeries.length;
+  const matchAverage = matchDays ? matchTotal / matchDays : 0;
+  const matchPeak = matchSeries.reduce(
+    (best, entry) => {
+      const count = Number(entry.count || 0);
+      return count > best.count ? { day: entry.day, count } : best;
+    },
+    { day: "-", count: 0 },
+  );
   const topNearMissCriteria = nearMiss.criteria || [];
   const topSchemes = (schemes || []).slice(0, 8);
   const photoBreakdown = photo.breakdown || [];
@@ -208,10 +220,41 @@ export default function AdminAnalyticsPage() {
 
         <div className="mt-6 grid gap-4 lg:grid-cols-3">
           <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Matches by day</p>
-            <div className="mt-5 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Matches by day</p>
+                <p className="mt-2 text-sm text-slate-400">A compact view of the daily trend, with the strongest day highlighted.</p>
+              </div>
+              {matchSeries.length > 7 ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllMatchDays((value) => !value)}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
+                >
+                  {showAllMatchDays ? "Show less" : "Show all"}
+                </button>
+              ) : null}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">7-day total</p>
+                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(matchTotal)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Average/day</p>
+                <p className="mt-2 text-2xl font-bold text-cyan-300">{formatNumber(matchAverage)}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Peak day</p>
+                <p className="mt-2 truncate text-lg font-bold text-emerald-300">{matchPeak.day}</p>
+                <p className="text-xs text-slate-400">{formatNumber(matchPeak.count)} matches</p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
               {matchSeries.length ? (
-                matchSeries.map((entry) => (
+                visibleMatchSeries.map((entry) => (
                   <BarRow
                     key={entry.day}
                     label={entry.day}
