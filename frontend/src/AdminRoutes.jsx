@@ -56,7 +56,7 @@ export default function AdminRoutes() {
       >
       <Routes>
         <Route element={<AdminAccessGate requireAuth />}>
-          <Route path="/admin" element={<AdminShell />}>
+          <Route element={<AdminShell />}>
             <Route index element={<AdminDashboardPage />} />
             <Route path="analytics" element={<AdminAnalyticsPage />} />
             <Route path="users" element={<AdminUsersPage />} />
