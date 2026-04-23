@@ -14,6 +14,114 @@ import {
   getPhotoCompletion,
 } from "../lib/adminUi";
 
+const USER_TYPE_COLORS = [
+  "#22c55e",
+  "#06b6d4",
+  "#f59e0b",
+  "#ef4444",
+  "#a855f7",
+  "#14b8a6",
+  "#3b82f6",
+  "#f97316",
+];
+
+function formatGroupLabel(value) {
+  return String(value || "unknown")
+    .replace(/[_\s]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function UserTypePie({ data }) {
+  const total = data.reduce((sum, item) => sum + Number(item.count || 0), 0);
+
+  if (!data.length || total <= 0) {
+    return (
+      <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
+        <p className="text-sm font-semibold text-white">User type mix</p>
+        <p className="mt-2 text-sm text-slate-400">No user type data yet.</p>
+      </div>
+    );
+  }
+
+  const topItems = data.slice(0, 5);
+  const otherCount = data.slice(5).reduce((sum, item) => sum + Number(item.count || 0), 0);
+  const chartItems = otherCount > 0
+    ? [...topItems, { key: "other", count: otherCount }]
+    : topItems;
+
+  let angle = 0;
+  const segments = chartItems.map((item, index) => {
+    const count = Number(item.count || 0);
+    const slice = (count / total) * 360;
+    const start = angle;
+    angle += slice;
+    return {
+      key: item.key,
+      label: item.key,
+      count,
+      pct: (count / total) * 100,
+      color: USER_TYPE_COLORS[index % USER_TYPE_COLORS.length],
+      start,
+      end: angle,
+    };
+  });
+
+  const gradient = segments.length
+    ? `conic-gradient(${segments
+        .map((segment) => `${segment.color} ${segment.start}deg ${segment.end}deg`)
+        .join(", ")})`
+    : "conic-gradient(#22c55e 0deg 360deg)";
+
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6 shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">User mix</p>
+          <h2 className="mt-2 text-2xl font-semibold text-white">User type pie</h2>
+          <p className="mt-2 text-sm text-slate-400">Breakdown of profile occupations from the current dataset.</p>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[190px_1fr] lg:items-center">
+        <div className="mx-auto flex h-[190px] w-[190px] items-center justify-center rounded-full border border-white/10 bg-slate-950/70 p-4">
+          <div
+            className="relative h-full w-full rounded-full"
+            style={{ background: gradient }}
+            aria-label="User type pie chart"
+          >
+            <div className="absolute inset-[22%] rounded-full border border-white/10 bg-slate-950/95" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total</p>
+                <p className="mt-1 text-3xl font-bold text-white">{formatNumber(total)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {segments.map((segment) => (
+            <div key={segment.key} className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-slate-950/70 px-4 py-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className="h-3 w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: segment.color }}
+                />
+                <span className="truncate text-sm text-slate-200">{formatGroupLabel(segment.label)}</span>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-white">{formatNumber(segment.count)} users</p>
+                <p className="text-xs text-slate-400">{formatPercent(segment.pct)} of total</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate();
   const dashboardQuery = useQuery({
@@ -48,6 +156,9 @@ export default function AdminDashboardPage() {
       : stats?.totalUsers > 0
         ? Number(stats.totalMatches || 0) / Number(stats.totalUsers || 1)
         : 0;
+  const userTypeStats = stats?.userTypeStats || [];
+  const systemHealth = stats?.systemHealth || {};
+  const lastUpdated = stats?.generatedAt || overview?.generatedAt;
 
   useEffect(() => {
     if (
@@ -113,6 +224,13 @@ export default function AdminDashboardPage() {
       accent: "text-lime-300",
       visible: Number(stats?.totalUsers || 0) > 0,
     },
+    {
+      label: "System health",
+      value: systemHealth.label || "Healthy",
+      accent: systemHealth.status === "healthy" ? "text-emerald-300" : "text-amber-300",
+      visible: true,
+      hint: `${systemHealth.postgresConnected ? "Postgres" : "Postgres offline"} · ${systemHealth.mongoConnected ? "Mongo" : "Mongo offline"}`,
+    },
   ].filter((card) => card.visible);
 
   return (
@@ -141,6 +259,9 @@ export default function AdminDashboardPage() {
                   {card.label}
                 </p>
                 <p className={`mt-4 text-4xl font-bold ${card.accent}`}>{card.value}</p>
+                {card.hint ? (
+                  <p className="mt-2 text-xs text-slate-400">{card.hint}</p>
+                ) : null}
                 {card.label === "Total users" && overview ? (
                   <p className="mt-2 text-xs text-slate-400">
                     Profiles: {formatNumber(overview.counts?.profiles)}
@@ -199,12 +320,25 @@ export default function AdminDashboardPage() {
                 )}
               </div>
             </article>
+          </section>
+
+          <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
+            <UserTypePie data={userTypeStats} />
 
             <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
-                Activity Feed
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Latest match events</h2>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
+                    Activity Feed
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold text-white">Latest match events</h2>
+                </div>
+                {lastUpdated ? (
+                  <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                    Updated {formatDateTime(lastUpdated)}
+                  </span>
+                ) : null}
+              </div>
               <div className="mt-6 space-y-3">
                 {activity.length ? (
                   activity.slice(0, 8).map((event) => (

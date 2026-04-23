@@ -52,6 +52,20 @@ async function getAdminStats() {
 
   const pool = getPool();
   const usersPromise = pool.query("SELECT COUNT(*)::INT AS count FROM users");
+  const userTypesPromise = pool
+    .query(`
+      SELECT COALESCE(occupation, 'unknown') AS key, COUNT(*)::INT AS count
+      FROM profiles
+      GROUP BY COALESCE(occupation, 'unknown')
+      ORDER BY count DESC, key ASC
+    `)
+    .catch((error) => {
+      if (isMissingRelationError(error)) {
+        return { rows: [] };
+      }
+
+      throw error;
+    });
   const matchesPromise = pool
     .query(
       `
@@ -112,8 +126,9 @@ async function getAdminStats() {
     ? Scheme.countDocuments({ active: true }).catch(() => 0)
     : Promise.resolve(0);
 
-  const [users, matches, activeSchemes, today, topScheme, photoStats] = await Promise.all([
+  const [users, userTypes, matches, activeSchemes, today, topScheme, photoStats] = await Promise.all([
     usersPromise,
+    userTypesPromise,
     matchesPromise,
     activeSchemesPromise,
     todayPromise,
@@ -123,13 +138,18 @@ async function getAdminStats() {
 
   const totalUsers = users.rows[0]?.count || 0;
   const totalMatches = matches.rows[0]?.count || 0;
+  const userTypeRows = userTypes.rows || [];
   const photoRows = photoStats.rows || [];
   const totalPhotoRows = photoRows.reduce((sum, row) => sum + Number(row.count || 0), 0);
   const completedPhotoRows = photoRows
     .filter((row) => row.photo_type && row.photo_type !== "none")
     .reduce((sum, row) => sum + Number(row.count || 0), 0);
+  const postgresConnected = true;
+  const mongoConnected = isMongoReady();
+  const systemHealthy = postgresConnected && mongoConnected;
 
   return {
+    generatedAt: new Date().toISOString(),
     totalUsers,
     totalMatches,
     totalNearMisses: matches.rows[0]?.near_miss_sum || 0,
@@ -139,6 +159,16 @@ async function getAdminStats() {
     photoCompletionPct: totalPhotoRows > 0 ? (completedPhotoRows / totalPhotoRows) * 100 : 0,
     topSchemeToday: topScheme.rows[0]?.scheme_id || "N/A",
     photoStats: photoRows,
+    userTypeStats: userTypeRows.map((row) => ({
+      key: row.key || "unknown",
+      count: Number(row.count || 0),
+    })),
+    systemHealth: {
+      status: systemHealthy ? "healthy" : "partial",
+      label: systemHealthy ? "Healthy" : "Partial",
+      postgresConnected,
+      mongoConnected,
+    },
   };
 }
 
