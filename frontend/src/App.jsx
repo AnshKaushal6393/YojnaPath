@@ -1,15 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { isAdminAuthenticated } from "./lib/adminAuthStorage";
 import { isAuthenticated } from "./utils/auth";
 
-const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
-const AdminAnalyticsPage = lazy(() => import("./pages/AdminAnalyticsPage"));
-const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
-const AdminShell = lazy(() => import("./pages/AdminShell"));
-const AdminSchemesPage = lazy(() => import("./pages/AdminSchemesPage"));
-const AdminUserDetailPage = lazy(() => import("./pages/AdminUserDetailPage"));
-const AdminUsersPage = lazy(() => import("./pages/AdminUsersPage"));
+const AdminRoutes = lazy(() => import("./AdminRoutes"));
 const HomePage = lazy(() => import("./pages/HomePage"));
 const ImpactPage = lazy(() => import("./pages/ImpactPage"));
 const KioskPage = lazy(() => import("./pages/KioskPage"));
@@ -33,14 +26,6 @@ function PublicAuthRoute() {
   return isAuthenticated() ? <Navigate to="/" replace /> : <Outlet />;
 }
 
-function AdminProtectedRoute() {
-  return isAdminAuthenticated() ? <Outlet /> : <Navigate to="/admin/login" replace />;
-}
-
-function AdminPublicRoute() {
-  return isAdminAuthenticated() ? <Navigate to="/admin" replace /> : <Outlet />;
-}
-
 export default function App() {
   return (
     <Suspense
@@ -51,21 +36,9 @@ export default function App() {
           </div>
         </div>
       }
-    >
+      >
       <Routes>
-        <Route element={<AdminPublicRoute />}>
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-        </Route>
-
-        <Route element={<AdminProtectedRoute />}>
-          <Route path="/admin" element={<AdminShell />}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="users/:userId" element={<AdminUserDetailPage />} />
-            <Route path="schemes" element={<AdminSchemesPage />} />
-          </Route>
-        </Route>
+        <Route path="/admin/*" element={<AdminRoutes />} />
 
         <Route element={<PublicAuthRoute />}>
           <Route path="/login" element={<Login />} />
