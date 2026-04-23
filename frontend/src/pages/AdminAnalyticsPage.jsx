@@ -524,17 +524,21 @@ export default function AdminAnalyticsPage() {
                   </button>
                 ) : null}
               </div>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                {visibleFunnelStages.map((stage) => (
-                  <div key={stage.key} className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{stage.label}</p>
-                    <p className="mt-3 text-3xl font-bold text-white">{formatNumber(stage.count)}</p>
-                  </div>
-                ))}
-              </div>
-              {!funnelStages.length ? (
+              {funnelChartData.length ? (
+                <div className="mt-5 h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={funnelChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" vertical={false} />
+                      <XAxis dataKey="label" tick={{ fill: "#cbd5e1", fontSize: 11 }} interval={0} angle={-28} textAnchor="end" height={46} />
+                      <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                      <Tooltip content={<RechartsTooltip label="Stages" />} />
+                      <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
                 <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
-              ) : null}
+              )}
             </div>
 
             <div className="rounded-[24px] border border-white/8 bg-slate-950/70 p-5">
@@ -561,14 +565,24 @@ export default function AdminAnalyticsPage() {
                         {showAllKioskWorkers ? "Show less" : "Show all"}
                       </button>
                     ) : null}
-                  </div>
-                  {kioskWorkers.length ? visibleKioskWorkers.map((item) => (
-                    <BarRow key={item.key} label={item.key} count={item.count} width={kioskWorkers[0]?.count ? (Number(item.count || 0) / Number(kioskWorkers[0].count || 1)) * 100 : 0} />
-                  )) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm font-semibold text-white">Top schemes by applications</p>
+                {kioskWorkerChartData.length ? (
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={kioskWorkerChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                        <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="label" width={92} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
+                        <Tooltip content={<RechartsTooltip label="Sessions" />} />
+                        <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#22c55e" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-sm font-semibold text-white">Top schemes by applications</p>
                     {topSchemes.length > 4 ? (
                       <button
                         type="button"
@@ -579,20 +593,22 @@ export default function AdminAnalyticsPage() {
                       </button>
                     ) : null}
                   </div>
-                  {topSchemes.length ? visibleTopSchemes.map((scheme) => (
-                    <div key={scheme.schemeId} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                      <div className="flex items-center justify-between gap-4">
-                        <span className="truncate text-sm text-slate-200">{scheme.name}</span>
-                        <span className="text-sm font-semibold text-white">{formatNumber(scheme.applications)}</span>
-                      </div>
-                      <p className="mt-2 text-xs text-slate-500">
-                        Matches: {formatNumber(scheme.matches)} | Near misses: {formatNumber(scheme.nearMisses)} | Apply clicked rate: {formatPercent(scheme.applyClickedRate)}
-                      </p>
-                    </div>
-                  )) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
-                </div>
+                {schemeChartData.length ? (
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={schemeChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.12)" horizontal={false} />
+                        <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                        <YAxis type="category" dataKey="label" width={96} tick={{ fill: "#cbd5e1", fontSize: 11 }} />
+                        <Tooltip content={<RechartsTooltip label="Applications" />} />
+                        <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#a855f7" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
               </div>
             </div>
+          </div>
           </div>
         </Section>
       </div>
