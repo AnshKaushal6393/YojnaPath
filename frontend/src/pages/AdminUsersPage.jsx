@@ -303,8 +303,7 @@ export default function AdminUsersPage() {
     <Card className="rounded-[20px] p-0 sm:rounded-[28px]">
       <CardHeader className="flex flex-col gap-4 px-4 pt-4 sm:px-6 sm:pt-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">User Routes</p>
-          <CardTitle className="mt-3 text-xl sm:text-2xl">User list</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">User list</CardTitle>
           <CardDescription className="leading-6">
             Searchable paginated table with photo thumbnails, state filters, and user type filters.
           </CardDescription>
