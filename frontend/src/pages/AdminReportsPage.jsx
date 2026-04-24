@@ -91,7 +91,7 @@ async function downloadPdf(report) {
   doc.setTextColor(90, 100, 112);
   doc.text(`Range: ${report.dateLabel}`, left, y);
   y += 6;
-  doc.text("Note: Current report APIs return latest snapshots. The selected date range is recorded in report metadata.", left, y, {
+  doc.text("Note: This report was generated from server-side data filtered to the selected date range.", left, y, {
     maxWidth: width,
   });
   y += 12;
@@ -160,6 +160,14 @@ export default function AdminReportsPage() {
     setError("");
 
     try {
+      if (!filters.startDate || !filters.endDate) {
+        throw new Error("Start date and end date are required.");
+      }
+
+      if (filters.startDate > filters.endDate) {
+        throw new Error("Start date must be before end date.");
+      }
+
       const payload = await fetchAdminReport({
         reportType: filters.reportType,
         startDate: filters.startDate,
@@ -242,7 +250,11 @@ export default function AdminReportsPage() {
               <Input
                 type="date"
                 value={filters.startDate}
-                onChange={(event) => setFilters((current) => ({ ...current, startDate: event.target.value }))}
+                max={filters.endDate || undefined}
+                onChange={(event) => {
+                  setFilters((current) => ({ ...current, startDate: event.target.value }));
+                  setError("");
+                }}
               />
             </label>
 
@@ -251,7 +263,11 @@ export default function AdminReportsPage() {
               <Input
                 type="date"
                 value={filters.endDate}
-                onChange={(event) => setFilters((current) => ({ ...current, endDate: event.target.value }))}
+                min={filters.startDate || undefined}
+                onChange={(event) => {
+                  setFilters((current) => ({ ...current, endDate: event.target.value }));
+                  setError("");
+                }}
               />
             </label>
 

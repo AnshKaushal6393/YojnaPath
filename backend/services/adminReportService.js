@@ -143,6 +143,55 @@ function getSnapshotFlags(scheme) {
   return reasons;
 }
 
+async function ensureHistoricalSchemeBaselines(currentSchemes = []) {
+  if (!currentSchemes.length) {
+    return;
+  }
+
+  await ensureDatabaseSchema();
+  const pool = getPool();
+  const schemeIds = currentSchemes
+    .map((scheme) => normalizeOptionalString(scheme.schemeId)?.toUpperCase())
+    .filter(Boolean);
+
+  if (!schemeIds.length) {
+    return;
+  }
+
+  const existingLogs = await pool.query(
+    `
+      SELECT DISTINCT scheme_id
+      FROM scheme_edit_log
+      WHERE scheme_id = ANY($1::TEXT[])
+    `,
+    [schemeIds]
+  );
+
+  const loggedIds = new Set(existingLogs.rows.map((row) => normalizeOptionalString(row.scheme_id)?.toUpperCase()));
+  const missingSchemes = currentSchemes
+    .map(normalizeSchemeSnapshot)
+    .filter((scheme) => scheme?.schemeId && !loggedIds.has(scheme.schemeId));
+
+  if (!missingSchemes.length) {
+    return;
+  }
+
+  for (const scheme of missingSchemes) {
+    await pool.query(
+      `
+        INSERT INTO scheme_edit_log (scheme_id, action, old_data, new_data, note, created_at)
+        VALUES ($1, 'create', NULL, $2::jsonb, $3, $4)
+      `,
+      [
+        scheme.schemeId,
+        JSON.stringify(scheme),
+        "backfilled baseline snapshot for historical reporting",
+        scheme.createdAt || new Date().toISOString(),
+      ]
+    );
+  }
+}
+
 async function getSchemeSnapshotsAt(range) {
   if (!isMongoReady()) {
     return new Map();
@@ -150,7 +199,7 @@ async function getSchemeSnapshotsAt(range) {
 
   await ensureDatabaseSchema();
   const pool = getPool();
-  const [currentSchemes, editLogs] = await Promise.all([
+  const [currentSchemes] = await Promise.all([
     Scheme.find({})
       .select({
         schemeId: 1,
@@ -165,16 +214,18 @@ async function getSchemeSnapshotsAt(range) {
         updatedAt: 1,
       })
       .lean(),
-    pool.query(
-      `
-        SELECT scheme_id, action, old_data, new_data, created_at
-        FROM scheme_edit_log
-        WHERE created_at < $1
-        ORDER BY created_at ASC, id ASC
-      `,
-      [range.exclusiveEndDate.toISOString()]
-    ),
   ]);
+
+  await ensureHistoricalSchemeBaselines(currentSchemes);
+  const editLogs = await pool.query(
+    `
+      SELECT scheme_id, action, old_data, new_data, created_at
+      FROM scheme_edit_log
+      WHERE created_at < $1
+      ORDER BY created_at ASC, id ASC
+    `,
+    [range.exclusiveEndDate.toISOString()]
+  );
 
   const snapshots = new Map();
 
