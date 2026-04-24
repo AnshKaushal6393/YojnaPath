@@ -23,9 +23,11 @@ const {
 const { getReports } = require("../controllers/adminReportsController");
 const {
   createScheme,
+  bulkUpdateSchemes,
   deleteScheme,
   exportSchemes,
   getScheme,
+  getSchemeHistory,
   getSchemeFlags,
   listSchemes,
   reviewScheme,
@@ -59,9 +61,11 @@ router.get("/users/:id/matches", getUserMatches);
 router.get("/schemes/flags", getSchemeFlags);
 router.get("/schemes/export", exportSchemes);
 router.get("/schemes", listSchemes);
+router.post("/schemes/bulk-status", bulkUpdateSchemes);
 router.get("/settings", getSettings);
 router.patch("/settings", updateSettings);
 router.get("/schemes/:id", getScheme);
+router.get("/schemes/:id/history", getSchemeHistory);
 router.post("/schemes/:id/review", reviewScheme);
 router.post("/schemes", createScheme);
 router.put("/schemes/:id", updateScheme);

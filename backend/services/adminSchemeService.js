@@ -53,6 +53,21 @@ function normalizeInteger(value, fallback = null) {
   return Number.isInteger(normalized) ? normalized : fallback;
 }
 
+function compareValues(left, right, direction = "asc") {
+  const leftValue = left ?? "";
+  const rightValue = right ?? "";
+
+  if (leftValue < rightValue) {
+    return direction === "asc" ? -1 : 1;
+  }
+
+  if (leftValue > rightValue) {
+    return direction === "asc" ? 1 : -1;
+  }
+
+  return 0;
+}
+
 function normalizeStringArray(value) {
   if (Array.isArray(value)) {
     return value.map((entry) => normalizeOptionalString(entry)).filter(Boolean);
@@ -476,7 +491,8 @@ async function listAdminSchemes(options = {}) {
   const page = Math.max(Number(options.page || 1), 1);
   const maxLimit = Math.max(Number(options.maxLimit || 100), 1);
   const limit = Math.min(Math.max(Number(options.limit || 25), 1), maxLimit);
-  const offset = (page - 1) * limit;
+  const sortBy = normalizeOptionalString(options.sortBy) || "updatedAt";
+  const sortDir = normalizeOptionalString(options.sortDir)?.toLowerCase() === "asc" ? "asc" : "desc";
   const query = {};
 
   if (options.active != null && options.active !== "") {
@@ -506,25 +522,47 @@ async function listAdminSchemes(options = {}) {
     ];
   }
 
-  const [schemes, total] = await Promise.all([
-    Scheme.find(query).sort({ updatedAt: -1, schemeId: 1 }).skip(offset).limit(limit).lean(),
-    Scheme.countDocuments(query),
-  ]);
+  const schemes = await Scheme.find(query).sort({ updatedAt: -1, schemeId: 1 }).lean();
+  const total = schemes.length;
   const matchCounts = await getMatchCountsBySchemeIds(schemes.map((scheme) => scheme.schemeId));
   const reviewActionMap = await getSchemeReviewMap(schemes.map((scheme) => scheme.schemeId));
+  const normalizedSchemes = schemes.map((scheme) => ({
+    ...attachDeadlineInfo(scheme),
+    matchCount: matchCounts.get(scheme.schemeId) || 0,
+    reviewAction: reviewActionMap.get(scheme.schemeId) || null,
+    reviewReasons: resolveReviewReasons(scheme, reviewActionMap.get(scheme.schemeId) || null),
+    enrichmentReasons: getEnrichmentReasons(scheme),
+  }));
+
+  normalizedSchemes.sort((left, right) => {
+    if (sortBy === "matchCount") {
+      const diff = Number(left.matchCount || 0) - Number(right.matchCount || 0);
+      if (diff !== 0) {
+        return sortDir === "asc" ? diff : -diff;
+      }
+    }
+
+    if (sortBy === "name") {
+      const nameDiff = compareValues(left.name?.en || "", right.name?.en || "", sortDir);
+      if (nameDiff !== 0) {
+        return nameDiff;
+      }
+    }
+
+    return compareValues(left.updatedAt || "", right.updatedAt || "", sortDir);
+  });
+
+  const offset = (page - 1) * limit;
+  const pagedSchemes = normalizedSchemes.slice(offset, offset + limit);
 
   return {
     page,
     limit,
     total,
     totalPages: total > 0 ? Math.ceil(total / limit) : 0,
-    schemes: schemes.map((scheme) => ({
-      ...attachDeadlineInfo(scheme),
-      matchCount: matchCounts.get(scheme.schemeId) || 0,
-      reviewAction: reviewActionMap.get(scheme.schemeId) || null,
-      reviewReasons: resolveReviewReasons(scheme, reviewActionMap.get(scheme.schemeId) || null),
-      enrichmentReasons: getEnrichmentReasons(scheme),
-    })),
+    sortBy,
+    sortDir,
+    schemes: pagedSchemes,
   };
 }
 
@@ -570,7 +608,7 @@ async function createAdminScheme(body = {}, actor = null) {
     schemeId: plain.schemeId,
     action: "create",
     newData: plain,
-    note: actor ? `created by ${actor}` : null,
+    note: normalizeOptionalString(body.auditNote) || (actor ? `created by ${actor}` : null),
   });
 
   return {
@@ -608,7 +646,7 @@ async function updateAdminScheme(schemeId, body = {}, actor = null) {
     action: "update",
     oldData: previous,
     newData: updated,
-    note: actor ? `updated by ${actor}` : null,
+    note: normalizeOptionalString(body.auditNote) || (actor ? `updated by ${actor}` : null),
   });
 
   return {
@@ -654,6 +692,71 @@ async function deleteAdminScheme(schemeId, actor = null) {
     reviewReasons: getReviewReasons(updated),
     enrichmentReasons: getEnrichmentReasons(updated),
   };
+}
+
+async function getAdminSchemeHistory(schemeId, limit = 3) {
+  await ensureDatabaseSchema();
+  const normalizedId = normalizeOptionalString(schemeId)?.toUpperCase();
+  if (!normalizedId) {
+    return [];
+  }
+
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT id, action, note, created_at
+      FROM scheme_edit_log
+      WHERE scheme_id = $1
+      ORDER BY created_at DESC, id DESC
+      LIMIT $2
+    `,
+    [normalizedId, Math.max(Number(limit || 3), 1)]
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    action: row.action,
+    note: row.note || null,
+    createdAt: row.created_at,
+  }));
+}
+
+async function setAdminSchemesActive(schemeIds = [], active, actor = null) {
+  if (!isMongoReady()) {
+    return [];
+  }
+
+  await ensureDatabaseSchema();
+  const normalizedIds = [...new Set((schemeIds || []).map((id) => normalizeOptionalString(id)?.toUpperCase()).filter(Boolean))];
+
+  if (!normalizedIds.length || typeof active !== "boolean") {
+    return [];
+  }
+
+  const schemes = await Scheme.find({ schemeId: { $in: normalizedIds } });
+  const updatedSchemes = [];
+
+  for (const scheme of schemes) {
+    const previous = scheme.toObject({ versionKey: false });
+    scheme.active = active;
+    await scheme.save();
+    const updated = scheme.toObject({ versionKey: false });
+    await appendSchemeEditLog({
+      schemeId: updated.schemeId,
+      action: active ? "activate" : "deactivate",
+      oldData: previous,
+      newData: updated,
+      note: actor ? `${active ? "activated" : "deactivated"} by ${actor}` : null,
+    });
+    updatedSchemes.push({
+      ...attachDeadlineInfo(updated),
+      matchCount: 0,
+      reviewReasons: getReviewReasons(updated),
+      enrichmentReasons: getEnrichmentReasons(updated),
+    });
+  }
+
+  return updatedSchemes;
 }
 
 async function getAdminSchemeFlags() {
@@ -724,9 +827,11 @@ module.exports = {
   deleteAdminScheme,
   exportAdminSchemesCsv,
   getAdminSchemeById,
+  getAdminSchemeHistory,
   getAdminSchemeFlags,
   getEnrichmentReasons,
   listAdminSchemes,
+  setAdminSchemesActive,
   setAdminSchemeReviewAction,
   updateAdminScheme,
 };

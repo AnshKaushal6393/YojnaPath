@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
+  bulkUpdateAdminSchemes,
   downloadAdminSchemesExport,
   fetchAdminScheme,
   fetchAdminSchemeFlags,
@@ -9,25 +10,7 @@ import {
   reviewAdminScheme,
 } from "../lib/adminApi";
 import { formatDateTime, formatNumber } from "../lib/adminUi";
-
-const CATEGORY_OPTIONS = [
-  "agriculture",
-  "health",
-  "finance",
-  "housing",
-  "women",
-  "education",
-  "disability",
-  "senior",
-  "skill_and_employment",
-  "labour",
-  "youth",
-  "minority",
-  "entrepreneur",
-  "sc_st_obc",
-  "environment",
-  "food_and_nutrition",
-];
+import { SCHEME_CATEGORY_OPTIONS } from "./adminSchemeFormConfig";
 
 function Badge({ children, tone = "slate" }) {
   const toneClass =
@@ -62,8 +45,11 @@ export default function AdminSchemesPage() {
     active: "",
     page: 1,
     limit: 12,
+    sortBy: "updatedAt",
+    sortDir: "desc",
   });
   const [selectedSchemeId, setSelectedSchemeId] = useState("");
+  const [selectedSchemeIds, setSelectedSchemeIds] = useState([]);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewUrl, setReviewUrl] = useState("");
 
@@ -90,6 +76,14 @@ export default function AdminSchemesPage() {
       await queryClient.invalidateQueries({ queryKey: ["admin-schemes"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-scheme-flags"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-scheme", selectedSchemeId] });
+    },
+  });
+  const bulkMutation = useMutation({
+    mutationFn: ({ schemeIds, active }) => bulkUpdateAdminSchemes({ schemeIds, active }),
+    onSuccess: async () => {
+      setSelectedSchemeIds([]);
+      await queryClient.invalidateQueries({ queryKey: ["admin-schemes"] });
+      await queryClient.invalidateQueries({ queryKey: ["admin-scheme-flags"] });
     },
   });
 
@@ -147,6 +141,12 @@ export default function AdminSchemesPage() {
     setSelectedSchemeId(schemeId);
   }
 
+  function toggleSelectedScheme(schemeId) {
+    setSelectedSchemeIds((current) =>
+      current.includes(schemeId) ? current.filter((item) => item !== schemeId) : [...current, schemeId]
+    );
+  }
+
   function handleClearSelection() {
     setSelectedSchemeId("");
   }
@@ -177,6 +177,8 @@ export default function AdminSchemesPage() {
     }
   })();
 
+  const allVisibleSelected = schemes.length > 0 && schemes.every((scheme) => selectedSchemeIds.includes(scheme.schemeId));
+
   return (
     <section className="space-y-6 pb-6">
       <div className="relative overflow-hidden rounded-[34px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 p-6 shadow-2xl shadow-slate-950/30">
@@ -186,13 +188,19 @@ export default function AdminSchemesPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
               Scheme Routes
             </p>
-            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Scheme review console</h2>
+            <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">Scheme list</h2>
             <p className="mt-2 text-sm leading-6 text-slate-300">
-              Scraped schemes appear here for review, filtering, export, and QA. This screen is read-only
-              by design so the scraper remains the source of truth.
+              Full-featured scheme table with search, filters, sorting, bulk status actions, and edit routes.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 lg:justify-end">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/schemes/add")}
+              className="min-h-11 rounded-2xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-400/20"
+            >
+              Add scheme
+            </button>
             <button
               type="button"
               onClick={handleClearSelection}
@@ -210,7 +218,7 @@ export default function AdminSchemesPage() {
           </div>
         </div>
 
-        <div className="relative mt-6 grid gap-3 rounded-[28px] border border-white/8 bg-slate-950/45 p-4 shadow-inner shadow-slate-950/30 md:grid-cols-2 xl:grid-cols-5">
+        <div className="relative mt-6 grid gap-3 rounded-[28px] border border-white/8 bg-slate-950/45 p-4 shadow-inner shadow-slate-950/30 md:grid-cols-2 xl:grid-cols-6">
           <input
             value={filters.search}
             onChange={(event) =>
@@ -235,7 +243,7 @@ export default function AdminSchemesPage() {
             className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
           >
             <option value="">All categories</option>
-            {CATEGORY_OPTIONS.map((category) => (
+            {SCHEME_CATEGORY_OPTIONS.map((category) => (
               <option key={category} value={category}>
                 {category}
               </option>
@@ -252,6 +260,20 @@ export default function AdminSchemesPage() {
             <option value="true">Active</option>
             <option value="false">Inactive</option>
           </select>
+          <select
+            value={`${filters.sortBy}:${filters.sortDir}`}
+            onChange={(event) => {
+              const [sortBy, sortDir] = event.target.value.split(":");
+              setFilters((current) => ({ ...current, sortBy, sortDir, page: 1 }));
+            }}
+            className="min-h-11 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none transition focus:border-cyan-400/50"
+          >
+            <option value="updatedAt:desc">Newest updated</option>
+            <option value="updatedAt:asc">Oldest updated</option>
+            <option value="matchCount:desc">Top matches</option>
+            <option value="matchCount:asc">Lowest matches</option>
+            <option value="name:asc">Name A-Z</option>
+          </select>
           <button
             type="button"
             onClick={() =>
@@ -262,6 +284,8 @@ export default function AdminSchemesPage() {
                 active: "",
                 page: 1,
                 limit: 12,
+                sortBy: "updatedAt",
+                sortDir: "desc",
               })
             }
             className="min-h-11 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
@@ -273,6 +297,28 @@ export default function AdminSchemesPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <section className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25">
+          <div className="mb-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => bulkMutation.mutate({ schemeIds: selectedSchemeIds, active: true })}
+              disabled={bulkMutation.isPending || selectedSchemeIds.length === 0}
+              className="min-h-11 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100 disabled:opacity-40"
+            >
+              Activate selected
+            </button>
+            <button
+              type="button"
+              onClick={() => bulkMutation.mutate({ schemeIds: selectedSchemeIds, active: false })}
+              disabled={bulkMutation.isPending || selectedSchemeIds.length === 0}
+              className="min-h-11 rounded-2xl border border-rose-400/30 bg-rose-400/10 px-4 py-2 text-sm font-semibold text-rose-100 disabled:opacity-40"
+            >
+              Deactivate selected
+            </button>
+            <span className="self-center text-sm text-slate-400">
+              {formatNumber(selectedSchemeIds.length)} selected
+            </span>
+          </div>
+
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
@@ -348,11 +394,22 @@ export default function AdminSchemesPage() {
           <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/60">
             <div className="overflow-x-auto">
               <div className="min-w-[860px]">
-                <div className="grid grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                <div className="grid grid-cols-[0.35fr_1.1fr_1fr_0.8fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={allVisibleSelected}
+                      onChange={() =>
+                        setSelectedSchemeIds(allVisibleSelected ? [] : schemes.map((scheme) => scheme.schemeId))
+                      }
+                    />
+                    <span>Select</span>
+                  </label>
                   <span>Scheme</span>
                   <span>State / Category</span>
                   <span>Status</span>
                   <span>Updated</span>
+                  <span>Actions</span>
                 </div>
               </div>
             </div>
@@ -364,14 +421,23 @@ export default function AdminSchemesPage() {
                 <div className="px-4 py-6 text-sm text-slate-400">No schemes match the current filters.</div>
               ) : null}
               {schemes.map((scheme) => (
-                <button
+                <div
                   key={scheme.schemeId}
-                  type="button"
                   onClick={() => handleSelectScheme(scheme.schemeId)}
-                  className={`grid w-full grid-cols-[1.1fr_1fr_0.8fr_0.8fr] gap-3 px-4 py-4 text-left transition ${
+                  className={`grid cursor-pointer grid-cols-[0.35fr_1.1fr_1fr_0.8fr_0.8fr_0.8fr] gap-3 px-4 py-4 text-left transition ${
                     selectedSchemeId === scheme.schemeId ? "bg-cyan-400/8" : "hover:bg-white/5"
                   }`}
                 >
+                  <span className="flex items-start pt-1">
+                    <input
+                      type="checkbox"
+                      checked={selectedSchemeIds.includes(scheme.schemeId)}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        toggleSelectedScheme(scheme.schemeId);
+                      }}
+                    />
+                  </span>
                   <span>
                     <span className="block break-all text-sm font-semibold text-white">{scheme.schemeId}</span>
                     <span className="mt-1 block break-words text-xs text-slate-400">{scheme.name?.en || "Untitled"}</span>
@@ -392,7 +458,19 @@ export default function AdminSchemesPage() {
                     </span>
                   </span>
                   <span className="text-sm text-slate-300">{formatDateTime(scheme.updatedAt)}</span>
-                </button>
+                  <span className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        navigate(`/admin/schemes/${scheme.schemeId}/edit`);
+                      }}
+                      className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white"
+                    >
+                      Edit
+                    </button>
+                  </span>
+                </div>
               ))}
             </div>
           </div>

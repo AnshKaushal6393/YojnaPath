@@ -6,6 +6,7 @@ import AdminShell from "./pages/AdminShell";
 const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const AdminAnalyticsPage = lazy(() => import("./pages/AdminAnalyticsPage"));
 const AdminReportsPage = lazy(() => import("./pages/AdminReportsPage"));
+const AdminSchemeFormPage = lazy(() => import("./pages/AdminSchemeFormPage"));
 const AdminSchemesPage = lazy(() => import("./pages/AdminSchemesPage"));
 const AdminSettingsPage = lazy(() => import("./pages/AdminSettingsPage"));
 const AdminUserDetailPage = lazy(() => import("./pages/AdminUserDetailPage"));
@@ -31,6 +32,8 @@ export default function AdminRoutes() {
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />
             <Route path="schemes" element={<AdminSchemesPage />} />
+            <Route path="schemes/add" element={<AdminSchemeFormPage />} />
+            <Route path="schemes/:schemeId/edit" element={<AdminSchemeFormPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>

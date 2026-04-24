@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPatch, apiPost } from "./api";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "./api";
 import { clearAdminToken, getAdminToken, setAdminToken } from "./adminAuthStorage";
 
 export async function loginAdmin(email, password) {
@@ -199,6 +199,30 @@ export async function fetchAdminSchemeFlags() {
 export async function fetchAdminScheme(schemeId) {
   return withAdminSession(async (token) => {
     return apiGet(`/api/admin/schemes/${schemeId}`, { token });
+  });
+}
+
+export async function fetchAdminSchemeHistory(schemeId) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/schemes/${schemeId}/history`, { token });
+  });
+}
+
+export async function createAdminScheme(body) {
+  return withAdminSession(async (token) => {
+    return apiPost("/api/admin/schemes", body, { token });
+  });
+}
+
+export async function updateAdminScheme(schemeId, body) {
+  return withAdminSession(async (token) => {
+    return apiPut(`/api/admin/schemes/${schemeId}`, body, { token });
+  });
+}
+
+export async function bulkUpdateAdminSchemes(body) {
+  return withAdminSession(async (token) => {
+    return apiPost("/api/admin/schemes/bulk-status", body, { token });
   });
 }
 

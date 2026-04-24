@@ -3,8 +3,10 @@ const {
   deleteAdminScheme,
   exportAdminSchemesCsv,
   getAdminSchemeById,
+  getAdminSchemeHistory,
   getAdminSchemeFlags,
   listAdminSchemes,
+  setAdminSchemesActive,
   setAdminSchemeReviewAction,
   updateAdminScheme,
 } = require("../services/adminSchemeService");
@@ -51,6 +53,8 @@ async function listSchemes(req, res) {
     category: normalizeOptionalString(req.query?.category),
     active: req.query?.active,
     search: normalizeOptionalString(req.query?.search),
+    sortBy: normalizeOptionalString(req.query?.sortBy),
+    sortDir: normalizeOptionalString(req.query?.sortDir),
   });
 
   return res.json(payload);
@@ -63,6 +67,11 @@ async function getScheme(req, res) {
   }
 
   return res.json(scheme);
+}
+
+async function getSchemeHistory(req, res) {
+  const history = await getAdminSchemeHistory(req.params?.id, 3);
+  return res.json({ items: history });
 }
 
 async function createScheme(req, res) {
@@ -94,6 +103,26 @@ async function deleteScheme(req, res) {
   return res.json({
     message: "Scheme deactivated successfully",
     scheme,
+  });
+}
+
+async function bulkUpdateSchemes(req, res) {
+  const schemeIds = Array.isArray(req.body?.schemeIds) ? req.body.schemeIds : [];
+  const active = typeof req.body?.active === "boolean" ? req.body.active : null;
+
+  if (active == null || schemeIds.length === 0) {
+    return res.status(400).json({ message: "schemeIds and active are required" });
+  }
+
+  const schemes = await setAdminSchemesActive(
+    schemeIds,
+    active,
+    req.admin?.email || req.admin?.id || null
+  );
+
+  return res.json({
+    message: active ? "Schemes activated successfully" : "Schemes deactivated successfully",
+    schemes,
   });
 }
 
@@ -145,9 +174,11 @@ async function reviewScheme(req, res) {
 
 module.exports = {
   createScheme,
+  bulkUpdateSchemes,
   deleteScheme,
   exportSchemes,
   getScheme,
+  getSchemeHistory,
   getSchemeFlags,
   listSchemes,
   reviewScheme,
