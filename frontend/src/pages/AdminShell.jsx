@@ -11,6 +11,7 @@ const ADMIN_NAV_ITEMS = [
   { to: "/admin/users", label: "Users" },
   { to: "/admin/analytics", label: "Analytics" },
   { to: "/admin/schemes", label: "Schemes" },
+  { to: "/admin/settings", label: "Settings" },
 ];
 
 function getNavClassName({ isActive }) {
