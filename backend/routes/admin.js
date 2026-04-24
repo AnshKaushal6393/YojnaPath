@@ -30,11 +30,14 @@ const {
   reviewScheme,
   updateScheme,
 } = require("../controllers/adminSchemeController");
+const { getSettings, updateSettings } = require("../controllers/adminSettingsController");
 const { requireAdminAuth } = require("../middleware/adminAuth");
+const { adminApiLimiter } = require("../middleware/rateLimit");
 
 const router = express.Router();
 
 router.use(requireAdminAuth);
+router.use(adminApiLimiter);
 router.get("/dashboard", getDashboard);
 router.get("/stats", getStats);
 router.get("/activity", getActivity);
@@ -54,6 +57,8 @@ router.get("/users/:id/matches", getUserMatches);
 router.get("/schemes/flags", getSchemeFlags);
 router.get("/schemes/export", exportSchemes);
 router.get("/schemes", listSchemes);
+router.get("/settings", getSettings);
+router.patch("/settings", updateSettings);
 router.get("/schemes/:id", getScheme);
 router.post("/schemes/:id/review", reviewScheme);
 router.post("/schemes", createScheme);

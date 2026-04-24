@@ -474,7 +474,8 @@ async function listAdminSchemes(options = {}) {
   await ensureDatabaseSchema();
 
   const page = Math.max(Number(options.page || 1), 1);
-  const limit = Math.min(Math.max(Number(options.limit || 25), 1), 100);
+  const maxLimit = Math.max(Number(options.maxLimit || 100), 1);
+  const limit = Math.min(Math.max(Number(options.limit || 25), 1), maxLimit);
   const offset = (page - 1) * limit;
   const query = {};
 

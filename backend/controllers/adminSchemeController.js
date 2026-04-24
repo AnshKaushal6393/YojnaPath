@@ -8,6 +8,7 @@ const {
   setAdminSchemeReviewAction,
   updateAdminScheme,
 } = require("../services/adminSchemeService");
+const { getAdminSettings } = require("../services/adminSettingsService");
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -41,9 +42,11 @@ function isValidHttpUrl(value) {
 }
 
 async function listSchemes(req, res) {
+  const settings = await getAdminSettings();
   const payload = await listAdminSchemes({
     page: req.query?.page,
-    limit: req.query?.limit,
+    limit: req.query?.limit ?? settings.schemesPageSize,
+    maxLimit: settings.searchMaxResults,
     state: normalizeOptionalString(req.query?.state),
     category: normalizeOptionalString(req.query?.category),
     active: req.query?.active,

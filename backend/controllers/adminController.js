@@ -12,6 +12,7 @@ const {
   getAdminUserMatches,
   listAdminUsers,
 } = require("../services/adminUserService");
+const { getAdminSettings } = require("../services/adminSettingsService");
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -47,9 +48,11 @@ async function getFunnel(req, res) {
 }
 
 async function getUsers(req, res) {
+  const settings = await getAdminSettings();
   const payload = await listAdminUsers({
     page: req.query?.page,
-    limit: req.query?.limit,
+    limit: req.query?.limit ?? settings.usersPageSize,
+    maxLimit: settings.searchMaxResults,
     state: normalizeOptionalString(req.query?.state),
     userType: normalizeOptionalString(req.query?.userType),
     search: normalizeOptionalString(req.query?.search),

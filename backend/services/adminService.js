@@ -62,6 +62,22 @@ async function findAdminById(adminId) {
   return result.rows[0] || null;
 }
 
+async function findAdminAuthById(adminId) {
+  await ensureAdminTable();
+  const pool = getPool();
+  const result = await pool.query(
+    `
+      SELECT id, email, password_hash, created_at, last_login
+      FROM admins
+      WHERE id = $1
+      LIMIT 1
+    `,
+    [adminId]
+  );
+
+  return result.rows[0] || null;
+}
+
 async function recordAdminLogin(adminId) {
   await ensureAdminTable();
   const pool = getPool();
@@ -75,9 +91,24 @@ async function recordAdminLogin(adminId) {
   );
 }
 
+async function updateAdminPasswordHash(adminId, passwordHash) {
+  await ensureAdminTable();
+  const pool = getPool();
+  await pool.query(
+    `
+      UPDATE admins
+      SET password_hash = $2
+      WHERE id = $1
+    `,
+    [adminId, passwordHash]
+  );
+}
+
 module.exports = {
   ensureAdminTable,
+  findAdminAuthById,
   findAdminByEmail,
   findAdminById,
   recordAdminLogin,
+  updateAdminPasswordHash,
 };
