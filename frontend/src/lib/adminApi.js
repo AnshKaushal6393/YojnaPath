@@ -1,4 +1,4 @@
-import { apiDelete, apiGet, apiPost } from "./api";
+import { apiDelete, apiGet, apiPatch, apiPost } from "./api";
 import { clearAdminToken, getAdminToken, setAdminToken } from "./adminAuthStorage";
 
 export async function loginAdmin(email, password) {
@@ -92,6 +92,18 @@ export async function fetchAdminAnalyticsPhoto() {
 export async function fetchAdminAnalyticsKiosk() {
   return withAdminSession(async (token) => {
     return apiGet("/api/admin/analytics/kiosk", { token });
+  });
+}
+
+export async function fetchAdminSettings() {
+  return withAdminSession(async (token) => {
+    return apiGet("/api/admin/settings", { token });
+  });
+}
+
+export async function updateAdminSettings(body = {}) {
+  return withAdminSession(async (token) => {
+    return apiPatch("/api/admin/settings", body, { token });
   });
 }
 

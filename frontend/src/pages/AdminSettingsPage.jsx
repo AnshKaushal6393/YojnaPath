@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Select } from "../components/ui/select";
+import { fetchAdminSettings, updateAdminSettings } from "../lib/adminApi";
 
 const DEFAULT_SETTINGS = {
   currentPassword: "",
@@ -40,9 +42,52 @@ function MetricCard({ label, value, hint }) {
 }
 
 export default function AdminSettingsPage() {
+  const queryClient = useQueryClient();
   const [form, setForm] = useState(DEFAULT_SETTINGS);
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState("success");
+  const settingsQuery = useQuery({
+    queryKey: ["admin-settings"],
+    queryFn: fetchAdminSettings,
+  });
+  const saveMutation = useMutation({
+    mutationFn: updateAdminSettings,
+    onSuccess: async (payload) => {
+      const nextSettings = payload?.settings || payload;
+      setForm((current) => ({
+        ...current,
+        ...nextSettings,
+        currentPassword: "",
+        nextPassword: "",
+        confirmPassword: "",
+      }));
+      setMessage(payload?.message || "Settings updated successfully.");
+      setMessageTone("success");
+      await queryClient.invalidateQueries({ queryKey: ["admin-settings"] });
+    },
+    onError: (error) => {
+      setMessage(error.message || "Could not update settings right now.");
+      setMessageTone("danger");
+    },
+  });
+
+  useEffect(() => {
+    if (settingsQuery.data === null) {
+      return;
+    }
+
+    if (!settingsQuery.data) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      ...settingsQuery.data,
+      currentPassword: "",
+      nextPassword: "",
+      confirmPassword: "",
+    }));
+  }, [settingsQuery.data]);
 
   function handleChange(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -50,30 +95,20 @@ export default function AdminSettingsPage() {
   }
 
   function handleReset() {
-    setForm(DEFAULT_SETTINGS);
-    setMessage("Settings reset to the current admin defaults.");
+    setForm({
+      ...DEFAULT_SETTINGS,
+      ...(settingsQuery.data || {}),
+      currentPassword: "",
+      nextPassword: "",
+      confirmPassword: "",
+    });
+    setMessage("Unsaved changes cleared.");
     setMessageTone("info");
   }
 
   function handleSave(event) {
     event.preventDefault();
-
-    if (form.nextPassword || form.confirmPassword || form.currentPassword) {
-      if (!form.currentPassword || !form.nextPassword || !form.confirmPassword) {
-        setMessage("Fill all password fields before saving a password change.");
-        setMessageTone("danger");
-        return;
-      }
-
-      if (form.nextPassword !== form.confirmPassword) {
-        setMessage("New password and confirmation do not match.");
-        setMessageTone("danger");
-        return;
-      }
-    }
-
-    setMessage("Settings saved in the admin UI. Wire these fields to the backend settings API next.");
-    setMessageTone("success");
+    saveMutation.mutate(form);
   }
 
   return (
@@ -90,6 +125,16 @@ export default function AdminSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+          {settingsQuery.isLoading ? (
+            <div className="mb-4 rounded-[20px] border border-white/8 bg-slate-950/60 px-4 py-3 text-sm text-slate-400">
+              Loading current settings...
+            </div>
+          ) : null}
+          {settingsQuery.error ? (
+            <div className="mb-4 rounded-[20px] border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+              {settingsQuery.error.message || "Could not load admin settings."}
+            </div>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard label="Login window" value={`${form.loginWindowMinutes} min`} hint="Rate-limit window for admin login attempts." />
             <MetricCard label="Login attempts" value={form.loginAttempts} hint="Allowed attempts per window before lockout." />
@@ -253,10 +298,16 @@ export default function AdminSettingsPage() {
               )}
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Button type="submit" className="w-full">
-                  Save settings
+                <Button type="submit" disabled={saveMutation.isPending || settingsQuery.isLoading} className="w-full">
+                  {saveMutation.isPending ? "Saving..." : "Save settings"}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleReset} className="w-full">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={saveMutation.isPending}
+                  className="w-full"
+                >
                   Reset defaults
                 </Button>
               </div>
