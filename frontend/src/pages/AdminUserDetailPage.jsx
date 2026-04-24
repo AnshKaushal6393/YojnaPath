@@ -11,53 +11,271 @@ import {
   formatDate,
   formatDateTime,
   formatNumber,
-  getUserDisplayPhoto,
   getProfileDisplayPhoto,
+  getUserDisplayPhoto,
   summarizeMatchStats,
 } from "../lib/adminUi";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions.js";
-
-function renderPhoto(photoUrl, label) {
-  if (!photoUrl) {
-    return (
-      <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-white/5 text-xs text-slate-500">
-        No photo
-      </div>
-    );
-  }
-
-  return (
-    <img
-      src={photoUrl}
-      alt={label}
-      className="h-24 w-24 rounded-2xl border border-white/10 object-cover"
-    />
-  );
-}
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 
 function getUserTypeLabel(userType) {
   if (!userType) return "Unknown";
+
   const normalized = userType.toString().toLowerCase().trim();
-  // Map legacy occupations to standard keys
   const legacyMap = {
-    'shopkeeper': 'business',
-    'artisan': 'business',
-    'daily_wage': 'worker',
-    'retired': 'senior',
-    'disabled': 'disability',
-    'migrant_worker': 'worker',
+    shopkeeper: "business",
+    artisan: "business",
+    daily_wage: "worker",
+    retired: "senior",
+    disabled: "disability",
+    migrant_worker: "worker",
   };
   const mapped = legacyMap[normalized] || normalized;
-  const match = USER_TYPE_OPTIONS.find((option) => 
-    option.key === mapped
-  );
+  const match = USER_TYPE_OPTIONS.find((option) => option.key === mapped);
+
   return match?.label || mapped.charAt(0).toUpperCase() + mapped.slice(1) || "Unknown";
+}
+
+function PhotoFrame({ src, alt, size = "lg" }) {
+  const sizeClass = size === "sm" ? "h-16 w-16 rounded-2xl" : "h-28 w-28 rounded-[28px] sm:h-32 sm:w-32";
+
+  return (
+    <div className={`${sizeClass} overflow-hidden border border-white/10 bg-slate-950/80`}>
+      {src ? (
+        <img src={src} alt={alt} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center px-2 text-center text-xs text-slate-500">
+          No photo
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionHeading({ eyebrow, title, description }) {
+  return (
+    <div>
+      {eyebrow ? (
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">{eyebrow}</p>
+      ) : null}
+      <h3 className="mt-2 text-xl font-semibold text-white sm:text-2xl">{title}</h3>
+      {description ? <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p> : null}
+    </div>
+  );
+}
+
+function StatCard({ label, value, tone = "default", helper }) {
+  const valueClassName =
+    tone === "emerald"
+      ? "text-emerald-300"
+      : tone === "amber"
+        ? "text-amber-300"
+        : tone === "cyan"
+          ? "text-cyan-300"
+          : "text-white";
+
+  return (
+    <Card className="rounded-[24px]">
+      <CardContent className="p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+        <p className={`mt-3 text-3xl font-semibold ${valueClassName}`}>{value}</p>
+        {helper ? <p className="mt-2 text-sm text-slate-400">{helper}</p> : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function InfoGrid({ items }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-[20px] border border-white/8 bg-slate-950/60 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.label}</p>
+          <p className="mt-2 text-sm font-medium text-slate-100">{item.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function EmptyPanel({ message }) {
+  return (
+    <div className="rounded-[20px] border border-white/8 bg-slate-950/60 px-4 py-4 text-sm text-slate-400">
+      {message}
+    </div>
+  );
+}
+
+function ProfileCard({ user, profile }) {
+  const fields = [
+    { label: "State", value: profile.state || "NA" },
+    { label: "User type", value: getUserTypeLabel(profile.userType || profile.occupation) },
+    { label: "Gender", value: profile.gender || "NA" },
+    { label: "Age", value: profile.age ?? "NA" },
+    { label: "Caste", value: profile.caste || "NA" },
+    { label: "District", value: profile.district || "NA" },
+    { label: "Annual income", value: profile.annualIncome != null ? `Rs ${formatNumber(profile.annualIncome)}` : "NA" },
+    { label: "Land acres", value: profile.landAcres != null ? formatNumber(profile.landAcres) : "NA" },
+    { label: "Disability %", value: profile.disabilityPct != null ? `${formatNumber(profile.disabilityPct)}%` : "NA" },
+  ];
+
+  return (
+    <Card className="rounded-[24px]">
+      <CardContent className="p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <PhotoFrame
+            src={getProfileDisplayPhoto(user, profile)}
+            alt={profile.profileName || "Profile photo"}
+            size="sm"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-lg font-semibold text-white">{profile.profileName || "Unnamed profile"}</p>
+              {profile.isPrimary ? <Badge variant="success">Primary</Badge> : null}
+              {profile.relation ? <Badge variant="default">{profile.relation}</Badge> : null}
+              {profile.isStudent ? <Badge variant="info">Student</Badge> : null}
+              {profile.isMigrant ? <Badge variant="warning">Migrant</Badge> : null}
+            </div>
+            <p className="mt-2 text-sm text-slate-400">
+              Updated {formatDateTime(profile.updatedAt)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {fields.map((field) => (
+            <div key={field.label} className="rounded-[18px] bg-white/5 px-4 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">{field.label}</p>
+              <p className="mt-2 text-sm text-slate-100">{field.value}</p>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MatchTimeline({ matches, isLoading, fallbackMessage }) {
+  if (isLoading) {
+    return <EmptyPanel message="Loading match history..." />;
+  }
+
+  if (!matches.length) {
+    return <EmptyPanel message={fallbackMessage} />;
+  }
+
+  return (
+    <div className="space-y-4">
+      {matches.slice(0, 12).map((match) => (
+        <div key={match.id} className="relative pl-6 sm:pl-8">
+          <div className="absolute left-[11px] top-3 h-full w-px bg-white/10 sm:left-[15px]" />
+          <div className="absolute left-0 top-2 h-6 w-6 rounded-full border border-emerald-400/30 bg-emerald-400/15 sm:left-1 sm:h-7 sm:w-7" />
+          <Card className="rounded-[22px]">
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {getUserTypeLabel(match.userType || match.occupation)}
+                    {match.state ? ` in ${match.state}` : ""}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Badge variant="default">{match.sessionType || "web"}</Badge>
+                    {match.lang ? <Badge variant="default">{match.lang}</Badge> : null}
+                  </div>
+                </div>
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                  {formatDateTime(match.date)}
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[18px] bg-white/5 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Matches</p>
+                  <p className="mt-2 text-lg font-semibold text-emerald-200">{formatNumber(match.matchCount)}</p>
+                </div>
+                <div className="rounded-[18px] bg-white/5 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Near misses</p>
+                  <p className="mt-2 text-lg font-semibold text-amber-200">{formatNumber(match.nearMissCount)}</p>
+                </div>
+                <div className="rounded-[18px] bg-white/5 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Schemes</p>
+                  <p className="mt-2 text-lg font-semibold text-cyan-200">
+                    {formatNumber(match.schemeIds?.length)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SchemeTable({ rows, type }) {
+  if (!rows.length) {
+    return <EmptyPanel message={type === "saved" ? "No saved schemes." : "No applications."} />;
+  }
+
+  return (
+    <>
+      <div className="space-y-3 lg:hidden">
+        {rows.map((row) => (
+          <Card key={`${row.schemeId}-${row.savedAt || row.appliedAt}`} className="rounded-[22px]">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold text-white">{row.schemeId}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {type === "saved" ? (
+                  <Badge variant="default">{formatDateTime(row.savedAt)}</Badge>
+                ) : (
+                  <>
+                    <Badge variant="default">{row.status || "pending"}</Badge>
+                    <Badge variant="default">{formatDate(row.appliedAt)}</Badge>
+                  </>
+                )}
+              </div>
+              {row.notes ? <p className="mt-3 text-sm text-slate-400">{row.notes}</p> : null}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="hidden overflow-hidden rounded-[24px] border border-white/10 lg:block">
+        <Table className="bg-slate-950/60">
+          <TableHeader className="bg-white/5">
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Scheme</TableHead>
+              <TableHead>{type === "saved" ? "Saved at" : "Applied at"}</TableHead>
+              <TableHead>{type === "saved" ? "Notes" : "Status"}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={`${row.schemeId}-${row.savedAt || row.appliedAt}`}>
+                <TableCell className="font-medium text-white">{row.schemeId}</TableCell>
+                <TableCell className="text-slate-300">
+                  {type === "saved" ? formatDateTime(row.savedAt) : formatDate(row.appliedAt)}
+                </TableCell>
+                <TableCell className="text-slate-300">
+                  {type === "saved" ? row.notes || "No notes" : row.status || "pending"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  );
 }
 
 export default function AdminUserDetailPage() {
   const { userId = "" } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const userQuery = useQuery({
     queryKey: ["admin-user", userId],
     queryFn: () => fetchAdminUser(userId),
@@ -129,35 +347,71 @@ export default function AdminUserDetailPage() {
     matchSummary.matchRuns || matchSummary.totalMatches || matchSummary.totalNearMisses
   );
   const matchSourceLabel = hasRecentMatchLogs
-    ? "recentMatches"
+    ? "recent match rows"
     : hasMatchSummary
-      ? "matchSummary fallback"
+      ? "summary fallback"
       : "no match data";
+
+  const accountFields = [
+    { label: "Phone", value: user?.phone || "Unknown" },
+    { label: "Language", value: user?.lang || "hi" },
+    { label: "Created", value: formatDate(user?.createdAt) },
+    { label: "Last login", value: formatDateTime(user?.lastLogin) },
+    {
+      label: "Registration",
+      value: user?.registration?.registrationCompletedAt
+        ? formatDateTime(user.registration.registrationCompletedAt)
+        : "Pending",
+    },
+    { label: "Photo type", value: user?.registration?.photoType || user?.photoType || "none" },
+  ];
+
+  const primaryProfileFields = visibleProfile
+    ? [
+        { label: "Profile", value: visibleProfile.profileName || "Unavailable" },
+        { label: "Relation", value: visibleProfile.relation || "Self" },
+        { label: "State", value: visibleProfile.state || "NA" },
+        { label: "User type", value: getUserTypeLabel(visibleProfile.userType || visibleProfile.occupation) },
+        { label: "Gender", value: visibleProfile.gender || "NA" },
+        { label: "Age", value: visibleProfile.age ?? "NA" },
+        { label: "Caste", value: visibleProfile.caste || "NA" },
+        {
+          label: "Annual income",
+          value: visibleProfile.annualIncome != null ? `Rs ${formatNumber(visibleProfile.annualIncome)}` : "NA",
+        },
+        {
+          label: "Disability %",
+          value: visibleProfile.disabilityPct != null ? `${formatNumber(visibleProfile.disabilityPct)}%` : "NA",
+        },
+      ]
+    : [];
 
   return (
     <section className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <Link to="/admin/users" className="text-sm text-emerald-300 transition hover:text-emerald-200">
             Back to users
           </Link>
-          <h2 className="mt-3 text-3xl font-semibold text-white">User detail</h2>
+          <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">User detail</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            Large profile photo, account details, all profile fields, match history timeline, and scheme activity in
+            one responsive admin view.
+          </p>
         </div>
-        <button
+
+        <Button
           type="button"
+          variant="destructive"
           onClick={handleDeleteUser}
           disabled={!userId || deleteUserMutation.isPending}
-          className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+          className="w-full lg:w-auto"
         >
           {deleteUserMutation.isPending ? "Deleting..." : "Delete user"}
-        </button>
+        </Button>
       </div>
 
-      {userQuery.isLoading ? (
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-6 text-sm text-slate-300">
-          Loading user details...
-        </div>
-      ) : null}
+      {userQuery.isLoading ? <EmptyPanel message="Loading user details..." /> : null}
 
       {userQuery.error || matchesQuery.error || liveMatchesQuery.error || deleteUserMutation.error ? (
         <div className="rounded-[24px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
@@ -171,336 +425,244 @@ export default function AdminUserDetailPage() {
 
       {user ? (
         <>
-          <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-                {renderPhoto(displayPhotoUrl, user.name || "User photo")}
+          <Card className="rounded-[28px] overflow-hidden">
+            <CardContent className="p-0">
+              <div className="grid gap-0 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+                <div className="border-b border-white/10 p-5 sm:p-6 xl:border-r xl:border-b-0 xl:p-8">
+                  <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+                    <PhotoFrame src={displayPhotoUrl} alt={user.name || "User photo"} />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-2xl font-semibold text-white sm:text-3xl">
+                          {user.name || "Unknown user"}
+                        </h3>
+                        <Badge variant={user.onboardingDone ? "success" : "warning"}>
+                          {user.onboardingDone ? "Onboarding complete" : "Onboarding pending"}
+                        </Badge>
+                      </div>
+                      <p className="mt-2 break-all text-sm text-slate-300 sm:break-normal">{user.phone}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Badge variant="default">Profiles {formatNumber(user.registration?.totalProfiles)}</Badge>
+                        <Badge variant="default">Saved {formatNumber(user.savedSchemes?.length)}</Badge>
+                        <Badge variant="default">Applications {formatNumber(user.applications?.length)}</Badge>
+                        {user.matchSummary?.lastMatchAt ? (
+                          <Badge variant="info">Last match {formatDateTime(user.matchSummary.lastMatchAt)}</Badge>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
 
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-300">
-                    Account
-                  </p>
-                  <h3 className="mt-3 text-2xl font-semibold text-white">{user.name || "Unknown user"}</h3>
-                  <p className="mt-2 text-sm text-slate-300">{user.phone}</p>
-                  <p className="mt-1 text-sm text-slate-400">Created {formatDate(user.createdAt)}</p>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-                <span className="rounded-full bg-white/5 px-3 py-1">Lang: {user.lang || "hi"}</span>
-                <span className="rounded-full bg-white/5 px-3 py-1">
-                  Photo type: {user.registration?.photoType || user.photoType || "none"}
-                </span>
-                <span className="rounded-full bg-white/5 px-3 py-1">
-                  Profiles: {formatNumber(user.registration?.totalProfiles)}
-                </span>
-                <span className="rounded-full bg-white/5 px-3 py-1">
-                  Logged runs: {formatNumber(matchStats.matchRuns)}
-                </span>
-                {user.matchSummary?.lastMatchAt ? (
-                  <span className="rounded-full bg-white/5 px-3 py-1">
-                    Last match: {formatDateTime(user.matchSummary.lastMatchAt)}
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Registration</p>
-                  <p className="mt-3 text-sm text-slate-200">
-                    Completed:{" "}
-                    {user.registration?.registrationCompletedAt
-                      ? formatDateTime(user.registration.registrationCompletedAt)
-                      : "Pending"}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-300">
-                    Last login: {formatDateTime(user.lastLogin)}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-300">
-                    Onboarding: {user.registration?.onboardingDone ? "done" : "pending"}
-                  </p>
-                </div>
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Primary profile</p>
-                  <p className="mt-3 text-sm text-slate-200">
-                    {visibleProfile?.profileName || "Unavailable"}
-                  </p>
-                  <div className="mt-2 space-y-1 text-sm text-slate-300">
-                    <p>
-                      {visibleProfile?.state || "NA"} /{" "}
-                      {getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation)}
-                    </p>
-                    <p>Gender: {visibleProfile?.gender || "NA"}</p>
-                    {user.primaryProfile?.id &&
-                    visibleProfile?.id &&
-                    user.primaryProfile.id !== visibleProfile.id ? (
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                        Visible profile differs from primary profile
-                      </p>
-                    ) : null}
+                  <div className="mt-6">
+                    <SectionHeading
+                      eyebrow="Account"
+                      title="Identity and session data"
+                      description="The account block keeps the operator context visible without burying the core details."
+                    />
+                    <div className="mt-5">
+                      <InfoGrid items={accountFields} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </article>
 
-            <article className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Logged match runs</p>
-                <p className="mt-4 text-4xl font-semibold text-cyan-300">
-                  {formatNumber(matchStats.matchRuns)}
-                </p>
+                <div className="p-5 sm:p-6 xl:p-8">
+                  <SectionHeading
+                    eyebrow="Primary Profile"
+                    title="Eligibility input snapshot"
+                    description="This is the current profile used to interpret the user’s eligibility and live matching state."
+                  />
+                  <div className="mt-5">
+                    {primaryProfileFields.length ? (
+                      <InfoGrid items={primaryProfileFields} />
+                    ) : (
+                      <EmptyPanel message="No primary profile details are available for this user." />
+                    )}
+                  </div>
+                  {user.primaryProfile?.id &&
+                  visibleProfile?.id &&
+                  user.primaryProfile.id !== visibleProfile.id ? (
+                    <div className="mt-4 rounded-[18px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                      The most complete display profile differs from the stored primary profile.
+                    </div>
+                  ) : null}
+                </div>
               </div>
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Schemes in logs</p>
-                <p className="mt-4 text-4xl font-semibold text-emerald-300">
-                  {formatNumber(matchStats.totalMatches)}
-                </p>
-              </div>
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Near misses in logs</p>
-                <p className="mt-4 text-4xl font-semibold text-amber-300">
-                  {formatNumber(matchStats.totalNearMisses)}
-                </p>
-              </div>
-            </article>
+            </CardContent>
+          </Card>
+
+          <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+            <StatCard label="Match runs" value={formatNumber(matchStats.matchRuns)} tone="cyan" />
+            <StatCard label="Matched schemes" value={formatNumber(matchStats.totalMatches)} tone="emerald" />
+            <StatCard label="Near misses" value={formatNumber(matchStats.totalNearMisses)} tone="amber" />
+            <StatCard
+              label="Eligible now"
+              value={formatNumber(liveMatches?.count || 0)}
+              tone="emerald"
+              helper={liveMatches?.profileReady === false ? liveMatches.message || "Profile incomplete" : "Live snapshot"}
+            />
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-                Live Eligibility
-              </p>
-              <h3 className="mt-3 text-2xl font-semibold text-white">Current scheme snapshot</h3>
-              <p className="mt-2 text-sm text-slate-400">
-                Computed from the user&apos;s current primary profile, not from historical logs.
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Eligible now</p>
-                  <p className="mt-4 text-4xl font-semibold text-emerald-300">
-                    {formatNumber(liveMatches?.count || 0)}
-                  </p>
-                </div>
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Near misses now</p>
-                  <p className="mt-4 text-4xl font-semibold text-amber-300">
-                    {formatNumber(liveMatches?.nearMissCount || 0)}
-                  </p>
-                </div>
-              </div>
-              {!liveMatchesQuery.isLoading && liveMatches?.message ? (
-                <div className="mt-4 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                  {liveMatches.message}
-                </div>
-              ) : null}
-              {liveMatchesQuery.isLoading ? (
-                <div className="mt-4 rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                  Loading live eligibility...
-                </div>
-              ) : null}
-              {liveMatches?.schemes?.length ? (
-                <div className="mt-4 space-y-2">
-                  {liveMatches.schemes.slice(0, 5).map((scheme) => (
-                    <div
-                      key={scheme.schemeId}
-                      className="flex items-center justify-between rounded-[16px] bg-slate-900/70 px-4 py-3 text-sm"
-                    >
-                      <span className="text-slate-200">{scheme.name?.en || scheme.schemeId}</span>
-                      <span className="text-slate-500">{scheme.schemeId}</span>
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+            <Card className="rounded-[28px]">
+              <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+                <SectionHeading
+                  eyebrow="Match History"
+                  title="Recent match timeline"
+                  description="Timeline view of the user’s logged match runs, ordered newest first."
+                />
+                <CardDescription className="mt-2">
+                  Source: {matchSourceLabel}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+                {hasMatchSummary && !hasRecentMatchLogs ? (
+                  <div className="mb-5 rounded-[18px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                    Aggregated totals exist, but individual match rows were not found for this user.
+                  </div>
+                ) : null}
+                <MatchTimeline
+                  matches={matches}
+                  isLoading={matchesQuery.isLoading}
+                  fallbackMessage="No logged match runs were found for this user yet."
+                />
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card className="rounded-[28px]">
+                <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+                  <SectionHeading
+                    eyebrow="Live Eligibility"
+                    title="Current scheme snapshot"
+                    description="Computed from the current profile, not from the historical log."
+                  />
+                </CardHeader>
+                <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                    <div className="rounded-[20px] bg-slate-950/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Eligible now</p>
+                      <p className="mt-2 text-3xl font-semibold text-emerald-300">
+                        {formatNumber(liveMatches?.count || 0)}
+                      </p>
                     </div>
+                    <div className="rounded-[20px] bg-slate-950/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Near misses now</p>
+                      <p className="mt-2 text-3xl font-semibold text-amber-300">
+                        {formatNumber(liveMatches?.nearMissCount || 0)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {liveMatchesQuery.isLoading ? (
+                    <div className="mt-4">
+                      <EmptyPanel message="Loading live eligibility..." />
+                    </div>
+                  ) : null}
+
+                  {!liveMatchesQuery.isLoading && liveMatches?.message ? (
+                    <div className="mt-4 rounded-[18px] bg-slate-950/60 px-4 py-3 text-sm text-slate-400">
+                      {liveMatches.message}
+                    </div>
+                  ) : null}
+
+                  {liveMatches?.schemes?.length ? (
+                    <div className="mt-4 space-y-3">
+                      {liveMatches.schemes.slice(0, 6).map((scheme) => (
+                        <div
+                          key={scheme.schemeId}
+                          className="rounded-[18px] border border-white/8 bg-slate-950/60 px-4 py-3"
+                        >
+                          <p className="text-sm font-semibold text-white">{scheme.name?.en || scheme.schemeId}</p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-500">
+                            {scheme.schemeId}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-[28px]">
+                <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+                  <SectionHeading
+                    eyebrow="Summary"
+                    title="Stored match totals"
+                    description="Useful when historical rows are missing but aggregate counters exist."
+                  />
+                </CardHeader>
+                <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+                  <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                    <div className="rounded-[20px] bg-slate-950/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Runs</p>
+                      <p className="mt-2 text-2xl font-semibold text-cyan-300">
+                        {formatNumber(matchSummary.matchRuns)}
+                      </p>
+                    </div>
+                    <div className="rounded-[20px] bg-slate-950/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Matches</p>
+                      <p className="mt-2 text-2xl font-semibold text-emerald-300">
+                        {formatNumber(matchSummary.totalMatches)}
+                      </p>
+                    </div>
+                    <div className="rounded-[20px] bg-slate-950/60 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Near misses</p>
+                      <p className="mt-2 text-2xl font-semibold text-amber-300">
+                        {formatNumber(matchSummary.totalNearMisses)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          <Card className="rounded-[28px]">
+            <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+              <SectionHeading
+                eyebrow="Family Profiles"
+                title="All linked profiles"
+                description="Every saved family member profile is shown with the same field structure for quick admin review."
+              />
+            </CardHeader>
+            <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+              {(user.profiles || []).length ? (
+                <div className="grid gap-4">
+                  {user.profiles.map((profile) => (
+                    <ProfileCard key={profile.id} user={user} profile={profile} />
                   ))}
                 </div>
-              ) : null}
-            </article>
+              ) : (
+                <EmptyPanel message="No profiles found for this user." />
+              )}
+            </CardContent>
+          </Card>
 
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">
-                Family Profiles
-              </p>
-              <h3 className="mt-3 text-2xl font-semibold text-white">All linked profiles</h3>
-              <div className="mt-6 space-y-4">
-                {(user.profiles || []).length ? (
-                  user.profiles.map((profile) => (
-                    <div
-                      key={profile.id}
-                      className="rounded-[20px] border border-white/8 bg-slate-900/70 p-4"
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        {renderPhoto(
-                          getProfileDisplayPhoto(user, profile),
-                          profile.profileName || "Profile photo"
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="text-lg font-semibold text-white">
-                              {profile.profileName || "Unnamed profile"}
-                            </p>
-                            {profile.isPrimary ? (
-                              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">
-                                Primary
-                              </span>
-                            ) : null}
-                            {profile.relation ? (
-                              <span className="rounded-full bg-white/5 px-3 py-1 text-xs text-slate-300">
-                                {profile.relation}
-                              </span>
-                            ) : null}
-                          </div>
-                          <div className="mt-3 grid gap-2 sm:grid-cols-2 text-sm text-slate-300">
-                            <p>State: {profile.state || "NA"}</p>
-                            <p>User type: {getUserTypeLabel(profile.userType || profile.occupation)}</p>
-                            <p>Gender: {profile.gender || "NA"}</p>
-                            <p>Age: {profile.age ?? "NA"}</p>
-                            <p>Caste: {profile.caste || "NA"}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No profiles found for this user.
-                  </div>
-                )}
-              </div>
-            </article>
+          <section className="grid gap-6 2xl:grid-cols-2">
+            <Card className="rounded-[28px]">
+              <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+                <SectionHeading
+                  eyebrow="Saved Schemes"
+                  title="Bookmarked schemes"
+                  description="Schemes the user chose to save for later review."
+                />
+              </CardHeader>
+              <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+                <SchemeTable rows={user.savedSchemes || []} type="saved" />
+              </CardContent>
+            </Card>
 
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
-                Match History
-              </p>
-              <h3 className="mt-3 text-2xl font-semibold text-white">Recent match logs</h3>
-              <p className="mt-2 text-sm text-slate-400">
-                This section shows only match runs saved in analytics logs for this user account.
-              </p>
-              <p className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">
-                Source: {matchSourceLabel}
-              </p>
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary runs</p>
-                  <p className="mt-3 text-2xl font-semibold text-cyan-300">
-                    {formatNumber(matchSummary.matchRuns)}
-                  </p>
-                </div>
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary matches</p>
-                  <p className="mt-3 text-2xl font-semibold text-emerald-300">
-                    {formatNumber(matchSummary.totalMatches)}
-                  </p>
-                </div>
-                <div className="rounded-[18px] bg-slate-950/75 p-4">
-                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Summary near misses</p>
-                  <p className="mt-3 text-2xl font-semibold text-amber-300">
-                    {formatNumber(matchSummary.totalNearMisses)}
-                  </p>
-                </div>
-              </div>
-              {matchSummary.lastMatchAt ? (
-                <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">
-                  Last summary match: {formatDateTime(matchSummary.lastMatchAt)}
-                </p>
-              ) : null}
-              {hasMatchSummary && !hasRecentMatchLogs ? (
-                <div className="mt-4 rounded-[18px] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-                  We found aggregated match totals, but no individual match rows. That usually means
-                  the summary was saved without the detailed log list.
-                </div>
-              ) : null}
-              <div className="mt-6 space-y-3">
-                {matchesQuery.isLoading ? (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    Loading match history...
-                  </div>
-                ) : null}
-                {matches.length ? (
-                  matches.slice(0, 12).map((match) => (
-                    <div
-                      key={match.id}
-                      className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-sm font-semibold text-white">
-                            User type: {match.userType || match.occupation || "unknown"}
-                            {match.state ? ` | ${match.state}` : ""}
-                          </p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">
-                            {match.sessionType || "web"}
-                          </p>
-                        </div>
-                        <span className="text-xs text-slate-400">{formatDateTime(match.date)}</span>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-300">
-                        <span className="rounded-full bg-white/5 px-3 py-1">
-                          Matches: {formatNumber(match.matchCount)}
-                        </span>
-                        <span className="rounded-full bg-white/5 px-3 py-1">
-                          Near misses: {formatNumber(match.nearMissCount)}
-                        </span>
-                        <span className="rounded-full bg-white/5 px-3 py-1">
-                          Schemes: {formatNumber(match.schemeIds?.length)}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No logged match runs were found for this user yet. They appear after a signed-in
-                    match run is saved.
-                  </div>
-                )}
-              </div>
-            </article>
-          </section>
-
-          <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
-                Saved Schemes
-              </p>
-              <div className="mt-5 space-y-2">
-                {user.savedSchemes?.length ? (
-                  user.savedSchemes.map((scheme) => (
-                    <div
-                      key={`${scheme.schemeId}-${scheme.savedAt}`}
-                      className="flex items-center justify-between rounded-[16px] bg-slate-900/70 px-4 py-3 text-sm"
-                    >
-                      <span className="text-slate-200">{scheme.schemeId}</span>
-                      <span className="text-slate-500">{formatDateTime(scheme.savedAt)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No saved schemes.
-                  </div>
-                )}
-              </div>
-            </article>
-
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fuchsia-300">
-                Applications
-              </p>
-              <div className="mt-5 space-y-2">
-                {user.applications?.length ? (
-                  user.applications.map((application) => (
-                    <div
-                      key={`${application.schemeId}-${application.appliedAt}`}
-                      className="flex items-center justify-between rounded-[16px] bg-slate-900/70 px-4 py-3 text-sm"
-                    >
-                      <span className="text-slate-200">{application.schemeId}</span>
-                      <span className="text-slate-500">
-                        {application.status} | {formatDate(application.appliedAt)}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] bg-slate-900/70 px-4 py-3 text-sm text-slate-400">
-                    No applications.
-                  </div>
-                )}
-              </div>
-            </article>
+            <Card className="rounded-[28px]">
+              <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
+                <SectionHeading
+                  eyebrow="Applications"
+                  title="Application records"
+                  description="Submission status and timestamps for schemes the user applied to."
+                />
+              </CardHeader>
+              <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
+                <SchemeTable rows={user.applications || []} type="application" />
+              </CardContent>
+            </Card>
           </section>
         </>
       ) : null}
