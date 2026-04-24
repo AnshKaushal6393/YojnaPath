@@ -10,6 +10,7 @@ const ADMIN_NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", end: true },
   { to: "/admin/users", label: "Users" },
   { to: "/admin/analytics", label: "Analytics" },
+  { to: "/admin/reports", label: "Reports" },
   { to: "/admin/schemes", label: "Schemes" },
   { to: "/admin/settings", label: "Settings" },
 ];
