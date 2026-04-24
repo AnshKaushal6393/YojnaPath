@@ -59,6 +59,83 @@ function SortPill({ active, direction }) {
   );
 }
 
+function UserPhoto({ user, size = "default" }) {
+  const thumbnail = getUserDisplayPhoto(user);
+  const sizeClass = size === "sm" ? "h-12 w-12 rounded-xl" : "h-14 w-14 rounded-2xl";
+
+  return (
+    <div className={`${sizeClass} shrink-0 overflow-hidden border border-white/10 bg-slate-900/80`}>
+      {thumbnail ? (
+        <img src={thumbnail} alt={user.name || "User photo"} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center px-1 text-center text-[10px] leading-3 text-slate-500">
+          No photo
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterField({ label, children }) {
+  return (
+    <label className="block space-y-2">
+      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function UserMobileCard({ user, onOpen }) {
+  const userType = getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-left transition hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+    >
+      <div className="flex gap-3">
+        <UserPhoto user={user} size="sm" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-white">{user.name || "Unknown"}</p>
+              <p className="mt-1 truncate text-xs text-slate-400">{user.phone || "No phone"}</p>
+            </div>
+            <Badge variant="default" className="shrink-0 px-2 py-1 text-[10px] text-slate-300">
+              {user.primaryProfile?.state || "NA"}
+            </Badge>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge variant="default" className="px-2.5 py-1 text-[11px] text-slate-300">
+              {userType}
+            </Badge>
+            <Badge variant={user.onboardingDone ? "success" : "default"} className="px-2.5 py-1 text-[11px]">
+              {user.onboardingDone ? "Complete" : "Pending"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="rounded-xl bg-white/5 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Runs</p>
+          <p className="mt-1 text-sm font-semibold text-white">{formatNumber(user.stats?.matchRuns)}</p>
+        </div>
+        <div className="rounded-xl bg-white/5 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Matches</p>
+          <p className="mt-1 text-sm font-semibold text-white">{formatNumber(user.stats?.totalMatches)}</p>
+        </div>
+        <div className="rounded-xl bg-white/5 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-[0.14em] text-slate-500">Near</p>
+          <p className="mt-1 text-sm font-semibold text-white">{formatNumber(user.stats?.totalNearMisses)}</p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-slate-500">Last login: {formatDateTime(user.lastLogin)}</p>
+    </button>
+  );
+}
+
 export default function AdminUsersPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState(createEmptyFilters);
@@ -127,19 +204,8 @@ export default function AdminUsersPage() {
         enableSorting: false,
         cell: ({ row }) => {
           const user = row.original;
-          const thumbnail = getUserDisplayPhoto(user);
 
-          return (
-            <div className="h-14 w-14 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80">
-              {thumbnail ? (
-                <img src={thumbnail} alt={user.name || "User photo"} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-[11px] text-slate-500">
-                  No photo
-                </div>
-              )}
-            </div>
-          );
+          return <UserPhoto user={user} />;
         },
       },
       {
@@ -234,73 +300,102 @@ export default function AdminUsersPage() {
   });
 
   return (
-    <Card className="p-0">
-      <CardHeader className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <Card className="rounded-[20px] p-0 sm:rounded-[28px]">
+      <CardHeader className="flex flex-col gap-4 px-4 pt-4 sm:px-6 sm:pt-6 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-lime-300">User Routes</p>
-          <CardTitle className="mt-3 text-2xl">Admin user explorer</CardTitle>
-          <CardDescription>Search, filter, export, and open full user detail pages.</CardDescription>
+          <CardTitle className="mt-3 text-xl sm:text-2xl">User list</CardTitle>
+          <CardDescription className="leading-6">
+            Searchable paginated table with photo thumbnails, state filters, and user type filters.
+          </CardDescription>
         </div>
-        <Button type="button" variant="secondary" onClick={handleExport} disabled={isExporting} className="w-fit">
+        <Button type="button" variant="secondary" onClick={handleExport} disabled={isExporting} className="w-full sm:w-fit">
           {isExporting ? "Exporting..." : "Export users CSV"}
         </Button>
       </CardHeader>
 
-      <CardContent className="pt-6">
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <Input
-            type="search"
-            id="admin-users-search"
-            name="search"
-            value={filters.search}
-            onChange={(event) => handleFilterChange("search", event.target.value)}
-            placeholder="Search by name, phone, or profile name"
-          />
-          <Input
-            type="text"
-            id="admin-users-state"
-            name="state"
-            value={filters.state}
-            onChange={(event) => handleFilterChange("state", event.target.value.toUpperCase())}
-            placeholder="Filter by state"
-            maxLength={10}
-          />
-          <Select
-            id="admin-users-type"
-            name="userType"
-            value={filters.userType}
-            onChange={(event) => handleFilterChange("userType", event.target.value)}
-          >
-            <option value="">All user types</option>
-            <option value="farmer">farmer</option>
-            <option value="business">business</option>
-            <option value="women">women</option>
-            <option value="student">student</option>
-            <option value="worker">worker</option>
-            <option value="health">health</option>
-            <option value="housing">housing</option>
-            <option value="senior">senior</option>
-            <option value="disability">disability</option>
-            <option value="shopkeeper">shopkeeper</option>
-            <option value="artisan">artisan</option>
-            <option value="daily_wage">daily_wage</option>
-            <option value="retired">retired</option>
-            <option value="disabled">disabled</option>
-            <option value="migrant_worker">migrant_worker</option>
-          </Select>
-          <Select
-            id="admin-users-photo"
-            name="hasPhoto"
-            value={filters.hasPhoto}
-            onChange={(event) => handleFilterChange("hasPhoto", event.target.value)}
-          >
-            <option value="">All photos</option>
-            <option value="true">Has photo</option>
-            <option value="false">No photo</option>
-          </Select>
-          <Button type="button" variant="outline" onClick={() => setFilters(createEmptyFilters())}>
-            Reset filters
-          </Button>
+      <CardContent className="px-4 pt-6 pb-4 sm:px-6 sm:pb-6">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1.4fr)_minmax(120px,0.7fr)_minmax(180px,1fr)_minmax(150px,0.8fr)_minmax(120px,0.7fr)_auto]">
+          <FilterField label="Search">
+            <Input
+              type="search"
+              id="admin-users-search"
+              name="search"
+              value={filters.search}
+              onChange={(event) => handleFilterChange("search", event.target.value)}
+              placeholder="Name, phone, or profile"
+              className="rounded-xl"
+            />
+          </FilterField>
+          <FilterField label="State">
+            <Input
+              type="text"
+              id="admin-users-state"
+              name="state"
+              value={filters.state}
+              onChange={(event) => handleFilterChange("state", event.target.value.toUpperCase())}
+              placeholder="UP"
+              maxLength={10}
+              className="rounded-xl"
+            />
+          </FilterField>
+          <FilterField label="User type">
+            <Select
+              id="admin-users-type"
+              name="userType"
+              value={filters.userType}
+              onChange={(event) => handleFilterChange("userType", event.target.value)}
+              className="rounded-xl"
+            >
+              <option value="">All user types</option>
+              <option value="farmer">farmer</option>
+              <option value="business">business</option>
+              <option value="women">women</option>
+              <option value="student">student</option>
+              <option value="worker">worker</option>
+              <option value="health">health</option>
+              <option value="housing">housing</option>
+              <option value="senior">senior</option>
+              <option value="disability">disability</option>
+              <option value="shopkeeper">shopkeeper</option>
+              <option value="artisan">artisan</option>
+              <option value="daily_wage">daily_wage</option>
+              <option value="retired">retired</option>
+              <option value="disabled">disabled</option>
+              <option value="migrant_worker">migrant_worker</option>
+            </Select>
+          </FilterField>
+          <FilterField label="Photo">
+            <Select
+              id="admin-users-photo"
+              name="hasPhoto"
+              value={filters.hasPhoto}
+              onChange={(event) => handleFilterChange("hasPhoto", event.target.value)}
+              className="rounded-xl"
+            >
+              <option value="">All photos</option>
+              <option value="true">Has photo</option>
+              <option value="false">No photo</option>
+            </Select>
+          </FilterField>
+          <FilterField label="Rows">
+            <Select
+              id="admin-users-limit"
+              name="limit"
+              value={filters.limit}
+              onChange={(event) => handleFilterChange("limit", Number(event.target.value))}
+              className="rounded-xl"
+            >
+              <option value="10">10 rows</option>
+              <option value="25">25 rows</option>
+              <option value="50">50 rows</option>
+            </Select>
+          </FilterField>
+          <div className="flex items-end">
+            <Button type="button" variant="outline" onClick={() => setFilters(createEmptyFilters())} className="w-full rounded-xl">
+              Reset
+            </Button>
+          </div>
         </div>
 
         {usersQuery.error ? (
@@ -309,7 +404,27 @@ export default function AdminUsersPage() {
           </div>
         ) : null}
 
-        <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10">
+        <div className="mt-6 grid gap-3 lg:hidden">
+          {usersQuery.isLoading ? (
+            <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
+              Loading users...
+            </div>
+          ) : null}
+          {!usersQuery.isLoading && users.length === 0 ? (
+            <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
+              No users match the current filters.
+            </div>
+          ) : null}
+          {users.map((user) => (
+            <UserMobileCard
+              key={user.id}
+              user={user}
+              onOpen={() => navigate(`/admin/users/${user.id}`)}
+            />
+          ))}
+        </div>
+
+        <div className="mt-6 hidden overflow-hidden rounded-[20px] border border-white/10 lg:block xl:rounded-[24px]">
           <div className="overflow-x-auto">
             <Table className="min-w-[1080px] bg-slate-950/60">
               <TableHeader className="bg-white/10">
@@ -373,17 +488,18 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <p className="text-sm text-slate-400">
             Showing {formatNumber(usersPayload?.total || 0)} users. Page {formatNumber(filters.page)} of{" "}
             {formatNumber(totalPages || 1)}
           </p>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:flex">
             <Button
               type="button"
               variant="outline"
               onClick={() => handleFilterChange("page", Math.max(filters.page - 1, 1))}
               disabled={filters.page <= 1}
+              className="rounded-xl"
             >
               Previous
             </Button>
@@ -394,6 +510,7 @@ export default function AdminUsersPage() {
                 handleFilterChange("page", totalPages ? Math.min(filters.page + 1, totalPages) : filters.page + 1)
               }
               disabled={Boolean(totalPages) && filters.page >= totalPages}
+              className="rounded-xl"
             >
               Next
             </Button>
