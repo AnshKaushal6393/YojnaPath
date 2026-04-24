@@ -15,8 +15,6 @@ import {
 } from "../lib/adminUi";
 import {
   Cell,
-  Funnel,
-  FunnelChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -303,51 +301,41 @@ export default function AdminDashboardPage() {
               </p>
               {funnelStages.length ? (
                 <>
-                  <div className="mt-6 h-[220px] sm:h-[260px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <FunnelChart>
-                        <Tooltip {...sharedTooltipProps} />
-                        <Funnel dataKey="count" data={funnelStages} isAnimationActive>
-                          {funnelStages.map((stage, index) => (
-                            <Cell
-                              key={stage.key || stage.label || index}
-                              fill={index === funnelStages.length - 1 ? "#06b6d4" : "#f59e0b"}
-                            />
-                          ))}
-                        </Funnel>
-                      </FunnelChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-6 grid gap-3">
                     {funnelStages.map((stage, index) => {
                       const count = Number(stage.count || 0);
                       const previousCount = index === 0 ? count : Number(funnelStages[index - 1]?.count || 0);
                       const retention = index === 0 || previousCount <= 0 ? 100 : (count / previousCount) * 100;
+                      const totalShare = funnelMaxCount > 0 ? (count / funnelMaxCount) * 100 : 0;
 
                       return (
                         <div
                           key={stage.key || stage.label || index}
-                          className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3"
+                          className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-4"
                         >
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                             <div>
                               <p className="text-sm font-semibold text-white">{stage.label}</p>
                               <p className="mt-1 text-xs text-slate-400">
                                 {index === 0 ? "Starting stage" : `${formatPercent(retention)} retained from previous stage`}
                               </p>
                             </div>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-white">{formatNumber(count)}</p>
+                            <div className="sm:text-right">
+                              <p className="text-lg font-semibold text-white">{formatNumber(count)}</p>
                               <p className="text-xs text-slate-400">users</p>
                             </div>
                           </div>
-                          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
                             <div
-                              className="h-full rounded-full bg-gradient-to-r from-amber-300 to-cyan-300"
+                              className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-cyan-300 to-amber-300"
                               style={{
-                                width: `${funnelMaxCount > 0 ? Math.max((count / funnelMaxCount) * 100, 4) : 0}%`,
+                                width: `${totalShare > 0 ? Math.max(totalShare, 4) : 0}%`,
                               }}
                             />
+                          </div>
+                          <div className="mt-2 flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-slate-500">
+                            <span>{formatPercent(totalShare)} of funnel</span>
+                            <span>Step {index + 1}</span>
                           </div>
                         </div>
                       );
