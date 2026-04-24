@@ -28,7 +28,7 @@ export default function AdminShell() {
 
   return (
     <main className="admin-shell min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_48%,#111827_100%)] px-4 py-8 text-slate-50">
-      <div className="mx-auto w-full max-w-[1600px]">
+      <div className="mx-auto w-full max-w-400">
         <Card className="mb-8 px-5 py-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
