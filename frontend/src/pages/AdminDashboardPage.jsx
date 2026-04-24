@@ -35,6 +35,53 @@ function formatGroupLabel(value) {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function HealthPill({ isOnline, onlineLabel, offlineLabel, offlineTone = "amber" }) {
+  const toneClass =
+    offlineTone === "rose"
+      ? "bg-rose-400/10 text-rose-200"
+      : "bg-amber-400/10 text-amber-200";
+
+  return (
+    <span
+      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+        isOnline ? "bg-emerald-400/10 text-emerald-200" : toneClass
+      }`}
+    >
+      {isOnline ? onlineLabel : offlineLabel}
+    </span>
+  );
+}
+
+function StatCard({ card, systemHealth }) {
+  return (
+    <article className="min-h-[132px] rounded-[20px] border border-white/10 bg-white/[0.06] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur sm:rounded-[22px] sm:p-5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+        {card.label}
+      </p>
+      <p className={`mt-3 break-words text-3xl font-bold leading-none sm:text-[34px] ${card.accent}`}>
+        {card.value}
+      </p>
+      {card.label === "System health" ? (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <HealthPill
+            isOnline={systemHealth.postgresConnected}
+            onlineLabel="Postgres online"
+            offlineLabel="Postgres offline"
+          />
+          <HealthPill
+            isOnline={systemHealth.mongoConnected}
+            onlineLabel="Mongo online"
+            offlineLabel="Mongo offline"
+            offlineTone="rose"
+          />
+        </div>
+      ) : card.hint ? (
+        <p className="mt-2 text-xs leading-5 text-slate-400">{card.hint}</p>
+      ) : null}
+    </article>
+  );
+}
+
 function UserTypePie({ data }) {
   const total = data.reduce((sum, item) => sum + Number(item.count || 0), 0);
   const chartData = data
@@ -55,21 +102,21 @@ function UserTypePie({ data }) {
   }
 
   return (
-    <div className={`${sharedChartCardClass} relative overflow-hidden`}>
+    <div className={`${sharedChartCardClass} relative overflow-hidden rounded-[20px] p-4 sm:rounded-[28px] sm:p-6`}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-400 via-cyan-400 to-amber-400" />
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">User mix</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">User type pie</h2>
+          <h2 className="mt-2 text-xl font-semibold text-white sm:text-2xl">User type pie</h2>
           <p className="mt-2 text-sm text-slate-400">Breakdown of profile occupations from the current dataset.</p>
         </div>
-        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+        <span className="w-fit rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
           Live snapshot
         </span>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr] lg:items-center">
-        <div className="mx-auto h-[220px] w-[220px]">
+        <div className="mx-auto h-[220px] w-full max-w-[240px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -94,7 +141,7 @@ function UserTypePie({ data }) {
           {chartData.map((segment, index) => {
             const pct = (segment.value / total) * 100;
             return (
-            <div key={segment.key} className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-slate-950/70 px-4 py-3">
+            <div key={segment.name} className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-slate-950/70 px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span
                   className="h-3 w-3 shrink-0 rounded-full"
@@ -103,7 +150,7 @@ function UserTypePie({ data }) {
                 <span className="truncate text-sm text-slate-200">{segment.name}</span>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-white">{formatNumber(segment.value)} users</p>
+                <p className="whitespace-nowrap text-sm font-semibold text-white">{formatNumber(segment.value)} users</p>
                 <p className="text-xs text-slate-400">{formatPercent(pct)} of total</p>
               </div>
             </div>
@@ -178,127 +225,88 @@ export default function AdminDashboardPage() {
       label: "Total users",
       value: formatNumber(stats?.totalUsers),
       accent: "text-emerald-300",
-      visible: true,
+      hint: overview ? `Profiles: ${formatNumber(overview.counts?.profiles)}` : "Registered platform accounts",
     },
     {
       label: "Total matches",
       value: formatNumber(stats?.totalMatches),
       accent: "text-cyan-300",
-      visible: Number(stats?.totalMatches || 0) > 0,
+      hint: "Eligible scheme matches generated",
     },
     {
       label: "Avg matches / user",
       value: avgMatchesPerUser.toFixed(1),
       accent: "text-amber-300",
-      visible: Number(stats?.totalMatches || 0) > 0,
+      hint: "Average discovery depth",
     },
     {
       label: "Near misses",
       value: formatNumber(stats?.totalNearMisses),
       accent: "text-rose-300",
-      visible: Number(stats?.totalNearMisses || 0) > 0,
+      hint: "Almost eligible scheme results",
     },
     {
       label: "Active schemes",
       value: formatNumber(stats?.activeSchemes),
       accent: "text-fuchsia-300",
-      visible: true,
+      hint: "Currently available schemes",
     },
     {
       label: "Matches today",
       value: formatNumber(stats?.activeToday),
       accent: "text-sky-300",
-      visible: Number(stats?.activeToday || 0) > 0,
+      hint: "Match sessions in the last day",
     },
     {
       label: "Photo completion",
       value: formatPercent(photoCompletion),
       accent: "text-lime-300",
-      visible: Number(stats?.totalUsers || 0) > 0,
+      hint: "Profiles with usable photos",
     },
     {
       label: "System health",
       value: systemHealth.label || "Healthy",
       accent: systemHealth.status === "healthy" ? "text-emerald-300" : "text-amber-300",
-      visible: true,
-      hint: `${systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"} | ${systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}`,
     },
-  ].filter((card) => card.visible);
+  ];
 
   return (
     <>
       {dashboardQuery.isLoading || statsQuery.isLoading ? (
-        <section className="rounded-[28px] border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+        <section className="rounded-[20px] border border-white/10 bg-white/5 p-5 text-sm text-slate-300 sm:rounded-[28px] sm:p-6">
           Loading dashboard stats...
         </section>
       ) : null}
 
       {criticalError ? (
-        <section className="rounded-[28px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
+        <section className="rounded-[20px] border border-red-400/30 bg-red-500/10 p-5 text-sm text-red-100 sm:rounded-[28px] sm:p-6">
           {criticalError.message || "Could not load admin dashboard right now."}
         </section>
       ) : null}
 
       {stats ? (
         <>
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {metricCards.map((card) => (
-              <article
-                key={card.label}
-                className="min-h-[132px] rounded-[22px] border border-white/10 bg-white/[0.06] p-4 shadow-[0_16px_40px_rgba(15,23,42,0.18)] backdrop-blur"
-              >
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                  {card.label}
-                </p>
-                <p className={`mt-3 text-3xl font-bold leading-none ${card.accent}`}>{card.value}</p>
-                {card.label === "System health" ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                        systemHealth.postgresConnected
-                          ? "bg-emerald-400/10 text-emerald-200"
-                          : "bg-amber-400/10 text-amber-200"
-                      }`}
-                    >
-                      {systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"}
-                    </span>
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                        systemHealth.mongoConnected
-                          ? "bg-cyan-400/10 text-cyan-200"
-                          : "bg-rose-400/10 text-rose-200"
-                      }`}
-                    >
-                      {systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}
-                    </span>
-                  </div>
-                ) : card.hint ? (
-                  <p className="mt-2 text-[11px] leading-5 text-slate-400">{card.hint}</p>
-                ) : null}
-                {card.label === "Total users" && overview ? (
-                  <p className="mt-2 text-[11px] text-slate-400">
-                    Profiles: {formatNumber(overview.counts?.profiles)}
-                  </p>
-                ) : null}
-              </article>
+              <StatCard key={card.label} card={card} systemHealth={systemHealth} />
             ))}
           </section>
 
-          <section className="mt-6 grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+          <section className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+            <article className="rounded-[20px] border border-white/10 bg-white/[0.06] p-4 sm:rounded-[28px] sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
                 Registration Funnel
               </p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">User progression</h2>
+              <h2 className="mt-3 text-xl font-semibold text-white sm:text-2xl">User progression</h2>
               <p className="mt-2 text-sm text-slate-400">
                 Track where users continue and where they drop off after login.
               </p>
               {funnelStages.length ? (
                 <>
-                  <div className="mt-6 h-[220px]">
+                  <div className="mt-6 h-[220px] sm:h-[260px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <FunnelChart>
-                        <Tooltip />
+                        <Tooltip {...sharedTooltipProps} />
                         <Funnel dataKey="count" data={funnelStages} isAnimationActive>
                           {funnelStages.map((stage, index) => (
                             <Cell
@@ -333,6 +341,14 @@ export default function AdminDashboardPage() {
                               <p className="text-xs text-slate-400">users</p>
                             </div>
                           </div>
+                          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-amber-300 to-cyan-300"
+                              style={{
+                                width: `${funnelMaxCount > 0 ? Math.max((count / funnelMaxCount) * 100, 4) : 0}%`,
+                              }}
+                            />
+                          </div>
                         </div>
                       );
                     })}
@@ -345,17 +361,17 @@ export default function AdminDashboardPage() {
               )}
             </article>
 
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
+            <article className="rounded-[20px] border border-white/10 bg-white/[0.06] p-4 sm:rounded-[28px] sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
                 Operational snapshot
               </p>
-              <h2 className="mt-3 text-2xl font-semibold text-white">Quick status</h2>
+              <h2 className="mt-3 text-xl font-semibold text-white sm:text-2xl">Quick status</h2>
               <p className="mt-2 text-sm text-slate-400">
                 A compact overview of system state and the current data pulse.
               </p>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5">
+                <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 sm:rounded-[22px] sm:p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Last updated</p>
                   <p className="mt-3 text-lg font-semibold text-white">
                     {lastUpdated ? formatDateTime(lastUpdated) : "No updates yet"}
@@ -365,34 +381,27 @@ export default function AdminDashboardPage() {
                   </p>
                 </div>
 
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5">
+                <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 sm:rounded-[22px] sm:p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">System health</p>
                   <p className="mt-3 text-2xl font-semibold text-emerald-300">
                     {systemHealth.label || "Healthy"}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        systemHealth.postgresConnected
-                          ? "bg-emerald-400/10 text-emerald-200"
-                          : "bg-amber-400/10 text-amber-200"
-                      }`}
-                    >
-                      {systemHealth.postgresConnected ? "Postgres online" : "Postgres offline"}
-                    </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        systemHealth.mongoConnected
-                          ? "bg-cyan-400/10 text-cyan-200"
-                          : "bg-rose-400/10 text-rose-200"
-                      }`}
-                    >
-                      {systemHealth.mongoConnected ? "Mongo online" : "Mongo offline"}
-                    </span>
+                    <HealthPill
+                      isOnline={systemHealth.postgresConnected}
+                      onlineLabel="Postgres online"
+                      offlineLabel="Postgres offline"
+                    />
+                    <HealthPill
+                      isOnline={systemHealth.mongoConnected}
+                      onlineLabel="Mongo online"
+                      offlineLabel="Mongo offline"
+                      offlineTone="rose"
+                    />
                   </div>
                 </div>
 
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/70 p-5 sm:col-span-2 xl:col-span-1">
+                <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 sm:col-span-2 sm:rounded-[22px] sm:p-5 xl:col-span-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Data pulse</p>
                   <p className="mt-3 text-lg font-semibold text-white">
                     {formatNumber(stats?.totalUsers)} users, {formatNumber(stats?.activeSchemes)} active schemes
@@ -408,16 +417,16 @@ export default function AdminDashboardPage() {
           <section className="mt-6 grid gap-4 xl:grid-cols-[1fr_1fr]">
             <UserTypePie data={userTypeStats} />
 
-            <article className="rounded-[28px] border border-white/10 bg-white/[0.06] p-6">
-              <div className="flex items-start justify-between gap-4">
+            <article className="rounded-[20px] border border-white/10 bg-white/[0.06] p-4 sm:rounded-[28px] sm:p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
                     Activity Feed
                   </p>
-                  <h2 className="mt-3 text-2xl font-semibold text-white">Latest match events</h2>
+                  <h2 className="mt-3 text-xl font-semibold text-white sm:text-2xl">Latest match events</h2>
                 </div>
                 {lastUpdated ? (
-                  <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                  <span className="text-xs uppercase tracking-[0.16em] text-slate-400 sm:text-right">
                     Updated {formatDateTime(lastUpdated)}
                   </span>
                 ) : null}
@@ -429,7 +438,7 @@ export default function AdminDashboardPage() {
                       key={event.id}
                       className="rounded-[18px] border border-white/8 bg-slate-900/70 px-4 py-4"
                     >
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div>
                           <p className="text-sm font-semibold capitalize text-white">
                             {event.sessionType} match
@@ -440,7 +449,7 @@ export default function AdminDashboardPage() {
                             }`}
                           </p>
                         </div>
-                        <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                        <span className="text-xs uppercase tracking-[0.16em] text-slate-400 sm:text-right">
                           {formatDateTime(event.createdAt)}
                         </span>
                       </div>
