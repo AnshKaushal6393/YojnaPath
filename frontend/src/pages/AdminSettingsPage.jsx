@@ -313,23 +313,6 @@ export default function AdminSettingsPage() {
               </div>
             </CardContent>
           </Card>
-
-          <Card className="rounded-[28px]">
-            <CardHeader className="px-5 pt-5 sm:px-6 sm:pt-6">
-              <CardTitle className="text-xl sm:text-2xl">What this page covers</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 px-5 pb-5 sm:px-6 sm:pb-6">
-              <div className="rounded-[18px] bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
-                Admin password change inputs
-              </div>
-              <div className="rounded-[18px] bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
-                Login and admin API rate-limit values
-              </div>
-              <div className="rounded-[18px] bg-slate-950/60 px-4 py-3 text-sm text-slate-300">
-                Max results per query for admin list screens
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </form>
     </section>
