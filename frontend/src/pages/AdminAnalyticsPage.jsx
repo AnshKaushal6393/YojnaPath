@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,6 +25,9 @@ import {
   fetchAdminAnalyticsSchemes,
 } from "../lib/adminApi";
 import { formatDateTime, formatNumber, formatPercent } from "../lib/adminUi";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import {
   sharedAxisTick,
   sharedChartPanelClass,
@@ -33,86 +36,54 @@ import {
   sharedTooltipProps,
 } from "../components/rechartsTheme";
 
-function Section({ eyebrow, title, subtitle, children, accent = false, badge = null }) {
+const TAB_OPTIONS = [
+  { key: "overview", label: "Overview" },
+  { key: "funnel", label: "Funnel" },
+  { key: "nearmiss", label: "Near-miss" },
+  { key: "state", label: "By state" },
+  { key: "usertype", label: "By user type" },
+  { key: "photo", label: "Photo stats" },
+];
+
+function TabButton({ active, children, onClick }) {
   return (
-    <section className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-slate-950/25">
-      {accent ? (
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400" />
-      ) : null}
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">{eyebrow}</p>
-        {badge ? (
-          <span className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-      <h2 className="mt-2 text-2xl font-semibold text-white">{title}</h2>
-      {subtitle ? <p className="mt-2 text-sm leading-6 text-slate-400">{subtitle}</p> : null}
-      <div className="mt-5">{children}</div>
-    </section>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`min-h-11 rounded-xl px-4 py-2 text-sm font-semibold transition ${
+        active
+          ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
+          : "border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
-function Metric({ label, value, hint, tone = "text-emerald-300" }) {
+function MetricCard({ label, value, hint, tone = "text-white" }) {
   return (
-    <article className="rounded-[22px] border border-white/8 bg-slate-950/70 p-5 shadow-inner shadow-slate-950/30">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
-      <p className={`mt-3 text-4xl font-bold ${tone}`}>{value}</p>
-      {hint ? <p className="mt-2 text-xs text-slate-400">{hint}</p> : null}
-    </article>
-  );
-}
-
-function emptyStateHint(label, value) {
-  if (Number(value || 0) > 0) {
-    return null;
-  }
-
-  if (label === "Total matches") {
-    return "No match logs yet.";
-  }
-
-  if (label === "Near misses") {
-    return "No near-miss logs yet.";
-  }
-
-  if (label === "Analyzed profiles") {
-    return "Profiles are ready, but no match analysis has surfaced yet.";
-  }
-
-  if (label === "Schemes ranked") {
-    return "Active schemes are available, but no ranking data has been generated.";
-  }
-
-  return null;
-}
-
-function BarRow({ label, count, width, suffix = "" }) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-4 text-sm">
-        <span className="break-words text-slate-300">{label}</span>
-        <span className="font-semibold text-white">
-          {formatNumber(count)}
-          {suffix}
-        </span>
-      </div>
-      <div className="h-3 rounded-full bg-slate-900/80">
-        <div
-          className="h-3 rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400"
-          style={{ width: `${Math.max(width, 6)}%` }}
-        />
-      </div>
+    <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className={`mt-3 text-3xl font-semibold ${tone}`}>{value}</p>
+      {hint ? <p className="mt-2 text-xs leading-5 text-slate-400">{hint}</p> : null}
     </div>
   );
 }
 
-function formatChartLabel(value) {
-  return String(value || "Unknown")
-    .replace(/[_\s]+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+function ChartPanel({ eyebrow, title, action, children }) {
+  return (
+    <div className={sharedChartPanelClass}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{eyebrow}</p>
+          <p className="mt-2 text-sm font-semibold text-white">{title}</p>
+        </div>
+        {action}
+      </div>
+      <div className="mt-5">{children}</div>
+    </div>
+  );
 }
 
 function RechartsTooltip({ active, payload, label, suffix = "" }) {
@@ -131,14 +102,46 @@ function RechartsTooltip({ active, payload, label, suffix = "" }) {
   );
 }
 
+function formatChartLabel(value) {
+  return String(value || "Unknown")
+    .replace(/[_\s]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function EmptyPanel({ text }) {
+  return <p className="text-sm leading-6 text-slate-400">{text}</p>;
+}
+
+function StateBars({ data }) {
+  const maxValue = Math.max(...data.map((item) => Number(item.count || 0)), 0);
+
+  return (
+    <div className="space-y-3">
+      {data.map((item) => {
+        const width = maxValue > 0 ? (Number(item.count || 0) / maxValue) * 100 : 0;
+        return (
+          <div key={item.key} className="space-y-2">
+            <div className="flex items-center justify-between gap-4 text-sm">
+              <span className="text-slate-300">{formatChartLabel(item.key)}</span>
+              <span className="font-semibold text-white">{formatNumber(item.count)}</span>
+            </div>
+            <div className="h-3 rounded-full bg-slate-900/80">
+              <div
+                className="h-3 rounded-full bg-gradient-to-r from-cyan-400 via-emerald-400 to-lime-400"
+                style={{ width: `${Math.max(width, item.count ? 8 : 0)}%` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminAnalyticsPage() {
   const navigate = useNavigate();
-  const [showAllMatchDays, setShowAllMatchDays] = useState(false);
-  const [showAllNearMisses, setShowAllNearMisses] = useState(false);
-  const [showAllPhotoBreakdown, setShowAllPhotoBreakdown] = useState(false);
-  const [showAllFunnelStages, setShowAllFunnelStages] = useState(false);
-  const [showAllKioskWorkers, setShowAllKioskWorkers] = useState(false);
-  const [showAllTopSchemes, setShowAllTopSchemes] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   const overviewQuery = useQuery({
     queryKey: ["admin-analytics-overview"],
@@ -195,84 +198,9 @@ export default function AdminAnalyticsPage() {
   const overview = overviewQuery.data || {};
   const funnel = funnelQuery.data || {};
   const nearMiss = nearMissQuery.data || {};
-  const schemes = schemesQuery.data?.schemes || [];
+  const schemesPayload = schemesQuery.data || {};
   const photo = photoQuery.data || {};
   const kiosk = kioskQuery.data || {};
-
-  const matchSeries = overview.matchesByDay || [];
-  const maxDailyMatches = Math.max(...matchSeries.map((entry) => Number(entry.count || 0)), 0);
-  const visibleMatchSeries = showAllMatchDays ? matchSeries : matchSeries.slice(0, 7);
-  const matchTotal = matchSeries.reduce((sum, entry) => sum + Number(entry.count || 0), 0);
-  const matchDays = matchSeries.length;
-  const matchAverage = matchDays ? matchTotal / matchDays : 0;
-  const matchPeak = matchSeries.reduce(
-    (best, entry) => {
-      const count = Number(entry.count || 0);
-      return count > best.count ? { day: entry.day, count } : best;
-    },
-    { day: "-", count: 0 },
-  );
-  const topNearMissCriteria = nearMiss.criteria || [];
-  const topSchemes = (schemes || []).slice(0, 8);
-  const photoBreakdown = photo.breakdown || [];
-  const kioskWorkers = kiosk.sessionsByWorker || [];
-  const visibleNearMissCriteria = showAllNearMisses ? topNearMissCriteria : topNearMissCriteria.slice(0, 5);
-  const visiblePhotoBreakdown = showAllPhotoBreakdown ? photoBreakdown : photoBreakdown.slice(0, 4);
-  const visibleFunnelStages = showAllFunnelStages ? funnel.stages || [] : (funnel.stages || []).slice(0, 4);
-  const visibleKioskWorkers = showAllKioskWorkers ? kioskWorkers : kioskWorkers.slice(0, 4);
-  const visibleTopSchemes = showAllTopSchemes ? topSchemes : topSchemes.slice(0, 4);
-  const photoTotal = photoBreakdown.reduce((sum, item) => sum + Number(item.count || 0), 0);
-  const dominantPhoto = photoBreakdown.reduce(
-    (best, item) => {
-      const count = Number(item.count || 0);
-      return count > best.count ? { label: item.label, count } : best;
-    },
-    { label: "-", count: 0 },
-  );
-  const funnelStages = funnel.stages || [];
-  const funnelTotal = funnelStages.reduce((sum, stage) => sum + Number(stage.count || 0), 0);
-  const funnelPeak = funnelStages.reduce(
-    (best, stage) => {
-      const count = Number(stage.count || 0);
-      return count > best.count ? { label: stage.label, count } : best;
-    },
-    { label: "-", count: 0 },
-  );
-  const matchChartData = visibleMatchSeries.map((entry) => ({
-    label: entry.day,
-    value: Number(entry.count || 0),
-  }));
-  const nearMissChartData = visibleNearMissCriteria.map((item) => ({
-    label: formatChartLabel(item.key),
-    value: Number(item.count || 0),
-  }));
-  const photoChartData = visiblePhotoBreakdown.map((item) => ({
-    label: item.label,
-    value: Number(item.count || 0),
-  }));
-  const funnelChartData = visibleFunnelStages.map((stage) => ({
-    label: stage.label,
-    value: Number(stage.count || 0),
-  }));
-  const kioskWorkerChartData = visibleKioskWorkers.map((item) => ({
-    label: formatChartLabel(item.key),
-    value: Number(item.count || 0),
-  }));
-  const schemeChartData = visibleTopSchemes.map((scheme) => ({
-    label: scheme.name,
-    value: Number(scheme.applications || 0),
-  }));
-  const lastUpdated = [
-    overview.generatedAt,
-    funnel.generatedAt,
-    nearMiss.generatedAt,
-    schemesQuery.data?.generatedAt,
-    photo.generatedAt,
-    kiosk.generatedAt,
-  ]
-    .filter(Boolean)
-    .sort()
-    .pop();
 
   const isLoading =
     overviewQuery.isLoading ||
@@ -281,6 +209,7 @@ export default function AdminAnalyticsPage() {
     schemesQuery.isLoading ||
     photoQuery.isLoading ||
     kioskQuery.isLoading;
+
   const error =
     overviewQuery.error ||
     funnelQuery.error ||
@@ -289,369 +218,486 @@ export default function AdminAnalyticsPage() {
     photoQuery.error ||
     kioskQuery.error;
 
-  return (
-    <section className="space-y-6 pb-6">
-      {isLoading ? (
-        <div className="rounded-[30px] border border-white/10 bg-white/[0.06] p-6 text-sm text-slate-300">
-          Loading analytics...
-        </div>
-      ) : null}
+  const matchSeries = overview.matchesByDay || [];
+  const stateData = overview.states || [];
+  const userTypeData = overview.userTypes || [];
+  const nearMissData = nearMiss.criteria || [];
+  const photoData = photo.breakdown || [];
+  const funnelStages = funnel.stages || [];
+  const topSchemes = (schemesPayload.schemes || []).slice(0, 8);
+  const kioskWorkers = kiosk.sessionsByWorker || [];
 
-      {error ? (
-        <div className="rounded-[30px] border border-red-400/30 bg-red-500/10 p-6 text-sm text-red-100">
-          {error.message || "Could not load analytics right now."}
-        </div>
-      ) : null}
+  const lastUpdated = [
+    overview.generatedAt,
+    funnel.generatedAt,
+    nearMiss.generatedAt,
+    schemesPayload.generatedAt,
+    photo.generatedAt,
+    kiosk.generatedAt,
+  ]
+    .filter(Boolean)
+    .sort()
+    .pop();
 
-      <Section
-        eyebrow="Analytics Routes"
-        title="Platform analytics"
-        subtitle="Live snapshots from matches, funnel progress, near misses, schemes, photos, and kiosk usage. Zero values usually mean the data has not been generated yet, not that the route is broken."
-        accent
-        badge="Live data"
-      >
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium uppercase tracking-[0.18em] text-slate-300">
-            Auto refreshed
-          </span>
-          <span>{lastUpdated ? `Last updated ${formatDateTime(lastUpdated)}` : "Last updated: unknown"}</span>
-        </div>
+  const overviewStats = useMemo(() => {
+    const matchTotal = matchSeries.reduce((sum, entry) => sum + Number(entry.count || 0), 0);
+    const peakMatch = matchSeries.reduce(
+      (best, entry) => (Number(entry.count || 0) > best.count ? { day: entry.day, count: Number(entry.count || 0) } : best),
+      { day: "-", count: 0 }
+    );
+    const photoTotal = photoData.reduce((sum, item) => sum + Number(item.count || 0), 0);
 
+    return {
+      matchTotal,
+      peakMatch,
+      photoTotal,
+      totalMatches: Number(overview.totals?.matches || 0),
+      totalNearMisses: Number(overview.totals?.nearMisses || 0),
+      analyzedProfiles: Number(nearMiss.analyzedProfiles || 0),
+      totalApplications: Number(schemesPayload.totalApplications || 0),
+    };
+  }, [matchSeries, nearMiss.analyzedProfiles, overview.totals?.matches, overview.totals?.nearMisses, photoData, schemesPayload.totalApplications]);
+
+  const matchChartData = matchSeries.map((entry) => ({
+    label: entry.day,
+    value: Number(entry.count || 0),
+  }));
+
+  const nearMissChartData = nearMissData.slice(0, 8).map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+
+  const stateChartData = stateData.slice(0, 10).map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+
+  const userTypeChartData = userTypeData.slice(0, 10).map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+
+  const photoChartData = photoData.map((item) => ({
+    label: item.label,
+    value: Number(item.count || 0),
+  }));
+
+  const schemeChartData = topSchemes.map((scheme) => ({
+    label: scheme.name,
+    value: Number(scheme.applications || 0),
+  }));
+
+  const funnelChartData = funnelStages.map((stage) => ({
+    label: stage.label,
+    value: Number(stage.count || 0),
+  }));
+
+  const kioskChartData = kioskWorkers.slice(0, 8).map((item) => ({
+    label: formatChartLabel(item.key),
+    value: Number(item.count || 0),
+  }));
+
+  function renderOverviewTab() {
+    return (
+      <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Metric
-            label="Total matches"
-            value={formatNumber(overview.totals?.matches)}
-            hint={emptyStateHint("Total matches", overview.totals?.matches)}
-            tone="text-cyan-300"
-          />
-          <Metric
-            label="Near misses"
-            value={formatNumber(overview.totals?.nearMisses)}
-            hint={emptyStateHint("Near misses", overview.totals?.nearMisses)}
-            tone="text-rose-300"
-          />
-          <Metric
-            label="Analyzed profiles"
-            value={formatNumber(nearMiss.analyzedProfiles)}
-            hint={emptyStateHint("Analyzed profiles", nearMiss.analyzedProfiles)}
-            tone="text-amber-300"
-          />
-          <Metric
-            label="Schemes ranked"
-            value={formatNumber(schemes.length)}
-            hint={emptyStateHint("Schemes ranked", schemes.length)}
-            tone="text-emerald-300"
-          />
+          <MetricCard label="Total matches" value={formatNumber(overviewStats.totalMatches)} tone="text-cyan-300" />
+          <MetricCard label="Near misses" value={formatNumber(overviewStats.totalNearMisses)} tone="text-rose-300" />
+          <MetricCard label="Analyzed profiles" value={formatNumber(overviewStats.analyzedProfiles)} tone="text-amber-300" />
+          <MetricCard label="Applications" value={formatNumber(overviewStats.totalApplications)} tone="text-emerald-300" />
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
-          <div className={sharedChartPanelClass}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Matches by day</p>
-                <p className="mt-2 text-sm text-slate-400">A compact view of the daily trend, with the strongest day highlighted.</p>
-              </div>
-              {matchSeries.length > 7 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAllMatchDays((value) => !value)}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                >
-                  {showAllMatchDays ? "Show less" : "Show all"}
-                </button>
-              ) : null}
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">7-day total</p>
-                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(matchTotal)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Average/day</p>
-                <p className="mt-2 text-2xl font-bold text-cyan-300">{formatNumber(matchAverage)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Peak day</p>
-                <p className="mt-2 truncate text-lg font-bold text-emerald-300">{matchPeak.day}</p>
-                <p className="text-xs text-slate-400">{formatNumber(matchPeak.count)} matches</p>
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-3">
-              {matchChartData.length ? (
-                <div className="h-[280px]">
+        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <ChartPanel eyebrow="Match trend" title="Daily matches">
+            {matchChartData.length ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MetricCard label="30-day total" value={formatNumber(overviewStats.matchTotal)} />
+                  <MetricCard label="Peak day" value={overviewStats.peakMatch.day} hint={`${formatNumber(overviewStats.peakMatch.count)} matches`} tone="text-emerald-300" />
+                  <MetricCard label="Photo uploads" value={formatNumber(overviewStats.photoTotal)} tone="text-amber-300" />
+                </div>
+                <div className="mt-5 h-[320px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={matchChartData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} vertical={false} />
-                      <XAxis dataKey="label" tick={sharedAxisTick} interval={0} angle={-35} textAnchor="end" height={50} />
+                      <XAxis dataKey="label" tick={sharedAxisTick} interval={4} />
                       <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
                       <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Matches" />} />
                       <Bar dataKey="value" radius={[12, 12, 0, 0]} fill="#06b6d4" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              ) : (
-                <p className="text-sm text-slate-400">No daily match history yet. Start a few match runs to see the curve.</p>
-              )}
-            </div>
-          </div>
+              </>
+            ) : (
+              <EmptyPanel text="No daily match history yet." />
+            )}
+          </ChartPanel>
 
-          <div className={sharedChartPanelClass}>
-            <div className="flex items-start justify-between gap-4">
+          <ChartPanel eyebrow="Operational mix" title="State and user-type leaders">
+            <div className="space-y-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Top near-miss blockers</p>
-                <p className="mt-2 text-sm text-slate-400">The most common blockers users are hitting before a full match.</p>
+                <p className="mb-3 text-xs uppercase tracking-[0.16em] text-slate-500">Top states</p>
+                {stateData.length ? <StateBars data={stateData.slice(0, 5)} /> : <EmptyPanel text="No state analytics yet." />}
               </div>
-              {topNearMissCriteria.length > 5 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAllNearMisses((value) => !value)}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                >
-                  {showAllNearMisses ? "Show less" : "Show all"}
-                </button>
-              ) : null}
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Analyzed profiles</p>
-                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(nearMiss.analyzedProfiles)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Top blocker</p>
-                <p className="mt-2 text-2xl font-bold text-rose-300">{formatNumber(topNearMissCriteria[0]?.count)}</p>
-                <p className="text-xs text-slate-400">
-                  {topNearMissCriteria[0]?.key ? topNearMissCriteria[0].key.replace(/_/g, " ") : "No blocker yet"}
-                </p>
+              <div>
+                <p className="mb-3 text-xs uppercase tracking-[0.16em] text-slate-500">Top user types</p>
+                {userTypeData.length ? <StateBars data={userTypeData.slice(0, 5)} /> : <EmptyPanel text="No user-type analytics yet." />}
               </div>
             </div>
-            <div className="mt-5 space-y-3">
-              {nearMissChartData.length ? (
-                <div className="h-[280px]">
+          </ChartPanel>
+        </div>
+      </div>
+    );
+  }
+
+  function renderFunnelTab() {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <ChartPanel eyebrow="Funnel" title="Registration progression">
+          {funnelChartData.length ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <MetricCard label="Stages" value={formatNumber(funnelStages.length)} />
+                <MetricCard label="Entrants" value={formatNumber(funnelChartData[0]?.value || 0)} tone="text-cyan-300" />
+                <MetricCard
+                  label="Final stage"
+                  value={formatNumber(funnelChartData[funnelChartData.length - 1]?.value || 0)}
+                  tone="text-emerald-300"
+                />
+              </div>
+              <div className="mt-5 h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <FunnelChart>
+                    <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Users" />} />
+                    <Funnel dataKey="value" data={funnelChartData} isAnimationActive>
+                      <LabelList position="right" dataKey="label" fill="#e2e8f0" stroke="none" />
+                    </Funnel>
+                  </FunnelChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          ) : (
+            <EmptyPanel text="No funnel data yet." />
+          )}
+        </ChartPanel>
+
+        <ChartPanel eyebrow="Retention" title="Stage-by-stage dropoff">
+          {funnelStages.length ? (
+            <div className="space-y-3">
+              {funnelStages.map((stage, index) => {
+                const count = Number(stage.count || 0);
+                const previousCount = index === 0 ? count : Number(funnelStages[index - 1]?.count || 0);
+                const retention = index === 0 || previousCount <= 0 ? 100 : (count / previousCount) * 100;
+
+                return (
+                  <div key={stage.key || stage.label || index} className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{stage.label}</p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          {index === 0 ? "Starting stage" : `${formatPercent(retention)} retained from previous stage`}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-white">{formatNumber(count)}</p>
+                        <p className="text-xs text-slate-400">users</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyPanel text="No funnel breakdown yet." />
+          )}
+        </ChartPanel>
+      </div>
+    );
+  }
+
+  function renderNearMissTab() {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <ChartPanel eyebrow="Near-miss" title="Most common blockers">
+          {nearMissChartData.length ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <MetricCard label="Profiles checked" value={formatNumber(nearMiss.analyzedProfiles)} />
+                <MetricCard label="Total near misses" value={formatNumber(nearMiss.totalNearMisses)} tone="text-rose-300" />
+                <MetricCard
+                  label="Top blocker"
+                  value={formatNumber(nearMissChartData[0]?.value || 0)}
+                  hint={nearMissChartData[0]?.label || "None"}
+                  tone="text-amber-300"
+                />
+              </div>
+              <div className="mt-5 h-[340px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={nearMissChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
+                    <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                    <YAxis type="category" dataKey="label" width={120} tick={sharedAxisTick} />
+                    <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Blockers" />} />
+                    <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#ef4444" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          ) : (
+            <EmptyPanel text="No near-miss breakdown yet." />
+          )}
+        </ChartPanel>
+
+        <ChartPanel eyebrow="Scheme pressure" title="Schemes with the most near misses">
+          {Array.isArray(nearMiss.schemes) && nearMiss.schemes.length ? (
+            <div className="space-y-3">
+              {nearMiss.schemes.slice(0, 8).map((scheme) => (
+                <div key={scheme.schemeId} className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">{scheme.name || scheme.schemeId}</p>
+                      <p className="mt-1 truncate text-xs text-slate-500">{scheme.schemeId}</p>
+                    </div>
+                    <Badge variant="warning">{formatNumber(scheme.nearMisses)} near misses</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyPanel text="No scheme-level near-miss list yet." />
+          )}
+        </ChartPanel>
+      </div>
+    );
+  }
+
+  function renderStateTab() {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <ChartPanel eyebrow="State distribution" title="Matches by state">
+          {stateChartData.length ? (
+            <div className="h-[360px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stateChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
+                  <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                  <YAxis type="category" dataKey="label" width={92} tick={sharedAxisTick} />
+                  <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Matches" />} />
+                  <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#14b8a6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyPanel text="No state data yet." />
+          )}
+        </ChartPanel>
+
+        <ChartPanel eyebrow="State breakdown" title="Top states at a glance">
+          {stateData.length ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <MetricCard label="Tracked states" value={formatNumber(stateData.length)} />
+                <MetricCard
+                  label="Top state"
+                  value={formatChartLabel(stateData[0]?.key)}
+                  hint={`${formatNumber(stateData[0]?.count || 0)} matches`}
+                  tone="text-emerald-300"
+                />
+              </div>
+              <div className="mt-5">
+                <StateBars data={stateData.slice(0, 8)} />
+              </div>
+            </>
+          ) : (
+            <EmptyPanel text="No state summary yet." />
+          )}
+        </ChartPanel>
+      </div>
+    );
+  }
+
+  function renderUserTypeTab() {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
+        <ChartPanel eyebrow="User type" title="Match volume by user type">
+          {userTypeChartData.length ? (
+            <div className="h-[360px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userTypeChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
+                  <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                  <YAxis type="category" dataKey="label" width={120} tick={sharedAxisTick} />
+                  <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Matches" />} />
+                  <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#8b5cf6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyPanel text="No user-type data yet." />
+          )}
+        </ChartPanel>
+
+        <ChartPanel eyebrow="Cross-signal" title="Kiosk workers and top schemes">
+          <div className="space-y-5">
+            <div>
+              <p className="mb-3 text-xs uppercase tracking-[0.16em] text-slate-500">Kiosk worker sessions</p>
+              {kioskChartData.length ? (
+                <div className="h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={nearMissChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                    <BarChart data={kioskChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
                       <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                      <YAxis type="category" dataKey="label" width={96} tick={sharedAxisTick} />
-                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Blockers" />} />
-                      <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#ef4444" />
+                      <YAxis type="category" dataKey="label" width={92} tick={sharedAxisTick} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Sessions" />} />
+                      <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#22c55e" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">No near-miss breakdown yet. Once users start missing by one rule, this list will fill in.</p>
+                <EmptyPanel text="No kiosk sessions yet." />
               )}
             </div>
-          </div>
-
-          <div className={sharedChartPanelClass}>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Photo breakdown</p>
-                <p className="mt-2 text-sm text-slate-400">A compact view of how users are adding profile photos.</p>
-              </div>
-              {photoBreakdown.length > 4 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAllPhotoBreakdown((value) => !value)}
-                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                >
-                  {showAllPhotoBreakdown ? "Show less" : "Show all"}
-                </button>
-              ) : null}
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Total photos</p>
-                <p className="mt-2 text-2xl font-bold text-white">{formatNumber(photoTotal)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Most used</p>
-                <p className="mt-2 text-2xl font-bold text-amber-300">{formatNumber(dominantPhoto.count)}</p>
-                <p className="text-xs text-slate-400">{dominantPhoto.label}</p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {photoChartData.length ? (
-                <div className="h-[280px]">
+            <div>
+              <p className="mb-3 text-xs uppercase tracking-[0.16em] text-slate-500">Top schemes by applications</p>
+              {schemeChartData.length ? (
+                <div className="h-[220px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={photoChartData}
-                        dataKey="value"
-                        nameKey="label"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={56}
-                        outerRadius={92}
-                        paddingAngle={3}
-                      >
-                        {photoChartData.map((entry, index) => (
-                          <Cell
-                            key={entry.label}
-                            fill={sharedPieColors[index % sharedPieColors.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Photos" />} />
-                    </PieChart>
+                    <BarChart data={schemeChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
+                      <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                      <YAxis type="category" dataKey="label" width={100} tick={sharedAxisTick} />
+                      <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Applications" />} />
+                      <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#a855f7" />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400">No photo stats yet. Registration activity will populate this breakdown.</p>
+                <EmptyPanel text="No scheme application ranking yet." />
               )}
             </div>
+          </div>
+        </ChartPanel>
+      </div>
+    );
+  }
+
+  function renderPhotoTab() {
+    return (
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <ChartPanel eyebrow="Photo stats" title="Profile photo breakdown">
+          {photoChartData.length ? (
+            <>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <MetricCard label="Total photos" value={formatNumber(photo.total || 0)} />
+                <MetricCard label="Methods tracked" value={formatNumber(photoData.length)} />
+                <MetricCard
+                  label="Top source"
+                  value={photoChartData[0]?.label || "-"}
+                  hint={`${formatNumber(photoChartData[0]?.value || 0)} profiles`}
+                  tone="text-amber-300"
+                />
+              </div>
+              <div className="mt-5 h-[340px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={photoChartData}
+                      dataKey="value"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={72}
+                      outerRadius={118}
+                      paddingAngle={3}
+                    >
+                      {photoChartData.map((entry, index) => (
+                        <Cell key={entry.label} fill={sharedPieColors[index % sharedPieColors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Profiles" />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          ) : (
+            <EmptyPanel text="No photo data yet." />
+          )}
+        </ChartPanel>
+
+        <ChartPanel eyebrow="Distribution" title="Photo source detail">
+          {photoData.length ? (
+            <div className="space-y-3">
+              {photoData.map((item) => (
+                <div key={item.key} className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{item.label}</p>
+                      <p className="mt-1 text-xs text-slate-400">{formatPercent(item.pct || 0)} of all profile photos</p>
+                    </div>
+                    <Badge variant="info">{formatNumber(item.count)}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyPanel text="No photo source list yet." />
+          )}
+        </ChartPanel>
+      </div>
+    );
+  }
+
+  function renderActiveTab() {
+    if (activeTab === "funnel") return renderFunnelTab();
+    if (activeTab === "nearmiss") return renderNearMissTab();
+    if (activeTab === "state") return renderStateTab();
+    if (activeTab === "usertype") return renderUserTypeTab();
+    if (activeTab === "photo") return renderPhotoTab();
+    return renderOverviewTab();
+  }
+
+  return (
+    <Card className="rounded-[22px] p-0 sm:rounded-[28px]">
+      <CardHeader className="gap-4 px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">Analytics routes</p>
+            <CardTitle className="mt-3 text-2xl sm:text-3xl">Analytics</CardTitle>
+            <CardDescription className="max-w-2xl leading-6">
+              Overview, funnel, near-miss, state, user-type, and photo analytics in one responsive admin surface.
+            </CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="success">Live data</Badge>
+            <Badge variant="default">{lastUpdated ? `Updated ${formatDateTime(lastUpdated)}` : "Updated unknown"}</Badge>
           </div>
         </div>
-      </Section>
+      </CardHeader>
 
-      <div className="space-y-6">
-        <Section
-          eyebrow="Operational Analytics"
-          title="Funnel and kiosk analytics"
-          subtitle="The funnel shows progression, while kiosk analytics show operator usage and PDF exports."
-        >
-          <div className="grid gap-4 md:grid-cols-3">
-            <Metric label="Funnel stages" value={formatNumber(funnelStages.length)} tone="text-cyan-300" />
-            <Metric label="Stage total" value={formatNumber(funnelTotal)} tone="text-emerald-300" />
-            <Metric label="Peak stage" value={formatNumber(funnelPeak.count)} hint={funnelPeak.label} tone="text-amber-300" />
+      <CardContent className="space-y-6 px-4 pt-0 pb-4 sm:px-6 sm:pb-6">
+        {isLoading ? (
+          <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-300">
+            Loading analytics...
           </div>
-          <div className="mt-5 grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-            <div className={sharedChartPanelClass}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Registration funnel</p>
-                  <p className="mt-2 text-sm text-slate-400">A compact stage-by-stage view of registration progress.</p>
-                </div>
-                {funnelStages.length > 4 ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowAllFunnelStages((value) => !value)}
-                    className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                  >
-                    {showAllFunnelStages ? "Show less" : "Show all"}
-                  </button>
-                ) : null}
-              </div>
-              {funnelChartData.length ? (
-                <>
-                  <div className="mt-5 h-[220px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <FunnelChart>
-                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Stages" />} />
-                        <Funnel dataKey="value" data={funnelChartData} isAnimationActive>
-                          <LabelList position="right" dataKey="label" fill="#e2e8f0" stroke="none" />
-                        </Funnel>
-                      </FunnelChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="mt-5 space-y-3">
-                    {funnelStages.map((stage, index) => {
-                      const count = Number(stage.count || 0);
-                      const previousCount = index === 0 ? count : Number(funnelStages[index - 1]?.count || 0);
-                      const retention = index === 0 || previousCount <= 0 ? 100 : (count / previousCount) * 100;
+        ) : null}
 
-                      return (
-                        <div
-                          key={stage.key || stage.label || index}
-                          className="rounded-[18px] border border-white/8 bg-slate-950/70 px-4 py-3"
-                        >
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-sm font-semibold text-white">{stage.label}</p>
-                              <p className="mt-1 text-xs text-slate-400">
-                                {index === 0 ? "Starting stage" : `${formatPercent(retention)} retained from previous stage`}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-white">{formatNumber(count)}</p>
-                              <p className="text-xs text-slate-400">users</p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-4 text-sm text-slate-400">No funnel data yet. This fills up as users move through registration.</p>
-              )}
-            </div>
+        {error ? (
+          <div className="rounded-[20px] border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-100">
+            {error.message || "Could not load analytics right now."}
+          </div>
+        ) : null}
 
-            <div className={sharedChartPanelClass}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Kiosk usage</p>
-                  <p className="mt-2 text-sm text-slate-400">Sessions, downloads, and the operators using the kiosk most often.</p>
-                </div>
-              </div>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <Metric label="Sessions" value={formatNumber(kiosk.totalSessions)} tone="text-cyan-300" />
-                <Metric label="PDF downloads" value={formatNumber(kiosk.totalPdfDownloads)} tone="text-amber-300" />
-              </div>
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm font-semibold text-white">Sessions per worker</p>
-                    {kioskWorkers.length > 4 ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllKioskWorkers((value) => !value)}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                      >
-                        {showAllKioskWorkers ? "Show less" : "Show all"}
-                      </button>
-                    ) : null}
-                </div>
-                {kioskWorkerChartData.length ? (
-                  <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={kioskWorkerChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
-                        <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                        <YAxis type="category" dataKey="label" width={92} tick={sharedAxisTick} />
-                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Sessions" />} />
-                        <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#22c55e" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : <p className="text-sm text-slate-400">No kiosk usage yet. Once kiosk sessions start, this will show which workers are active.</p>}
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-sm font-semibold text-white">Top schemes by applications</p>
-                    {topSchemes.length > 4 ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllTopSchemes((value) => !value)}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-                      >
-                        {showAllTopSchemes ? "Show less" : "Show all"}
-                      </button>
-                    ) : null}
-                  </div>
-                {schemeChartData.length ? (
-                  <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={schemeChartData} layout="vertical" margin={{ top: 10, right: 8, left: 12, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={sharedGridStroke} horizontal={false} />
-                        <XAxis type="number" tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-                        <YAxis type="category" dataKey="label" width={96} tick={sharedAxisTick} />
-                        <Tooltip {...sharedTooltipProps} content={<RechartsTooltip label="Applications" />} />
-                        <Bar dataKey="value" radius={[0, 12, 12, 0]} fill="#a855f7" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : <p className="text-sm text-slate-400">No scheme analytics yet. Applications will populate this list.</p>}
-              </div>
-            </div>
-          </div>
-          </div>
-        </Section>
-      </div>
-    </section>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          {TAB_OPTIONS.map((tab) => (
+            <TabButton key={tab.key} active={activeTab === tab.key} onClick={() => setActiveTab(tab.key)}>
+              {tab.label}
+            </TabButton>
+          ))}
+        </div>
+
+        {!isLoading && !error ? renderActiveTab() : null}
+      </CardContent>
+    </Card>
   );
 }
-
-
