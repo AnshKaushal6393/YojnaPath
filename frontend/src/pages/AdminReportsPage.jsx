@@ -1,15 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  fetchAdminActivity,
-  fetchAdminAnalyticsFunnel,
-  fetchAdminAnalyticsOverview,
-  fetchAdminDashboard,
-  fetchAdminSchemeFlags,
-  fetchAdminSchemes,
-  fetchAdminStats,
-} from "../lib/adminApi";
-import { formatDateTime, formatNumber, formatPercent } from "../lib/adminUi";
+import { fetchAdminReport } from "../lib/adminApi";
+import { formatDateTime } from "../lib/adminUi";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -138,96 +130,6 @@ async function downloadPdf(report) {
   doc.save(`${sanitizeFileName(report.title)}.pdf`);
 }
 
-async function buildOperationsReport() {
-  const [dashboard, stats, activity] = await Promise.all([
-    fetchAdminDashboard(),
-    fetchAdminStats(),
-    fetchAdminActivity(),
-  ]);
-
-  return {
-    nullGuard: dashboard ?? stats ?? activity,
-    title: "Operations Report",
-    highlights: [
-      { label: "Total users", value: formatNumber(stats?.totalUsers || 0) },
-      { label: "Active schemes", value: formatNumber(stats?.activeSchemes || 0) },
-      { label: "Total match runs", value: formatNumber(stats?.totalMatchRuns || 0) },
-      { label: "System health", value: stats?.systemHealth?.postgresConnected ? "Postgres online" : "Postgres offline" },
-    ],
-    tableHeaders: ["Event", "Time", "Detail"],
-    tableRows: (activity?.events || []).slice(0, 20).map((event) => [
-      event.label || event.type || "Activity",
-      formatDateTime(event.createdAt || event.timestamp),
-      event.description || event.meta || "Recent admin activity",
-    ]),
-  };
-}
-
-async function buildAcquisitionReport() {
-  const [overview, funnel] = await Promise.all([
-    fetchAdminAnalyticsOverview(),
-    fetchAdminAnalyticsFunnel(),
-  ]);
-
-  const stages = funnel?.stages || [];
-  const matchesByDay = overview?.matchesByDay || [];
-  const totalMatches = matchesByDay.reduce((sum, item) => sum + Number(item.count || 0), 0);
-  const analyzedProfiles = Number(overview?.analyzedProfiles || 0);
-
-  return {
-    nullGuard: overview ?? funnel,
-    title: "User Acquisition Report",
-    highlights: [
-      { label: "Analyzed profiles", value: formatNumber(analyzedProfiles) },
-      { label: "Total matches", value: formatNumber(totalMatches) },
-      { label: "Average matches / profile", value: analyzedProfiles ? formatPercent((totalMatches / analyzedProfiles) * 100 / 100) : "0%" },
-      { label: "Funnel stages", value: formatNumber(stages.length) },
-    ],
-    tableHeaders: ["Stage", "Count", "Conversion"],
-    tableRows: stages.map((stage, index) => {
-      const previous = index === 0 ? Number(stage.count || 0) : Number(stages[index - 1]?.count || 0);
-      const current = Number(stage.count || 0);
-      const conversion = previous > 0 ? `${Math.round((current / previous) * 100)}%` : "100%";
-
-      return [stage.label || stage.name || `Stage ${index + 1}`, formatNumber(current), conversion];
-    }),
-  };
-}
-
-async function buildSchemeQualityReport() {
-  const [flags, schemes] = await Promise.all([
-    fetchAdminSchemeFlags(),
-    fetchAdminSchemes({ page: 1, limit: 25 }),
-  ]);
-
-  const flaggedSchemes = flags?.schemes || [];
-  const enrichmentSchemes = flags?.enrichmentSchemes || [];
-  const schemeRows = schemes?.schemes || [];
-
-  return {
-    nullGuard: flags ?? schemes,
-    title: "Scheme Quality Report",
-    highlights: [
-      { label: "Flagged schemes", value: formatNumber(flaggedSchemes.length) },
-      { label: "Need enrichment", value: formatNumber(enrichmentSchemes.length) },
-      { label: "Listed schemes", value: formatNumber(schemes?.total || schemeRows.length || 0) },
-      { label: "Inactive schemes", value: formatNumber(schemeRows.filter((scheme) => scheme.active === false).length) },
-    ],
-    tableHeaders: ["Scheme", "State", "Review flags"],
-    tableRows: schemeRows.slice(0, 20).map((scheme) => [
-      scheme.schemeId || "Unknown",
-      scheme.state || "NA",
-      (scheme.reviewReasons || scheme.enrichmentReasons || []).join(", ") || "Clear",
-    ]),
-  };
-}
-
-const REPORT_BUILDERS = {
-  operations: buildOperationsReport,
-  acquisition: buildAcquisitionReport,
-  "scheme-quality": buildSchemeQualityReport,
-};
-
 function StatCard({ label, value, hint }) {
   return (
     <div className="rounded-[22px] border border-white/8 bg-slate-950/60 p-4">
@@ -258,20 +160,18 @@ export default function AdminReportsPage() {
     setError("");
 
     try {
-      const builder = REPORT_BUILDERS[filters.reportType];
-      const payload = await builder();
+      const payload = await fetchAdminReport({
+        reportType: filters.reportType,
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+      });
 
-      if (payload.nullGuard === null) {
+      if (payload === null) {
         navigate("/admin/login", { replace: true });
         return;
       }
 
-      setReport({
-        ...payload,
-        type: filters.reportType,
-        dateLabel: `${filters.startDate} to ${filters.endDate}`,
-        generatedAt: new Date().toISOString(),
-      });
+      setReport(payload);
     } catch (buildError) {
       setError(buildError.message || "Could not generate report right now.");
     } finally {
@@ -363,8 +263,7 @@ export default function AdminReportsPage() {
           </div>
 
           <div className="mt-4 rounded-[20px] border border-white/8 bg-slate-950/60 px-4 py-3 text-sm text-slate-400">
-            {activeType.description} Current backend report feeds return latest snapshots, so the selected date range is
-            stored in the report context and exports.
+            {activeType.description}
           </div>
 
           {error ? (

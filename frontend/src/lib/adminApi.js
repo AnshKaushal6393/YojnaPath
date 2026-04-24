@@ -95,6 +95,12 @@ export async function fetchAdminAnalyticsKiosk() {
   });
 }
 
+export async function fetchAdminReport(params = {}) {
+  return withAdminSession(async (token) => {
+    return apiGet(`/api/admin/reports${buildQueryString(params)}`, { token });
+  });
+}
+
 export async function fetchAdminSettings() {
   return withAdminSession(async (token) => {
     return apiGet("/api/admin/settings", { token });

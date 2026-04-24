@@ -20,6 +20,7 @@ const {
   getAnalyticsPhotoRoute,
   getAnalyticsSchemesRoute,
 } = require("../controllers/adminAnalyticsController");
+const { getReports } = require("../controllers/adminReportsController");
 const {
   createScheme,
   deleteScheme,
@@ -48,6 +49,7 @@ router.get("/analytics/nearmiss", getAnalyticsNearMissRoute);
 router.get("/analytics/schemes", getAnalyticsSchemesRoute);
 router.get("/analytics/photo", getAnalyticsPhotoRoute);
 router.get("/analytics/kiosk", getAnalyticsKioskRoute);
+router.get("/reports", getReports);
 router.get("/users/export", exportUsers);
 router.get("/users", getUsers);
 router.get("/users/:id", getUserById);
