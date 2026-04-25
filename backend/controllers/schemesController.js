@@ -9,6 +9,7 @@ const {
   isSchemeOpenForApplications,
 } = require("../services/deadlineTrackerService");
 const { topSchemesCache } = require("../services/topSchemesCache");
+const { submitSchemeIssueReport } = require("../services/schemeReportService");
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -319,6 +320,26 @@ async function getAllSchemesLightweight(req, res) {
   return res.json(schemes.filter((scheme) => isSchemeOpenForApplications(scheme)).map((scheme) => attachDeadlineInfo(scheme)));
 }
 
+async function reportSchemeIssue(req, res) {
+  try {
+    const result = await submitSchemeIssueReport(req.params?.id, req.body || {}, {
+      userId: req.user?.id || null,
+      lang: normalizeLanguage(req.body?.lang ?? req.query?.lang),
+      userAgent: req.headers["user-agent"] || null,
+      ipAddress: req.ip || req.socket?.remoteAddress || null,
+    });
+
+    if (!result) {
+      return res.status(404).json({ message: "Scheme not found" });
+    }
+
+    return res.status(201).json(result);
+  } catch (error) {
+    const status = Number(error?.status || 500);
+    return res.status(status).json({ message: error?.message || "Could not report issue" });
+  }
+}
+
 module.exports = {
   buildMatchProfile,
   buildCacheKey,
@@ -329,6 +350,7 @@ module.exports = {
   getTopSchemesByUserType,
   getUrgentSchemes,
   matchSchemes,
+  reportSchemeIssue,
   normalizeUserType,
   validateMatchProfile,
 };

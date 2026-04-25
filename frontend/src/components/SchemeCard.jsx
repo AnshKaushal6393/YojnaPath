@@ -3,7 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoryMeta } from "../lib/categoryMeta";
 import { generateChecklistPdf } from "../lib/checklistPdf";
+import { reportSchemeIssue } from "../lib/schemeReportApi";
 import { fetchSchemeDetail } from "../lib/schemeDetailApi";
+
+const ISSUE_OPTIONS = [
+  { value: "wrong_url", label: "Wrong URL" },
+  { value: "scheme_closed", label: "Scheme is closed" },
+  { value: "wrong_eligibility", label: "Wrong eligibility info" },
+  { value: "other", label: "Other" },
+];
 
 export default function SchemeCard({
   schemeId,
@@ -24,6 +32,11 @@ export default function SchemeCard({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isDownloadingChecklist, setIsDownloadingChecklist] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState("wrong_url");
+  const [reportNote, setReportNote] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [reportSuccessMessage, setReportSuccessMessage] = useState("");
 
   function toSentenceCase(value) {
     return String(value ?? "")
@@ -125,6 +138,43 @@ export default function SchemeCard({
     }
   }
 
+  function openReportSheet(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setReportSuccessMessage("");
+    setSelectedIssue("wrong_url");
+    setReportNote("");
+    setIsReportOpen(true);
+  }
+
+  function closeReportSheet() {
+    if (isSubmittingReport) {
+      return;
+    }
+
+    setIsReportOpen(false);
+  }
+
+  async function handleReportSubmit(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      setIsSubmittingReport(true);
+      await reportSchemeIssue(schemeId, {
+        reason: selectedIssue,
+        note: reportNote,
+        lang: i18n.resolvedLanguage,
+      });
+      setReportSuccessMessage("Thanks. We sent this to the admin review queue.");
+      setIsReportOpen(false);
+    } catch (error) {
+      window.alert(error?.message || "Could not submit issue report.");
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  }
+
   return (
     <article
       className={`scheme-card ${statusClass}`.trim()}
@@ -179,20 +229,109 @@ export default function SchemeCard({
           </div>
         ) : null}
         <div className="scheme-card__actions" onClick={(event) => event.stopPropagation()}>
-          <button
-            type="button"
-            className="detail-card__secondary-button"
-            onClick={handleChecklistDownload}
-            disabled={isDownloadingChecklist}
-          >
-            {isDownloadingChecklist ? t("checklist.generating") : t("checklist.download")}
-          </button>
+          <div className="scheme-card__action-stack">
+            <button
+              type="button"
+              className="detail-card__secondary-button"
+              onClick={handleChecklistDownload}
+              disabled={isDownloadingChecklist}
+            >
+              {isDownloadingChecklist ? t("checklist.generating") : t("checklist.download")}
+            </button>
+            <div className="scheme-card__report-row">
+              <button type="button" className="scheme-card__report-link" onClick={openReportSheet}>
+                Report an issue
+              </button>
+              {reportSuccessMessage ? (
+                <span className="scheme-card__report-feedback" role="status">
+                  {reportSuccessMessage}
+                </span>
+              ) : null}
+            </div>
+          </div>
         </div>
         <span className="scheme-card__expand-row" aria-hidden="true">
           <span className="scheme-card__expand-label">View full details</span>
           <span className="card-expand-icon">{"\u2197"}</span>
         </span>
       </div>
+      {isReportOpen ? (
+        <div className="app-modal-backdrop app-modal-backdrop--sheet" role="presentation" onClick={closeReportSheet}>
+          <div
+            className="app-modal scheme-report-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`scheme-report-title-${schemeId}`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+          >
+            <form className="scheme-report-sheet__form" onSubmit={handleReportSubmit}>
+              <div className="scheme-report-sheet__header">
+                <div>
+                  <p className="type-label">Report issue</p>
+                  <h3 id={`scheme-report-title-${schemeId}`} className="type-h3">
+                    {schemeName}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  className="scheme-report-sheet__close"
+                  onClick={closeReportSheet}
+                  aria-label="Close report issue dialog"
+                >
+                  x
+                </button>
+              </div>
+
+              <div className="scheme-report-sheet__options">
+                {ISSUE_OPTIONS.map((option) => (
+                  <label key={option.value} className="scheme-report-sheet__option">
+                    <input
+                      type="radio"
+                      name={`scheme-issue-${schemeId}`}
+                      value={option.value}
+                      checked={selectedIssue === option.value}
+                      onChange={() => setSelectedIssue(option.value)}
+                    />
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
+
+              <label className="scheme-report-sheet__field">
+                <span className="type-label">Note</span>
+                <textarea
+                  className="scheme-report-sheet__textarea"
+                  rows={4}
+                  value={reportNote}
+                  onChange={(event) => setReportNote(event.target.value)}
+                  placeholder="Optional details for the admin team"
+                />
+              </label>
+
+              <div className="scheme-report-sheet__actions">
+                <button
+                  type="button"
+                  className="scheme-report-sheet__ghost"
+                  onClick={closeReportSheet}
+                  disabled={isSubmittingReport}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="detail-card__secondary-button"
+                  disabled={isSubmittingReport || (selectedIssue === "other" && !reportNote.trim())}
+                >
+                  {isSubmittingReport ? "Submitting..." : "Submit report"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }

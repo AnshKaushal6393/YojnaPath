@@ -130,6 +130,18 @@ CREATE TABLE IF NOT EXISTS scheme_review_actions (
   reviewed_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS scheme_issue_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scheme_id VARCHAR(50) NOT NULL,
+  reason VARCHAR(40) NOT NULL,
+  note TEXT,
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  lang VARCHAR(5),
+  user_agent TEXT,
+  ip_address VARCHAR(120),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS kiosk_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(20) UNIQUE NOT NULL,
