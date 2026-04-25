@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS match_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES users(id) ON DELETE SET NULL,
   session_type VARCHAR(10) DEFAULT 'web',
-  state VARCHAR(10),
+  state VARCHAR(80),
   occupation VARCHAR(30),
   match_count INTEGER,
   near_miss_count INTEGER,
