@@ -2222,6 +2222,12 @@ select {
   justify-content: center;
 }
 
+.scheme-card__explain-button {
+  background: rgba(245, 169, 52, 0.08);
+  border-color: rgba(181, 106, 0, 0.18);
+  color: #8a5a00;
+}
+
 .scheme-card__report-row {
   display: flex;
   align-items: center;
@@ -2247,6 +2253,11 @@ select {
 
 .scheme-card__compare-toggle input {
   accent-color: var(--brand);
+}
+
+.scheme-card__compare-toggle input:disabled + span,
+.scheme-card__compare-toggle:has(input:disabled) {
+  opacity: 0.45;
 }
 
 .scheme-card__report-link {
@@ -3229,6 +3240,18 @@ select {
   background: transparent;
   color: #27413b;
   cursor: pointer;
+}
+
+.scheme-explain-sheet__content {
+  padding: 2px 0 0;
+}
+
+.scheme-explain-sheet__text {
+  margin: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  line-height: 1.7;
+  color: #27413b;
 }
 
 .profile-create-modal {

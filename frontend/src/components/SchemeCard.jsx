@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoryMeta } from "../lib/categoryMeta";
 import { generateChecklistPdf } from "../lib/checklistPdf";
+import { explainSchemeInHindi } from "../lib/schemeExplainApi";
 import { reportSchemeIssue } from "../lib/schemeReportApi";
 import { fetchSchemeDetail } from "../lib/schemeDetailApi";
 
@@ -29,12 +30,16 @@ export default function SchemeCard({
   totalCriteria,
   isCompareSelectable = false,
   isCompareSelected = false,
+  isCompareDisabled = false,
   onCompareToggle = null,
   staggerIndex = 0,
 }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isDownloadingChecklist, setIsDownloadingChecklist] = useState(false);
+  const [isExplainOpen, setIsExplainOpen] = useState(false);
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [schemeExplanation, setSchemeExplanation] = useState("");
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState("wrong_url");
   const [reportNote, setReportNote] = useState("");
@@ -147,6 +152,31 @@ export default function SchemeCard({
     }
   }
 
+  async function openExplainSheet(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    try {
+      setIsExplainOpen(true);
+      setIsExplaining(true);
+      setSchemeExplanation("");
+      const payload = await explainSchemeInHindi(schemeId);
+      setSchemeExplanation(payload?.explanation || "Abhi simple explanation available nahi hai.");
+    } catch (error) {
+      setSchemeExplanation(error?.message || "Scheme explanation load nahi ho paya.");
+    } finally {
+      setIsExplaining(false);
+    }
+  }
+
+  function closeExplainSheet() {
+    if (isExplaining) {
+      return;
+    }
+
+    setIsExplainOpen(false);
+  }
+
   function openReportSheet(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -213,6 +243,7 @@ export default function SchemeCard({
             <input
               type="checkbox"
               checked={isCompareSelected}
+              disabled={isCompareDisabled}
               onChange={handleCompareToggle}
               aria-label={`Select ${schemeName} for comparison`}
             />
@@ -252,6 +283,14 @@ export default function SchemeCard({
         ) : null}
         <div className="scheme-card__actions" onClick={(event) => event.stopPropagation()}>
           <div className="scheme-card__action-stack">
+            <button
+              type="button"
+              className="detail-card__secondary-button scheme-card__explain-button"
+              onClick={openExplainSheet}
+              disabled={isExplaining}
+            >
+              {isExplaining ? "Samjha rahe hain..." : "Samjhao"}
+            </button>
             <button
               type="button"
               className="detail-card__secondary-button"
@@ -351,6 +390,47 @@ export default function SchemeCard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+      {isExplainOpen ? (
+        <div className="app-modal-backdrop app-modal-backdrop--sheet" role="presentation" onClick={closeExplainSheet}>
+          <div
+            className="app-modal scheme-report-sheet scheme-explain-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`scheme-explain-title-${schemeId}`}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+          >
+            <div className="scheme-report-sheet__form">
+              <div className="scheme-report-sheet__header">
+                <div>
+                  <p className="type-label">AI scheme explainer</p>
+                  <h3 id={`scheme-explain-title-${schemeId}`} className="type-h3">
+                    {schemeName}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  className="scheme-report-sheet__close"
+                  onClick={closeExplainSheet}
+                  aria-label="Close explainer dialog"
+                >
+                  x
+                </button>
+              </div>
+
+              <div className="scheme-explain-sheet__content">
+                {isExplaining ? (
+                  <p className="type-body-en">Simple Hindi explanation aa raha hai...</p>
+                ) : (
+                  <pre className="scheme-explain-sheet__text">{schemeExplanation}</pre>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       ) : null}

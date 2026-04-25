@@ -113,6 +113,7 @@ export default function ResultsPage() {
     const schemeMap = new Map((resultsQuery.data?.schemes || []).map((scheme) => [scheme.id, scheme]));
     return compareSchemeIds.map((schemeId) => schemeMap.get(schemeId)).filter(Boolean);
   }, [compareSchemeIds, resultsQuery.data?.schemes]);
+  const compareCategory = compareSchemes[0]?.category || null;
 
   const compareRows = useMemo(() => {
     if (!compareSchemes.length || !compareDetailsQuery.data?.length) {
@@ -181,9 +182,20 @@ export default function ResultsPage() {
   }
 
   function handleCompareToggle(schemeId) {
+    const selectedScheme = (resultsQuery.data?.schemes || []).find((scheme) => scheme.id === schemeId);
+
     setCompareSchemeIds((current) => {
       if (current.includes(schemeId)) {
         return current.filter((id) => id !== schemeId);
+      }
+
+       if (
+        current.length > 0 &&
+        selectedScheme &&
+        compareCategory &&
+        selectedScheme.category !== compareCategory
+      ) {
+        return current;
       }
 
       if (current.length >= 2) {
@@ -303,6 +315,9 @@ export default function ResultsPage() {
                   {compareSchemeIds.length ? (
                     <span className="type-caption">{compareSchemeIds.length} selected</span>
                   ) : null}
+                  {compareCategory ? (
+                    <span className="type-caption">Category: {toSentenceCase(compareCategory)}</span>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -314,7 +329,11 @@ export default function ResultsPage() {
             {compareSchemeIds.length ? (
               <div className="results-compare-bar">
                 <span className="type-caption">
-                  Select {2 - compareSchemeIds.length > 0 ? `${2 - compareSchemeIds.length} more` : "ready to compare"}
+                  {compareCategory
+                    ? `Compare only ${toSentenceCase(compareCategory)} schemes. ${
+                        2 - compareSchemeIds.length > 0 ? `Select ${2 - compareSchemeIds.length} more.` : "Ready to compare."
+                      }`
+                    : `Select ${2 - compareSchemeIds.length > 0 ? `${2 - compareSchemeIds.length} more` : "ready to compare"}`}
                 </span>
                 <div className="results-compare-bar__actions">
                   <button type="button" className="results-page-button" onClick={clearCompareSelection}>
@@ -369,6 +388,11 @@ export default function ResultsPage() {
                     descriptionHi={scheme.descriptionHi}
                     isCompareSelectable={true}
                     isCompareSelected={compareSchemeIds.includes(scheme.id)}
+                    isCompareDisabled={
+                      Boolean(compareCategory) &&
+                      !compareSchemeIds.includes(scheme.id) &&
+                      scheme.category !== compareCategory
+                    }
                     onCompareToggle={handleCompareToggle}
                     staggerIndex={index}
                   />

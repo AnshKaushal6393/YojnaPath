@@ -10,6 +10,7 @@ const {
 } = require("../services/deadlineTrackerService");
 const { topSchemesCache } = require("../services/topSchemesCache");
 const { submitSchemeIssueReport } = require("../services/schemeReportService");
+const { explainSchemeInHindi } = require("../services/schemeExplainService");
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -340,6 +341,21 @@ async function reportSchemeIssue(req, res) {
   }
 }
 
+async function explainScheme(req, res) {
+  try {
+    const result = await explainSchemeInHindi(req.params?.id);
+
+    if (!result) {
+      return res.status(404).json({ message: "Scheme not found" });
+    }
+
+    return res.json(result);
+  } catch (error) {
+    const status = Number(error?.status || 500);
+    return res.status(status).json({ message: error?.message || "Could not explain scheme" });
+  }
+}
+
 module.exports = {
   buildMatchProfile,
   buildCacheKey,
@@ -350,6 +366,7 @@ module.exports = {
   getTopSchemesByUserType,
   getUrgentSchemes,
   matchSchemes,
+  explainScheme,
   reportSchemeIssue,
   normalizeUserType,
   validateMatchProfile,
