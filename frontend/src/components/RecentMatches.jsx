@@ -26,6 +26,8 @@ export default function RecentMatches({ schemes, isLoading, error }) {
               state={scheme.state}
               ministry={scheme.ministry}
               matchScorePercent={scheme.matchScorePercent}
+              matchedCriteria={scheme.matchedCriteria}
+              totalCriteria={scheme.totalCriteria}
               matchStatus={scheme.matchStatus}
               description={scheme.description}
               descriptionHi={scheme.descriptionHi}

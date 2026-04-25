@@ -11,6 +11,20 @@ import {
   toSentenceCase,
 } from "./schemeText";
 
+const TOTAL_MATCH_RULES = 14;
+
+function toMatchPercent(score, totalCriteria) {
+  const hasValidScore = typeof score === "number" && !Number.isNaN(score);
+  const hasValidCriteria =
+    typeof totalCriteria === "number" && !Number.isNaN(totalCriteria) && totalCriteria > 0;
+
+  if (!hasValidScore || !hasValidCriteria) {
+    return null;
+  }
+
+  return Math.round(72 + Math.min(totalCriteria / TOTAL_MATCH_RULES, 1) * 28);
+}
+
 function pickFeaturedSchemeIds(schemes, limit = 6) {
   const visibleSchemes = schemes.filter((scheme) => isSchemeVisibleNow(scheme));
   const selected = [];
@@ -68,7 +82,15 @@ function mapSchemeDetailToCard(scheme) {
     category,
     state: scheme.state || "central",
     ministry: normalizeMinistry(scheme.ministry, category, schemeName),
-    matchScorePercent: null,
+    matchedCriteria:
+      typeof scheme.matchScore === "number" && !Number.isNaN(scheme.matchScore)
+        ? scheme.matchScore
+        : null,
+    totalCriteria:
+      typeof scheme.totalCriteria === "number" && !Number.isNaN(scheme.totalCriteria)
+        ? scheme.totalCriteria
+        : null,
+    matchScorePercent: toMatchPercent(scheme.matchScore, scheme.totalCriteria),
     matchStatus: "matched",
     description,
     descriptionHi:
