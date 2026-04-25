@@ -41,6 +41,7 @@ export default function SchemeCard({
   const [isExplaining, setIsExplaining] = useState(false);
   const [schemeExplanation, setSchemeExplanation] = useState("");
   const [isSpeakingExplanation, setIsSpeakingExplanation] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState([]);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState("wrong_url");
   const [reportNote, setReportNote] = useState("");
@@ -112,10 +113,20 @@ export default function SchemeCard({
     : null;
 
   useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      return undefined;
+    }
+
+    function loadVoices() {
+      setAvailableVoices(window.speechSynthesis.getVoices());
+    }
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+      window.speechSynthesis.cancel();
     };
   }, []);
 
@@ -196,18 +207,35 @@ export default function SchemeCard({
       return;
     }
 
-    if (window.speechSynthesis.speaking) {
+    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
       window.speechSynthesis.cancel();
       setIsSpeakingExplanation(false);
       return;
     }
 
+    const preferredVoice =
+      availableVoices.find((voice) => voice.lang?.toLowerCase().startsWith("hi")) ||
+      availableVoices.find((voice) => voice.lang?.toLowerCase().includes("in")) ||
+      availableVoices[0];
+
+    if (!preferredVoice) {
+      window.alert("Is browser me speech voice available nahi hai.");
+      return;
+    }
+
     const utterance = new SpeechSynthesisUtterance(schemeExplanation);
-    utterance.lang = "hi-IN";
+    utterance.lang = preferredVoice.lang || "hi-IN";
+    utterance.voice = preferredVoice;
     utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.onstart = () => setIsSpeakingExplanation(true);
     utterance.onend = () => setIsSpeakingExplanation(false);
-    utterance.onerror = () => setIsSpeakingExplanation(false);
-    setIsSpeakingExplanation(true);
+    utterance.onerror = () => {
+      setIsSpeakingExplanation(false);
+      window.alert("Voice playback start nahi ho paya.");
+    };
+    window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }
 
