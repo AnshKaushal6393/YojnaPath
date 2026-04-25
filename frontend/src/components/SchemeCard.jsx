@@ -67,6 +67,14 @@ export default function SchemeCard({
     typeof matchScorePercent === "number" && Number.isFinite(matchScorePercent)
       ? Math.max(0, Math.min(100, Math.round(matchScorePercent)))
       : null;
+  const matchToneClass =
+    matchScore == null
+      ? ""
+      : matchScore >= 80
+        ? "scheme-card__match-summary--strong"
+        : matchScore >= 60
+          ? "scheme-card__match-summary--medium"
+          : "scheme-card__match-summary--weak";
 
   function openDetail() {
     navigate(`/schemes/${schemeId}`);
@@ -145,6 +153,9 @@ export default function SchemeCard({
         ) : null}
         {matchScore != null ? (
           <div className="scheme-card__match-block" aria-hidden="true">
+            <div className={`scheme-card__match-summary ${matchToneClass}`.trim()}>
+              {matchScore}% match
+            </div>
             <div className="scheme-card__match-label-row">
               <span className="scheme-card__match-label">Match quality</span>
               <span className="scheme-card__match-value">{matchScore}%</span>
