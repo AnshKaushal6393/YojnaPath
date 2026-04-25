@@ -11,14 +11,20 @@ jest.mock("../../services/emailService", () => ({
 }));
 
 jest.mock("../../services/userService", () => ({
+  findOrCreateUserByGoogleProfile: jest.fn(),
   findOrCreateUserByIdentifier: jest.fn(),
+}));
+
+jest.mock("../../services/googleAuthService", () => ({
+  verifyGoogleIdToken: jest.fn(),
 }));
 
 const jwt = require("jsonwebtoken");
 const { sendOtpEmail } = require("../../services/emailService");
+const { verifyGoogleIdToken } = require("../../services/googleAuthService");
 const { getOtpStore } = require("../../services/otpStore");
-const { findOrCreateUserByIdentifier } = require("../../services/userService");
-const { login, verify } = require("../authController");
+const { findOrCreateUserByGoogleProfile, findOrCreateUserByIdentifier } = require("../../services/userService");
+const { googleLogin, login, verify } = require("../authController");
 
 function createResponse() {
   return {
@@ -37,6 +43,7 @@ describe("authController", () => {
     process.env.DEMO_OTP_PHONES = "";
     process.env.SMS_OTP_ENABLED = "false";
     process.env.EXPOSE_OTP_IN_RESPONSE = "false";
+    process.env.GOOGLE_CLIENT_ID = "google-client-id";
   });
 
   test("login returns 400 for invalid phone", async () => {
@@ -210,5 +217,62 @@ describe("authController", () => {
         onboardingDone: false,
       }),
     }));
+  });
+
+  test("googleLogin returns 400 when credential is missing", async () => {
+    const req = { body: {} };
+    const res = createResponse();
+
+    await googleLogin(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Google credential is required" });
+  });
+
+  test("googleLogin verifies credential and returns app token", async () => {
+    verifyGoogleIdToken.mockResolvedValue({
+      sub: "google-sub-1",
+      email: "test@example.com",
+      emailVerified: true,
+      name: "Test User",
+      picture: "https://lh3.googleusercontent.com/a/test",
+    });
+    findOrCreateUserByGoogleProfile.mockResolvedValue({
+      id: "user-google-1",
+      email: "test@example.com",
+      google_sub: "google-sub-1",
+      email_verified: true,
+      name: "Test User",
+      photo_url: "https://lh3.googleusercontent.com/a/test",
+      photo_type: "upload",
+      onboarding_done: true,
+      lang: "en",
+    });
+
+    const req = { body: { credential: "google-id-token", lang: "en" } };
+    const res = createResponse();
+
+    await googleLogin(req, res);
+
+    expect(verifyGoogleIdToken).toHaveBeenCalledWith("google-id-token", "google-client-id");
+    expect(findOrCreateUserByGoogleProfile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sub: "google-sub-1",
+        email: "test@example.com",
+      }),
+      "en"
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        token: expect.any(String),
+        needsRegistration: false,
+        user: expect.objectContaining({
+          id: "user-google-1",
+          email: "test@example.com",
+          photoType: "upload",
+          onboardingDone: true,
+        }),
+      })
+    );
   });
 });

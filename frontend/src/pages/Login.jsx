@@ -1,17 +1,23 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import InstallAppButton from "../components/InstallAppButton";
+import { fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
+import { loadGoogleIdentityScript } from "../lib/googleAuth";
 import { setTempDebugOtp } from "../utils/auth";
 import { apiPost } from "../utils/api";
 
 export default function Login() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [type, setType] = useState("phone");
   const [identifier, setIdentifier] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+  const googleButtonRef = useRef(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
   function getOptionClass(option) {
     const isActive = type === option;
@@ -48,6 +54,85 @@ export default function Login() {
     setIdentifier(normalizeIdentifier(value, type));
     setError("");
   }
+
+  useEffect(() => {
+    if (!googleClientId || !googleButtonRef.current) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    async function setupGoogleButton() {
+      try {
+        const google = await loadGoogleIdentityScript();
+        if (!isMounted || !googleButtonRef.current || !google?.accounts?.id) {
+          return;
+        }
+
+        google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response) => {
+            if (!response?.credential) {
+              setError(t("auth.login.googleError", { defaultValue: "Could not sign in with Google." }));
+              return;
+            }
+
+            try {
+              setIsGoogleLoading(true);
+              setError("");
+              const payload = await apiPost("/api/auth/google", {
+                credential: response.credential,
+                lang: i18n.resolvedLanguage === "en" ? "en" : "hi",
+              });
+
+              localStorage.setItem("tempAuthType", "google");
+              localStorage.setItem("tempAuthIdentifier", payload?.user?.email || "");
+              localStorage.setItem("yojnapath_auth_token", payload.token);
+              setTempDebugOtp("");
+
+              if (payload.needsRegistration) {
+                navigate("/register", { replace: true });
+                return;
+              }
+
+              const savedProfile = await fetchSavedProfile();
+              navigate(isProfileReadyForMatching(savedProfile) ? "/results" : "/onboard", {
+                replace: true,
+              });
+            } catch (submitError) {
+              setError(
+                submitError.message ||
+                  t("auth.login.googleError", { defaultValue: "Could not sign in with Google." })
+              );
+            } finally {
+              setIsGoogleLoading(false);
+            }
+          },
+        });
+
+        googleButtonRef.current.innerHTML = "";
+        google.accounts.id.renderButton(googleButtonRef.current, {
+          type: "standard",
+          theme: "outline",
+          text: "continue_with",
+          shape: "pill",
+          size: "large",
+          width: "320",
+        });
+        setGoogleReady(true);
+      } catch (loadError) {
+        if (isMounted) {
+          setGoogleReady(false);
+        }
+      }
+    }
+
+    setupGoogleButton();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [googleClientId, i18n.resolvedLanguage, navigate, t]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -96,6 +181,33 @@ export default function Login() {
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
+            {googleClientId ? (
+              <div className="space-y-3">
+                <div
+                  ref={googleButtonRef}
+                  className={[
+                    "flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white",
+                    googleReady ? "px-0 py-0" : "px-4 py-3",
+                  ].join(" ")}
+                >
+                  {!googleReady ? (
+                    <span className="text-sm font-medium text-slate-500">
+                      {isGoogleLoading
+                        ? t("auth.login.googleLoading", { defaultValue: "Signing in with Google..." })
+                        : t("auth.login.googleCta", { defaultValue: "Continue with Google" })}
+                    </span>
+                  ) : null}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
+                    {t("auth.login.orDivider", { defaultValue: "Or use OTP" })}
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+              </div>
+            ) : null}
+
             <div className="mb-4 space-y-3">
               <label className="text-sm font-medium text-slate-700">{t("auth.login.methodLabel")}</label>
               <div className="flex gap-3 rounded-xl border border-slate-200 bg-slate-50 p-1">
@@ -159,7 +271,7 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isGoogleLoading}
               className="flex h-14 w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 text-base font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
             >
               {isLoading ? t("auth.login.sendingOtp") : t("auth.login.sendOtp")}

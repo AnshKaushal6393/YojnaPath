@@ -9,9 +9,11 @@ const { recordFunnelStage } = require("../services/funnelService");
 const { getOtpStore } = require("../services/otpStore");
 const {
   completeUserRegistration,
+  findOrCreateUserByGoogleProfile,
   findOrCreateUserByIdentifier,
   getUserById,
 } = require("../services/userService");
+const { verifyGoogleIdToken } = require("../services/googleAuthService");
 
 const { sendOtpEmail } = require("../services/emailService");
 
@@ -63,8 +65,28 @@ function serializeUser(user) {
     photoType: user.photo_type || "none",
     onboardingDone: Boolean(user.onboarding_done),
     lang: user.lang,
-    needsRegistration: !user.name,
+    needsRegistration: !user.name || !user.photo_url,
   };
+}
+
+function issueUserToken(userId) {
+  const jwtSecret = getRequiredEnv("JWT_SECRET");
+  return jwt.sign(
+    {
+      userId,
+      role: "user",
+    },
+    jwtSecret,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+}
+
+function sendAuthResponse(res, user) {
+  return res.json({
+    token: issueUserToken(user.id),
+    user: serializeUser(user),
+    needsRegistration: !user.name || !user.photo_url,
+  });
 }
 
 
@@ -206,21 +228,7 @@ async function verify(req, res) {
     phone: type === 'phone' ? identifier : undefined,
     oncePerUser: true,
   });
-  const jwtSecret = getRequiredEnv("JWT_SECRET");
-  const token = jwt.sign(
-    {
-      userId: user.id,
-      role: "user",
-    },
-    jwtSecret,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
-
-  return res.json({
-    token,
-    user: serializeUser(user),
-    needsRegistration: !user.name,
-  });
+  return sendAuthResponse(res, user);
 }
 
 
@@ -273,7 +281,36 @@ async function register(req, res) {
   });
 }
 
+async function googleLogin(req, res) {
+  const credential = String(req.body?.credential || "").trim();
+  const lang = req.body?.lang === "en" ? "en" : "hi";
+
+  if (!credential) {
+    return res.status(400).json({ message: "Google credential is required" });
+  }
+
+  try {
+    const googleProfile = await verifyGoogleIdToken(
+      credential,
+      getRequiredEnv("GOOGLE_CLIENT_ID")
+    );
+
+    const user = await findOrCreateUserByGoogleProfile(googleProfile, lang);
+    await recordFunnelStage({
+      stage: "google_login",
+      userId: user.id,
+      oncePerUser: true,
+    });
+
+    return sendAuthResponse(res, user);
+  } catch (error) {
+    console.error("[auth] Google login failed:", error);
+    return res.status(401).json({ message: "Google sign-in failed" });
+  }
+}
+
 module.exports = {
+  googleLogin,
   login,
   me,
   register,
