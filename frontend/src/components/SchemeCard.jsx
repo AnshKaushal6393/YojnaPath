@@ -27,6 +27,9 @@ export default function SchemeCard({
   matchScorePercent,
   matchedCriteria,
   totalCriteria,
+  isCompareSelectable = false,
+  isCompareSelected = false,
+  onCompareToggle = null,
   staggerIndex = 0,
 }) {
   const { t, i18n } = useTranslation();
@@ -111,6 +114,12 @@ export default function SchemeCard({
       event.preventDefault();
       openDetail();
     }
+  }
+
+  function handleCompareToggle(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    onCompareToggle?.(schemeId);
   }
 
   async function handleChecklistDownload(event) {
@@ -198,6 +207,19 @@ export default function SchemeCard({
           <p className="type-benefit">{benefitAmount}</p>
         </div>
       </div>
+      {isCompareSelectable ? (
+        <div className="scheme-card__compare-row" onClick={(event) => event.stopPropagation()}>
+          <label className="scheme-card__compare-toggle">
+            <input
+              type="checkbox"
+              checked={isCompareSelected}
+              onChange={handleCompareToggle}
+              aria-label={`Select ${schemeName} for comparison`}
+            />
+            <span>Compare</span>
+          </label>
+        </div>
+      ) : null}
 
       <div className="scheme-card__content">
         <div className="scheme-card__identity">

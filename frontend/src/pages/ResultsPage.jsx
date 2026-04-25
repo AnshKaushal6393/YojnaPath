@@ -10,6 +10,7 @@ import SchemeCard from "../components/SchemeCard";
 import UrgencyBanner from "../components/UrgencyBanner";
 import { getActiveProfileId } from "../lib/activeProfile";
 import { fetchResultsData } from "../lib/resultsApi";
+import { fetchSchemeDetail } from "../lib/schemeDetailApi";
 
 const RESULTS_PER_PAGE = 12;
 
@@ -60,10 +61,18 @@ export default function ResultsPage() {
   const [activeFilter, setActiveFilter] = useState(initialCategoryFilter);
   const [currentPage, setCurrentPage] = useState(1);
   const [showAllNearMisses, setShowAllNearMisses] = useState(false);
+  const [compareSchemeIds, setCompareSchemeIds] = useState([]);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   const resultsQuery = useQuery({
     queryKey: ["results-data", activeProfileId],
     queryFn: () => fetchResultsData(activeProfileId),
+  });
+
+  const compareDetailsQuery = useQuery({
+    queryKey: ["scheme-compare", compareSchemeIds],
+    enabled: isCompareOpen && compareSchemeIds.length === 2,
+    queryFn: async () => Promise.all(compareSchemeIds.map((schemeId) => fetchSchemeDetail(schemeId))),
   });
 
   const filterItems = useMemo(
@@ -100,6 +109,48 @@ export default function ResultsPage() {
     return visibleSchemes.slice(startIndex, startIndex + RESULTS_PER_PAGE);
   }, [currentPage, visibleSchemes]);
 
+  const compareSchemes = useMemo(() => {
+    const schemeMap = new Map((resultsQuery.data?.schemes || []).map((scheme) => [scheme.id, scheme]));
+    return compareSchemeIds.map((schemeId) => schemeMap.get(schemeId)).filter(Boolean);
+  }, [compareSchemeIds, resultsQuery.data?.schemes]);
+
+  const compareRows = useMemo(() => {
+    if (!compareSchemes.length || !compareDetailsQuery.data?.length) {
+      return [];
+    }
+
+    return [
+      {
+        label: "Benefit amount",
+        values: compareSchemes.map((scheme) => scheme.benefitAmount || "Check details"),
+      },
+      {
+        label: "Match summary",
+        values: compareSchemes.map((scheme) =>
+          scheme.totalCriteria
+            ? `${scheme.matchedCriteria || 0} of ${scheme.totalCriteria} checks matched`
+            : "Available after matching"
+        ),
+      },
+      {
+        label: "Apply mode",
+        values: compareDetailsQuery.data.map((scheme) => toSentenceCase(scheme.applyMode || "Check details")),
+      },
+      {
+        label: "Deadline",
+        values: compareDetailsQuery.data.map((scheme) => scheme.deadline?.closes || "No fixed deadline"),
+      },
+      {
+        label: "Documents",
+        values: compareDetailsQuery.data.map((scheme) =>
+          scheme.documents?.length
+            ? scheme.documents.map((document) => document.en || document.hi).filter(Boolean).join(", ")
+            : "Check scheme details"
+        ),
+      },
+    ];
+  }, [compareDetailsQuery.data, compareSchemes]);
+
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(1);
@@ -110,6 +161,11 @@ export default function ResultsPage() {
     const urlFilter = searchParams.get("category") || "all";
     setActiveFilter(urlFilter);
   }, [searchParams]);
+
+  useEffect(() => {
+    const validIds = new Set((resultsQuery.data?.schemes || []).map((scheme) => scheme.id));
+    setCompareSchemeIds((current) => current.filter((schemeId) => validIds.has(schemeId)));
+  }, [resultsQuery.data?.schemes]);
 
   function handleFilterSelect(value) {
     setActiveFilter(value);
@@ -122,6 +178,25 @@ export default function ResultsPage() {
       nextParams.set("category", value);
     }
     setSearchParams(nextParams, { replace: true });
+  }
+
+  function handleCompareToggle(schemeId) {
+    setCompareSchemeIds((current) => {
+      if (current.includes(schemeId)) {
+        return current.filter((id) => id !== schemeId);
+      }
+
+      if (current.length >= 2) {
+        return [current[1], schemeId];
+      }
+
+      return [...current, schemeId];
+    });
+  }
+
+  function clearCompareSelection() {
+    setCompareSchemeIds([]);
+    setIsCompareOpen(false);
   }
 
   if (resultsQuery.isSuccess && !resultsQuery.data?.profile) {
@@ -223,7 +298,12 @@ export default function ResultsPage() {
             <div className="results-filters-card__header">
               <p className="type-label">Filter by category</p>
               {!resultsQuery.isLoading ? (
-                <span className="type-caption">Showing {paginatedSchemes.length} on this page</span>
+                <div className="results-toolbar-meta">
+                  <span className="type-caption">Showing {paginatedSchemes.length} on this page</span>
+                  {compareSchemeIds.length ? (
+                    <span className="type-caption">{compareSchemeIds.length} selected</span>
+                  ) : null}
+                </div>
               ) : null}
             </div>
             <FilterPills
@@ -231,6 +311,26 @@ export default function ResultsPage() {
               onSelect={handleFilterSelect}
               ariaLabel="Scheme category filters"
             />
+            {compareSchemeIds.length ? (
+              <div className="results-compare-bar">
+                <span className="type-caption">
+                  Select {2 - compareSchemeIds.length > 0 ? `${2 - compareSchemeIds.length} more` : "ready to compare"}
+                </span>
+                <div className="results-compare-bar__actions">
+                  <button type="button" className="results-page-button" onClick={clearCompareSelection}>
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    className="results-page-button results-page-button--primary"
+                    disabled={compareSchemeIds.length !== 2}
+                    onClick={() => setIsCompareOpen(true)}
+                  >
+                    Compare
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {resultsQuery.isLoading ? (
@@ -267,6 +367,9 @@ export default function ResultsPage() {
                     matchStatus={scheme.matchStatus}
                     description={scheme.description}
                     descriptionHi={scheme.descriptionHi}
+                    isCompareSelectable={true}
+                    isCompareSelected={compareSchemeIds.includes(scheme.id)}
+                    onCompareToggle={handleCompareToggle}
                     staggerIndex={index}
                   />
                 ))}
@@ -316,6 +419,72 @@ export default function ResultsPage() {
           </div>
         ) : null}
       </div>
+
+      {isCompareOpen ? (
+        <div className="app-modal-backdrop" role="presentation" onClick={() => setIsCompareOpen(false)}>
+          <div
+            className="app-modal scheme-compare-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="scheme-compare-title"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+          >
+            <div className="scheme-compare-modal__header">
+              <div>
+                <p className="type-label">Scheme comparison</p>
+                <h2 id="scheme-compare-title" className="type-h2">
+                  Side by side
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="scheme-report-sheet__close"
+                onClick={() => setIsCompareOpen(false)}
+                aria-label="Close comparison dialog"
+              >
+                x
+              </button>
+            </div>
+
+            {compareDetailsQuery.isLoading ? (
+              <div className="results-loading-card">
+                <p className="type-body-en">Loading scheme comparison...</p>
+              </div>
+            ) : compareDetailsQuery.isError ? (
+              <div className="results-loading-card state-danger" role="alert">
+                <p className="type-body-en">
+                  {compareDetailsQuery.error?.message || "Could not load comparison details."}
+                </p>
+              </div>
+            ) : (
+              <div className="scheme-compare-table">
+                <div className="scheme-compare-table__header">
+                  <div className="scheme-compare-table__label-cell" />
+                  {compareSchemes.map((scheme) => (
+                    <div key={scheme.id} className="scheme-compare-table__scheme-cell">
+                      <p className="type-label">{toSentenceCase(scheme.category)}</p>
+                      <h3 className="type-h3">{scheme.schemeName}</h3>
+                    </div>
+                  ))}
+                </div>
+                {compareRows.map((row) => (
+                  <div key={row.label} className="scheme-compare-table__row">
+                    <div className="scheme-compare-table__label-cell">{row.label}</div>
+                    {row.values.map((value, index) => (
+                      <div key={`${row.label}-${compareSchemes[index]?.id || index}`} className="scheme-compare-table__value-cell">
+                        {value}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       <BottomNav active="home" />
     </main>

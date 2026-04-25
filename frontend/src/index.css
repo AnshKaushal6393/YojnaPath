@@ -2230,6 +2230,25 @@ select {
   flex-wrap: wrap;
 }
 
+.scheme-card__compare-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.scheme-card__compare-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-12);
+  font-weight: 700;
+  color: #27413b;
+}
+
+.scheme-card__compare-toggle input {
+  accent-color: var(--brand);
+}
+
 .scheme-card__report-link {
   padding: 0;
   border: 0;
@@ -3036,6 +3055,96 @@ select {
   align-items: end;
   place-items: end center;
   padding: var(--sp16);
+}
+
+.results-toolbar-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.results-compare-bar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(29, 158, 117, 0.12);
+}
+
+.results-compare-bar__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.results-page-button--primary {
+  border-color: transparent;
+  background: var(--brand);
+  color: #fff;
+}
+
+.results-page-button--primary:disabled {
+  opacity: 0.5;
+}
+
+.scheme-compare-modal {
+  padding: var(--sp20);
+}
+
+.scheme-compare-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.scheme-compare-table {
+  display: grid;
+  gap: 12px;
+}
+
+.scheme-compare-table__header,
+.scheme-compare-table__row {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.scheme-compare-table__label-cell,
+.scheme-compare-table__scheme-cell,
+.scheme-compare-table__value-cell {
+  padding: 14px;
+  border: 1px solid rgba(29, 158, 117, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.scheme-compare-table__label-cell {
+  font-size: var(--fs-12);
+  font-weight: 800;
+  color: #5c6f69;
+  text-transform: uppercase;
+}
+
+.scheme-compare-table__scheme-cell,
+.scheme-compare-table__value-cell {
+  color: #27413b;
+  line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .scheme-compare-table__header,
+  .scheme-compare-table__row {
+    grid-template-columns: 1fr;
+  }
+
+  .scheme-compare-table__label-cell {
+    margin-bottom: -4px;
+  }
 }
 
 .scheme-report-sheet {
