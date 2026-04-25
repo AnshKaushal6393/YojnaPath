@@ -82,6 +82,15 @@ async function ensureAnalyticsSchema() {
           created_at TIMESTAMP DEFAULT NOW()
         )
       `);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id) ON DELETE SET NULL`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS session_type VARCHAR(10) DEFAULT 'web'`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS state VARCHAR(10)`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS occupation VARCHAR(30)`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS match_count INTEGER`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS near_miss_count INTEGER`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS scheme_ids TEXT[]`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS lang VARCHAR(5)`);
+      await pool.query(`ALTER TABLE match_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
       await pool.query(`
         CREATE TABLE IF NOT EXISTS kiosk_usage_events (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -89,6 +98,8 @@ async function ensureAnalyticsSchema() {
           created_at TIMESTAMP DEFAULT NOW()
         )
       `);
+      await pool.query(`ALTER TABLE kiosk_usage_events ADD COLUMN IF NOT EXISTS kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL`);
+      await pool.query(`ALTER TABLE kiosk_usage_events ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
       await pool.query(`
         CREATE TABLE IF NOT EXISTS kiosk_pdf_events (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -96,6 +107,8 @@ async function ensureAnalyticsSchema() {
           created_at TIMESTAMP DEFAULT NOW()
         )
       `);
+      await pool.query(`ALTER TABLE kiosk_pdf_events ADD COLUMN IF NOT EXISTS kiosk_id UUID REFERENCES kiosks(id) ON DELETE SET NULL`);
+      await pool.query(`ALTER TABLE kiosk_pdf_events ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`);
     })().catch((error) => {
       analyticsSchemaReadyPromise = null;
       throw error;
@@ -231,9 +244,7 @@ async function recordMatchAnalytics(matchLog = null) {
       });
     }
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn(`[analytics] Failed to persist match log: ${error.message}`);
-    }
+    console.warn(`[analytics] Failed to persist match log: ${error.message}`);
   }
 }
 
