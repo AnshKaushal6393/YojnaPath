@@ -17,6 +17,7 @@ export default function Login() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const googleButtonRef = useRef(null);
+  const googleRenderedRef = useRef(false);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
   function getOptionClass(option) {
@@ -110,15 +111,18 @@ export default function Login() {
           },
         });
 
-        googleButtonRef.current.innerHTML = "";
-        google.accounts.id.renderButton(googleButtonRef.current, {
-          type: "standard",
-          theme: "outline",
-          text: "continue_with",
-          shape: "pill",
-          size: "large",
-          width: "320",
-        });
+        if (!googleRenderedRef.current) {
+          google.accounts.id.renderButton(googleButtonRef.current, {
+            type: "standard",
+            theme: "outline",
+            text: "continue_with",
+            shape: "pill",
+            size: "large",
+            width: "320",
+          });
+          googleRenderedRef.current = true;
+        }
+
         setGoogleReady(true);
       } catch (loadError) {
         if (isMounted) {
@@ -183,19 +187,14 @@ export default function Login() {
           <form className="space-y-5" onSubmit={handleSubmit}>
             {googleClientId ? (
               <div className="space-y-3">
-                <div
-                  ref={googleButtonRef}
-                  className={[
-                    "flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white",
-                    googleReady ? "px-0 py-0" : "px-4 py-3",
-                  ].join(" ")}
-                >
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                  <div ref={googleButtonRef} className="flex min-h-11 items-center justify-center" />
                   {!googleReady ? (
-                    <span className="text-sm font-medium text-slate-500">
+                    <div className="mt-2 text-center text-sm font-medium text-slate-500">
                       {isGoogleLoading
                         ? t("auth.login.googleLoading", { defaultValue: "Signing in with Google..." })
                         : t("auth.login.googleCta", { defaultValue: "Continue with Google" })}
-                    </span>
+                    </div>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-3">
