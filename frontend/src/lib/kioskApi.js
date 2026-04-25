@@ -39,6 +39,14 @@ function normalizeScheme(scheme) {
       "Scheme details are available in the kiosk summary."
     ),
     descriptionHi: normalizeText(scheme.description?.hi, ""),
+    matchedCriteria:
+      typeof scheme.matchScore === "number" && !Number.isNaN(scheme.matchScore)
+        ? scheme.matchScore
+        : null,
+    totalCriteria:
+      typeof scheme.totalCriteria === "number" && !Number.isNaN(scheme.totalCriteria)
+        ? scheme.totalCriteria
+        : null,
     matchScorePercent,
     matchStatus: "matched",
   };

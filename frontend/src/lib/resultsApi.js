@@ -85,6 +85,14 @@ function mapSchemeToCard(scheme, matchStatus = "matched") {
       hasDevanagariText(descriptionHi) && isMeaningfullyDifferent(descriptionHi, description)
         ? descriptionHi
         : "",
+    matchedCriteria:
+      typeof scheme.matchScore === "number" && !Number.isNaN(scheme.matchScore)
+        ? scheme.matchScore
+        : null,
+    totalCriteria:
+      typeof scheme.totalCriteria === "number" && !Number.isNaN(scheme.totalCriteria)
+        ? scheme.totalCriteria
+        : null,
     matchScorePercent: toMatchPercent(scheme.matchScore, scheme.totalCriteria, matchStatus),
     matchStatus,
   };

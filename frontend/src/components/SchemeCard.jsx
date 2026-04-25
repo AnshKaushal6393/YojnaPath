@@ -17,6 +17,8 @@ export default function SchemeCard({
   description,
   descriptionHi,
   matchScorePercent,
+  matchedCriteria,
+  totalCriteria,
   staggerIndex = 0,
 }) {
   const { t, i18n } = useTranslation();
@@ -75,6 +77,17 @@ export default function SchemeCard({
         : matchScore >= 60
           ? "scheme-card__match-summary--medium"
           : "scheme-card__match-summary--weak";
+  const hasCriteriaCount =
+    typeof matchedCriteria === "number" &&
+    Number.isFinite(matchedCriteria) &&
+    typeof totalCriteria === "number" &&
+    Number.isFinite(totalCriteria) &&
+    totalCriteria > 0;
+  const matchExplanation = hasCriteriaCount
+    ? matchStatus === "near-miss"
+      ? `${matchedCriteria} of ${totalCriteria} eligibility checks matched`
+      : `Matched after checking ${totalCriteria} eligibility rules`
+    : null;
 
   function openDetail() {
     navigate(`/schemes/${schemeId}`);
@@ -151,18 +164,18 @@ export default function SchemeCard({
         {showHindiDescription ? (
           <p className="scheme-description scheme-description--hi hi">{descriptionHi}</p>
         ) : null}
-        {matchScore != null ? (
+        {matchScore != null || matchExplanation ? (
           <div className="scheme-card__match-block" aria-hidden="true">
-            <div className={`scheme-card__match-summary ${matchToneClass}`.trim()}>
-              {matchScore}% match
-            </div>
-            <div className="scheme-card__match-label-row">
-              <span className="scheme-card__match-label">Match quality</span>
-              <span className="scheme-card__match-value">{matchScore}%</span>
-            </div>
-            <div className="scheme-card__match-track">
-              <span className="scheme-card__match-fill" style={{ width: `${matchScore}%` }} />
-            </div>
+            {matchExplanation ? (
+              <div className={`scheme-card__match-summary ${matchToneClass}`.trim()}>
+                {matchExplanation}
+              </div>
+            ) : null}
+            {matchScore != null ? (
+              <div className="scheme-card__match-track">
+                <span className="scheme-card__match-fill" style={{ width: `${matchScore}%` }} />
+              </div>
+            ) : null}
           </div>
         ) : null}
         <div className="scheme-card__actions" onClick={(event) => event.stopPropagation()}>
