@@ -2,8 +2,8 @@ const { isMongoReady } = require("../config/mongo");
 const { Scheme } = require("../models/Scheme");
 const { attachDeadlineInfo, isSchemeOpenForApplications } = require("./deadlineTrackerService");
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
+const GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite";
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -73,7 +73,7 @@ function buildEligibilitySummary(eligibility = {}) {
   return items.slice(0, 5);
 }
 
-function buildClaudePrompt(scheme) {
+function buildExplainPrompt(scheme) {
   const eligibilityItems = buildEligibilitySummary(scheme.eligibility);
   const documents = (scheme.documents || [])
     .map((document) => normalizeOptionalString(document?.hi || document?.en))
@@ -112,12 +112,13 @@ function buildClaudePrompt(scheme) {
 }
 
 function extractTextContent(payload) {
-  if (!Array.isArray(payload?.content)) {
+  const parts = payload?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) {
     return "";
   }
 
-  return payload.content
-    .filter((item) => item?.type === "text" && typeof item.text === "string")
+  return parts
+    .filter((item) => typeof item?.text === "string")
     .map((item) => item.text.trim())
     .filter(Boolean)
     .join("\n\n");
@@ -138,29 +139,35 @@ async function explainSchemeInHindi(schemeId) {
     return null;
   }
 
-  const apiKey = normalizeOptionalString(process.env.ANTHROPIC_API_KEY);
+  const apiKey =
+    normalizeOptionalString(process.env.GEMINI_API_KEY) ||
+    normalizeOptionalString(process.env.GOOGLE_API_KEY);
   if (!apiKey) {
-    const error = new Error("ANTHROPIC_API_KEY is not configured on the backend.");
+    const error = new Error("GEMINI_API_KEY is not configured on the backend.");
     error.status = 503;
     throw error;
   }
 
-  const model = normalizeOptionalString(process.env.ANTHROPIC_MODEL) || DEFAULT_ANTHROPIC_MODEL;
-  const response = await fetch(ANTHROPIC_API_URL, {
+  const model = normalizeOptionalString(process.env.GEMINI_MODEL) || DEFAULT_GEMINI_MODEL;
+  const response = await fetch(`${GEMINI_API_BASE_URL}/models/${encodeURIComponent(model)}:generateContent`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
+      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
-      model,
-      max_tokens: 500,
-      temperature: 0.3,
-      messages: [
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 500,
+      },
+      contents: [
         {
           role: "user",
-          content: buildClaudePrompt(attachDeadlineInfo(scheme)),
+          parts: [
+            {
+              text: buildExplainPrompt(attachDeadlineInfo(scheme)),
+            },
+          ],
         },
       ],
     }),
@@ -168,7 +175,7 @@ async function explainSchemeInHindi(schemeId) {
 
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = new Error(payload?.error?.message || payload?.message || "Claude explanation failed");
+    const error = new Error(payload?.error?.message || payload?.message || "Gemini explanation failed");
     error.status = response.status;
     throw error;
   }
