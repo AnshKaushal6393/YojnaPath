@@ -1945,6 +1945,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: var(--sp12);
+  min-width: 0;
   padding: var(--sp14) var(--sp14) var(--sp14) var(--sp12);
   border: 1.5px solid var(--border);
   border-left: 4px solid var(--brand);
@@ -1967,6 +1968,7 @@ select {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: var(--sp12);
   margin-bottom: var(--sp4);
 }
@@ -1999,6 +2001,7 @@ select {
   padding: 8px 16px;
   white-space: nowrap;
   flex-shrink: 0;
+  max-width: 100%;
   box-shadow: 0 8px 18px rgba(8, 80, 65, 0.08);
 }
 
@@ -2026,6 +2029,7 @@ select {
   font-size: var(--fs-17);
   font-weight: 700;
   line-height: 1;
+  overflow-wrap: anywhere;
 }
 
 .scheme-card__content {
@@ -2038,6 +2042,7 @@ select {
   display: flex;
   align-items: flex-start;
   gap: var(--sp12);
+  min-width: 0;
 }
 
 .scheme-card__icon-box {
@@ -2105,6 +2110,7 @@ select {
   font-size: var(--fs-14);
   font-weight: 600;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .scheme-card__title-hi {
@@ -2114,6 +2120,7 @@ select {
   font-size: var(--fs-13);
   font-weight: 400;
   line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
 .scheme-description {
@@ -2125,6 +2132,7 @@ select {
   font-size: var(--fs-13);
   color: #666666;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .scheme-description--en {
@@ -2155,6 +2163,7 @@ select {
   letter-spacing: 0.02em;
   background-color: rgba(26, 26, 26, 0.06);
   color: #6b7280;
+  overflow-wrap: anywhere;
 }
 
 .scheme-card__match-summary--strong {
@@ -2220,6 +2229,8 @@ select {
 .scheme-card__actions .detail-card__secondary-button {
   width: 100%;
   justify-content: center;
+  text-align: center;
+  white-space: normal;
 }
 
 .scheme-card__explain-button {
@@ -2304,12 +2315,14 @@ select {
   background-color: var(--surface-2);
   color: var(--brand-text);
   border: 1px solid rgba(29, 158, 117, 0.16);
+  max-width: 100%;
 }
 
 .scheme-card__expand-label {
   font-size: var(--fs-12);
   font-weight: 500;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .card-expand-icon {
@@ -3692,6 +3705,12 @@ select {
 }
 
 @media (max-width: 639px) {
+  .results-scheme-grid,
+  .results-near-miss-grid,
+  .recent-matches {
+    grid-template-columns: 1fr;
+  }
+
   .calendar-header__actions {
     width: 100%;
     align-items: stretch;
@@ -3727,6 +3746,58 @@ select {
 
   .results-filters-card {
     padding: var(--sp12);
+  }
+
+  .scheme-card {
+    padding: var(--sp12);
+  }
+
+  .scheme-card__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .scheme-card__benefit-chip {
+    margin-left: 0;
+    align-self: flex-start;
+    padding: 8px 14px;
+  }
+
+  .scheme-card__benefit-chip .type-benefit {
+    font-size: var(--fs-15);
+  }
+
+  .scheme-card__identity {
+    gap: 10px;
+  }
+
+  .scheme-card__icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .scheme-card__title-en {
+    font-size: var(--fs-13);
+  }
+
+  .scheme-card__title-hi,
+  .scheme-description {
+    font-size: var(--fs-12);
+  }
+
+  .scheme-card__compare-row {
+    justify-content: flex-start;
+  }
+
+  .scheme-card__report-row {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .scheme-card__expand-row {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .results-pagination {
@@ -3792,6 +3863,69 @@ select {
   }
 }
 
+@media (min-width: 640px) and (max-width: 899px) {
+  .results-scheme-grid,
+  .results-near-miss-grid,
+  .recent-matches {
+    grid-template-columns: 1fr;
+  }
+
+  .scheme-card__top {
+    align-items: flex-start;
+  }
+
+  .scheme-card__benefit-chip {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .scheme-card {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .scheme-card__meta-chips {
+    gap: 6px;
+  }
+
+  .scheme-card__category-chip,
+  .scheme-card__scope-chip {
+    min-height: 28px;
+    padding: 5px 10px;
+  }
+
+  .scheme-card__benefit-chip {
+    min-height: 38px;
+    padding: 7px 12px;
+  }
+
+  .scheme-card__benefit-chip .type-benefit {
+    font-size: var(--fs-14);
+  }
+
+  .scheme-card__icon-box {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .scheme-card__title-en {
+    font-size: var(--fs-12);
+  }
+
+  .scheme-card__title-hi,
+  .scheme-description,
+  .scheme-card__ministry {
+    font-size: var(--fs-11);
+  }
+
+  .scheme-card__actions .detail-card__secondary-button,
+  .scheme-card__expand-row {
+    min-height: 40px;
+  }
+}
+
 @media (min-width: 900px) {
   .app-shell {
     padding: var(--sp32) var(--sp24) var(--sp24);
@@ -3838,6 +3972,27 @@ select {
   .impact-stats-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
+  .scheme-card {
+    gap: 10px;
+  }
+
+  .scheme-card__content {
+    gap: 6px;
+  }
+
+  .scheme-card__title-en {
+    font-size: var(--fs-13);
+  }
+
+  .scheme-card__title-hi,
+  .scheme-description {
+    font-size: var(--fs-12);
+  }
+
+  .scheme-card__actions .detail-card__secondary-button {
+    min-height: 40px;
+  }
 }
 
 @media (min-width: 1280px) {
@@ -3847,6 +4002,35 @@ select {
 
   .bottom-nav {
     width: min(100%, 1320px);
+  }
+
+  .results-scheme-grid,
+  .results-near-miss-grid,
+  .recent-matches {
+    gap: 14px;
+  }
+
+  .scheme-card {
+    padding: 12px 12px 12px 10px;
+  }
+
+  .scheme-card__top {
+    gap: 10px;
+  }
+
+  .scheme-card__benefit-chip {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  .scheme-card__benefit-chip .type-benefit {
+    font-size: var(--fs-16);
+  }
+
+  .scheme-card__icon-box {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
   }
 }
 
