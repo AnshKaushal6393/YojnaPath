@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoryMeta } from "../lib/categoryMeta";
@@ -40,6 +40,7 @@ export default function SchemeCard({
   const [isExplainOpen, setIsExplainOpen] = useState(false);
   const [isExplaining, setIsExplaining] = useState(false);
   const [schemeExplanation, setSchemeExplanation] = useState("");
+  const [isSpeakingExplanation, setIsSpeakingExplanation] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState("wrong_url");
   const [reportNote, setReportNote] = useState("");
@@ -110,6 +111,14 @@ export default function SchemeCard({
       : `Matched after checking ${totalCriteria} eligibility rules`
     : null;
 
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   function openDetail() {
     navigate(`/schemes/${schemeId}`);
   }
@@ -174,7 +183,32 @@ export default function SchemeCard({
       return;
     }
 
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeakingExplanation(false);
     setIsExplainOpen(false);
+  }
+
+  function handleSpeakExplanation() {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !schemeExplanation.trim()) {
+      window.alert("Voice playback is not available on this device.");
+      return;
+    }
+
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingExplanation(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(schemeExplanation);
+    utterance.lang = "hi-IN";
+    utterance.rate = 0.95;
+    utterance.onend = () => setIsSpeakingExplanation(false);
+    utterance.onerror = () => setIsSpeakingExplanation(false);
+    setIsSpeakingExplanation(true);
+    window.speechSynthesis.speak(utterance);
   }
 
   function openReportSheet(event) {
@@ -427,7 +461,19 @@ export default function SchemeCard({
                 {isExplaining ? (
                   <p className="type-body-en">Simple Hindi explanation aa raha hai...</p>
                 ) : (
-                  <pre className="scheme-explain-sheet__text">{schemeExplanation}</pre>
+                  <>
+                    <div className="scheme-explain-sheet__actions">
+                      <button
+                        type="button"
+                        className="detail-card__secondary-button"
+                        onClick={handleSpeakExplanation}
+                        disabled={!schemeExplanation.trim()}
+                      >
+                        {isSpeakingExplanation ? "Roko" : "Suno"}
+                      </button>
+                    </div>
+                    <pre className="scheme-explain-sheet__text">{schemeExplanation}</pre>
+                  </>
                 )}
               </div>
             </div>

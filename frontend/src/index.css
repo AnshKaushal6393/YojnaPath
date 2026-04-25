@@ -3246,6 +3246,12 @@ select {
   padding: 2px 0 0;
 }
 
+.scheme-explain-sheet__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
 .scheme-explain-sheet__text {
   margin: 0;
   white-space: pre-wrap;
