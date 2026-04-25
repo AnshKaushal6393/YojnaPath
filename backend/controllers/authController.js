@@ -304,8 +304,18 @@ async function googleLogin(req, res) {
 
     return sendAuthResponse(res, user);
   } catch (error) {
-    console.error("[auth] Google login failed:", error);
-    return res.status(401).json({ message: "Google sign-in failed" });
+    const reason = error?.message || "Unknown Google sign-in error";
+    console.error("[auth] Google login failed:", {
+      reason,
+      hasGoogleClientId: Boolean(process.env.GOOGLE_CLIENT_ID),
+      googleClientIdPreview: process.env.GOOGLE_CLIENT_ID
+        ? `${process.env.GOOGLE_CLIENT_ID.slice(0, 12)}...`
+        : null,
+    });
+    return res.status(401).json({
+      message: "Google sign-in failed",
+      reason,
+    });
   }
 }
 
