@@ -138,10 +138,8 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
   const normalizedSub = String(profile?.sub || "").trim();
   const rawEmail = String(profile?.email || "").trim().toLowerCase();
   const normalizedName = String(profile?.name || "").trim().replace(/\s+/g, " ");
-  const normalizedPicture = String(profile?.picture || "").trim();
   const emailVerified = profile?.emailVerified === true;
   const normalizedEmail = emailVerified ? rawEmail : "";
-  const hasGoogleProfile = Boolean(normalizedName) && Boolean(normalizedPicture);
 
   if (!normalizedSub) {
     throw new Error("Google subject is required");
@@ -163,21 +161,11 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
           email = CASE WHEN $2 <> '' THEN $2 ELSE email END,
           email_verified = email_verified OR $3,
           name = CASE WHEN COALESCE(name, '') = '' AND $4 <> '' THEN $4 ELSE name END,
-          photo_url = CASE WHEN COALESCE(photo_url, '') = '' AND $5 <> '' THEN $5 ELSE photo_url END,
-          photo_type = CASE
-            WHEN COALESCE(photo_url, '') = '' AND $5 <> '' THEN 'upload'
-            ELSE photo_type
-          END,
           onboarding_done = CASE
-            WHEN onboarding_done = TRUE THEN TRUE
-            ELSE $6
+            WHEN COALESCE(photo_url, '') <> '' THEN onboarding_done
+            ELSE FALSE
           END,
-          registration_completed_at = CASE
-            WHEN registration_completed_at IS NOT NULL THEN registration_completed_at
-            WHEN $6 THEN NOW()
-            ELSE registration_completed_at
-          END,
-          lang = COALESCE($7, lang),
+          lang = COALESCE($5, lang),
           last_login = NOW()
         WHERE id = (SELECT id FROM existing_user)
         RETURNING id, phone, email, google_sub, email_verified, name, photo_url, photo_type, onboarding_done, lang, registration_completed_at
@@ -187,10 +175,7 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
         google_sub,
         email_verified,
         name,
-        photo_url,
-        photo_type,
         onboarding_done,
-        registration_completed_at,
         lang,
         created_at,
         last_login
@@ -200,11 +185,8 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
         $1,
         $3,
         NULLIF($4, ''),
-        NULLIF($5, ''),
-        CASE WHEN $5 <> '' THEN 'upload' ELSE 'none' END,
-        $6,
-        CASE WHEN $6 THEN NOW() ELSE NULL END,
-        $7,
+        FALSE,
+        $5,
         NOW(),
         NOW()
       WHERE NOT EXISTS (SELECT 1 FROM updated_user)
@@ -215,8 +197,6 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
       normalizedEmail,
       emailVerified,
       normalizedName,
-      normalizedPicture,
-      hasGoogleProfile,
       normalizedLang,
     ]
   );

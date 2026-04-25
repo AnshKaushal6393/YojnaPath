@@ -93,7 +93,7 @@ export default function Register() {
           setPhotoBlob(null);
         }
 
-        if (user?.name) {
+        if (user?.name && user?.photoUrl) {
           const nextPath = await getPostRegistrationDestination();
           if (isMounted) {
             navigate(nextPath, { replace: true });
