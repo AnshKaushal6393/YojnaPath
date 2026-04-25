@@ -3,6 +3,7 @@ require("../config/env");
 const crypto = require("crypto");
 
 const GOOGLE_CERTS_URL = "https://www.googleapis.com/oauth2/v3/certs";
+const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 const GOOGLE_ISSUERS = new Set(["accounts.google.com", "https://accounts.google.com"]);
 
 let certCache = {
@@ -104,13 +105,31 @@ async function verifyGoogleIdToken(idToken, expectedAudience) {
     const refreshedKeys = await getGooglePublicKeys();
     const nextPublicKey = refreshedKeys.get(token.header.kid);
     if (!nextPublicKey) {
-      throw new Error("Google signing key not found");
+      return verifyGoogleIdTokenViaTokenInfo(idToken, expectedAudience);
     }
 
     return verifyParsedToken(token, nextPublicKey, expectedAudience);
   }
 
   return verifyParsedToken(token, publicKey, expectedAudience);
+}
+
+async function verifyGoogleIdTokenViaTokenInfo(idToken, expectedAudience) {
+  const url = new URL(GOOGLE_TOKENINFO_URL);
+  url.searchParams.set("id_token", idToken);
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Google token verification failed");
+  }
+
+  const payload = await response.json();
+  return normalizeVerifiedPayload(payload, expectedAudience);
 }
 
 function verifyParsedToken(token, publicKey, expectedAudience) {
@@ -147,6 +166,25 @@ function verifyParsedToken(token, publicKey, expectedAudience) {
 
   if (!payload.sub) {
     throw new Error("Google subject is missing");
+  }
+
+  return normalizeVerifiedPayload(payload, expectedAudience);
+}
+
+function normalizeVerifiedPayload(payload, expectedAudience) {
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const audiences = Array.isArray(payload?.aud) ? payload.aud : [payload?.aud];
+
+  if (!GOOGLE_ISSUERS.has(payload?.iss)) {
+    throw new Error("Invalid Google issuer");
+  }
+
+  if (!audiences.includes(expectedAudience)) {
+    throw new Error("Invalid Google audience");
+  }
+
+  if (!payload?.exp || Number(payload.exp) <= nowInSeconds) {
+    throw new Error("Google credential expired");
   }
 
   return {
