@@ -130,14 +130,16 @@ export default function SchemeCard({
     };
   }, []);
 
-  function openDetail() {
+  function openDetail(event) {
+    event?.preventDefault();
+    event?.stopPropagation();
     navigate(`/schemes/${schemeId}`);
   }
 
   function handleKeyDown(event) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openDetail();
+      openExplainSheet();
     }
   }
 
@@ -173,8 +175,8 @@ export default function SchemeCard({
   }
 
   async function openExplainSheet(event) {
-    event.preventDefault();
-    event.stopPropagation();
+    event?.preventDefault();
+    event?.stopPropagation();
 
     try {
       setIsExplainOpen(true);
@@ -280,10 +282,10 @@ export default function SchemeCard({
     <article
       className={`scheme-card ${statusClass}`.trim()}
       style={{ "--stagger-index": staggerIndex }}
-      role="link"
+      role="button"
       tabIndex={0}
-      aria-label={`Open details for ${schemeName}`}
-      onClick={openDetail}
+      aria-label={`Explain ${schemeName} in simple Hindi`}
+      onClick={openExplainSheet}
       onKeyDown={handleKeyDown}
     >
       <div className="scheme-card__top">
@@ -373,10 +375,15 @@ export default function SchemeCard({
             </div>
           </div>
         </div>
-        <span className="scheme-card__expand-row" aria-hidden="true">
+        <button
+          type="button"
+          className="scheme-card__expand-row"
+          onClick={openDetail}
+          aria-label={`View full details for ${schemeName}`}
+        >
           <span className="scheme-card__expand-label">View full details</span>
           <span className="card-expand-icon">{"\u2197"}</span>
-        </span>
+        </button>
       </div>
       {isReportOpen ? (
         <div className="app-modal-backdrop app-modal-backdrop--sheet" role="presentation" onClick={closeReportSheet}>

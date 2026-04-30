@@ -2316,6 +2316,8 @@ select {
   color: var(--brand-text);
   border: 1px solid rgba(29, 158, 117, 0.16);
   max-width: 100%;
+  cursor: pointer;
+  font: inherit;
 }
 
 .scheme-card__expand-label {
