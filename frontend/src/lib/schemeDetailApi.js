@@ -129,6 +129,8 @@ export async function fetchSchemeDetail(schemeId) {
     benefitAmount: formatBenefitAmount(scheme.benefitAmount),
     benefitType: normalizeText(scheme.benefitType, ""),
     applyUrl: normalizeText(scheme.applyUrl, ""),
+    applyUrlRedirect: normalizeText(scheme.applyUrlRedirect, ""),
+    urlStatus: normalizeText(scheme.urlStatus, "unknown"),
     applyMode: normalizeText(scheme.applyMode, ""),
     officeAddress: {
       en: normalizeText(scheme.officeAddress?.en, ""),

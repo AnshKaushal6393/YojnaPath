@@ -403,6 +403,7 @@ const hi = {
   },
   actions: {
     applyNow: "अभी आवेदन करें",
+    findOnMyScheme: "MyScheme पर खोजें",
     more: "और",
     shareWhatsapp: "WhatsApp पर शेयर करें",
     copyDocuments: "दस्तावेज़ सूची कॉपी करें",

@@ -8,7 +8,11 @@
     "start": "node index.js",
     "create:admin": "node scripts/createAdmin.js",
     "seed:schemes": "node seeds/seedSchemes.js",
+    "seed:myscheme": "node seeds/seedSchemes.js --source=puppeteer",
     "scrape:myscheme": "node seeds/scrapers/myschemeScraper.js",
+    "check:urls": "node scripts/checkUrls.js",
+    "audit:scheme-urls": "node scripts/auditSchemeUrls.js",
+    "repair:scheme-urls": "node scripts/auditSchemeUrls.js --repair",
     "test": "jest --runInBand"
   },
   "dependencies": {

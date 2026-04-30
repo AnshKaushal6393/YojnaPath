@@ -4,6 +4,8 @@ export default function ActionButtons({
   schemeName,
   benefitAmount,
   applyUrl,
+  applyUrlRedirect,
+  urlStatus,
   documents,
   schemeUrl,
   isSaved,
@@ -12,7 +14,23 @@ export default function ActionButtons({
   onTrackApplication,
   isTrackPending,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const resolvedApplyUrl = getApplyUrl({ schemeName, applyUrl, applyUrlRedirect, urlStatus });
+  const isDeadUrl = urlStatus === "dead";
+  const isHindi = i18n.resolvedLanguage?.toLowerCase().startsWith("hi");
+
+  function getApplyUrl(scheme) {
+    if (scheme.urlStatus === "dead") {
+      const searchQuery = encodeURIComponent(scheme.schemeName || "");
+      return `https://www.myscheme.gov.in/search?keyword=${searchQuery}`;
+    }
+
+    if (scheme.applyUrlRedirect) {
+      return scheme.applyUrlRedirect;
+    }
+
+    return scheme.applyUrl;
+  }
 
   function handleWhatsappShare() {
     const topDocuments = documents
@@ -25,7 +43,7 @@ export default function ActionButtons({
       t("actions.whatsappTitle", { scheme: schemeName }),
       benefitAmount ? t("actions.whatsappBenefit", { benefit: benefitAmount }) : "",
       topDocuments ? t("actions.whatsappDocuments", { documents: topDocuments }) : "",
-      applyUrl ? t("actions.whatsappApply", { url: applyUrl }) : "",
+      resolvedApplyUrl ? t("actions.whatsappApply", { url: resolvedApplyUrl }) : "",
       schemeUrl ? t("actions.whatsappDetails", { url: schemeUrl }) : "",
     ]
       .filter(Boolean)
@@ -36,14 +54,24 @@ export default function ActionButtons({
 
   return (
     <div className="detail-actions">
-      {applyUrl ? (
+      {isDeadUrl ? (
+        <p className="detail-actions__url-warning" role="status">
+          <span aria-hidden="true">{"\u26A0\uFE0F"}</span>{" "}
+          {isHindi
+            ? "यह लिंक पुराना हो सकता है — MyScheme पर खोजें"
+            : "This link may be outdated — search on MyScheme"}
+        </p>
+      ) : null}
+      {resolvedApplyUrl ? (
         <a
-          href={applyUrl}
+          href={resolvedApplyUrl}
           target="_blank"
           rel="noreferrer"
           className="detail-card__apply btn-primary tap-target"
         >
-          <span className="type-label">{t("actions.applyNow")}</span>
+          <span className="type-label">
+            {isDeadUrl ? t("actions.findOnMyScheme") : t("actions.applyNow")}
+          </span>
         </a>
       ) : null}
       <button type="button" className="detail-card__secondary-button" onClick={handleWhatsappShare}>

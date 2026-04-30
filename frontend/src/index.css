@@ -2651,6 +2651,16 @@ select {
   flex: 1 1 100%;
 }
 
+.detail-actions__url-warning {
+  width: 100%;
+  margin: 0;
+  padding: var(--sp10) var(--sp12);
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  border-radius: var(--r12);
+  background-color: rgba(255, 247, 237, 0.88);
+  color: #8a3b12;
+}
+
 .detail-card__apply {
   display: inline-flex;
   align-items: center;

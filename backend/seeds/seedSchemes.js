@@ -657,7 +657,9 @@ async function loadHuggingFaceSource() {
 }
 
 async function loadPuppeteerSource() {
-  const scrapedSchemes = await scrapeMyScheme();
+  const scrapedSchemes = await scrapeMyScheme({
+    maxSchemes: process.env.MYSCHEME_MAX ? Number(process.env.MYSCHEME_MAX) : null,
+  });
   if (scrapedSchemes.length) {
     return scrapedSchemes.map((scheme) => normalizeScheme(scheme, "myscheme"));
   }
@@ -688,6 +690,38 @@ const SOURCE_LOADERS = {
   apisetu: loadApiSetuSource,
   manual: loadManualSource,
 };
+
+function parseSeedArgs(argv = process.argv.slice(2)) {
+  const options = {};
+
+  argv.forEach((arg) => {
+    if (arg.startsWith("--source=")) {
+      options.sourceOrder = arg
+        .slice("--source=".length)
+        .split(",")
+        .map((source) => source.trim())
+        .filter(Boolean);
+      return;
+    }
+
+    if (arg.startsWith("--sources=")) {
+      options.sourceOrder = arg
+        .slice("--sources=".length)
+        .split(",")
+        .map((source) => source.trim())
+        .filter(Boolean);
+    }
+  });
+
+  if (!options.sourceOrder?.length && process.env.SEED_SOURCES) {
+    options.sourceOrder = process.env.SEED_SOURCES
+      .split(",")
+      .map((source) => source.trim())
+      .filter(Boolean);
+  }
+
+  return options;
+}
 
 async function upsertScheme(scheme) {
   const update = {
@@ -746,7 +780,7 @@ async function seedSchemes({
 }
 
 if (require.main === module) {
-  seedSchemes()
+  seedSchemes(parseSeedArgs())
     .then((summary) => {
       console.log("Scheme seed completed");
       console.table(summary.bySource);
@@ -767,6 +801,7 @@ module.exports = {
   parseCsv,
   loadHuggingFaceRemoteSource,
   normalizeScheme,
+  parseSeedArgs,
   parseDatasetContent,
   seedSchemes,
   normalizeState,

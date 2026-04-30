@@ -183,6 +183,8 @@ export default function SchemeDetail({
         schemeName={scheme.schemeName}
         benefitAmount={scheme.benefitAmount}
         applyUrl={scheme.applyUrl}
+        applyUrlRedirect={scheme.applyUrlRedirect}
+        urlStatus={scheme.urlStatus}
         documents={scheme.documents}
         schemeUrl={schemeUrl}
         isSaved={isSaved}

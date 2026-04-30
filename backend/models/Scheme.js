@@ -278,6 +278,48 @@ const schemeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    originalApplyUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    applyUrlStatus: {
+      type: String,
+      enum: ["unknown", "ok", "redirected", "blocked", "dead", "fallback"],
+      default: "unknown",
+    },
+    applyUrlCheckedAt: {
+      type: Date,
+      default: null,
+    },
+    applyUrlFinal: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    applyUrlError: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    urlStatus: {
+      type: String,
+      enum: ["unknown", "live", "dead"],
+      default: "unknown",
+    },
+    urlCheckedAt: {
+      type: Date,
+      default: null,
+    },
+    urlHttpStatus: {
+      type: Number,
+      default: null,
+    },
+    applyUrlRedirect: {
+      type: String,
+      default: null,
+      trim: true,
+    },
     applyMode: {
       type: String,
       required: true,

@@ -433,6 +433,7 @@ const en = {
   },
   actions: {
     applyNow: "Apply now",
+    findOnMyScheme: "Find on MyScheme",
     more: "More",
     shareWhatsapp: "Share on WhatsApp",
     copyDocuments: "Copy documents list",

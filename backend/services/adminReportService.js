@@ -128,8 +128,12 @@ function getSnapshotFlags(scheme) {
     reasons.push("missing_hindi");
   }
 
-  if (!isLikelyValidUrl(scheme?.applyUrl)) {
+  if (!isLikelyValidUrl(scheme?.applyUrl) || scheme?.applyUrlStatus === "dead") {
     reasons.push("dead_url");
+  }
+
+  if (scheme?.applyUrlStatus === "fallback") {
+    reasons.push("fallback_url");
   }
 
   if (isEligibilityEmpty(scheme?.eligibility)) {

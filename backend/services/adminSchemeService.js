@@ -169,8 +169,12 @@ function getReviewReasons(scheme) {
     reasons.push("missing_hindi");
   }
 
-  if (!isLikelyValidUrl(scheme?.applyUrl)) {
+  if (!isLikelyValidUrl(scheme?.applyUrl) || scheme?.applyUrlStatus === "dead") {
     reasons.push("dead_url");
+  }
+
+  if (scheme?.applyUrlStatus === "fallback") {
+    reasons.push("fallback_url");
   }
 
   const tags = Array.isArray(scheme?.tags) ? scheme.tags.map((tag) => normalizeOptionalString(tag)?.toLowerCase()).filter(Boolean) : [];
