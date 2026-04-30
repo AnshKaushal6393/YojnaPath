@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { getCategoryMeta } from "../lib/categoryMeta";
@@ -13,6 +13,148 @@ const ISSUE_OPTIONS = [
   { value: "wrong_eligibility", label: "Wrong eligibility info" },
   { value: "other", label: "Other" },
 ];
+
+function cleanExplanationMarkup(value) {
+  return String(value ?? "")
+    .replace(/\r/g, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/^\s*[*-]\s+/gm, "")
+    .replace(/[*_`#>]/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function createSpeechChunks(value) {
+  const cleanText = cleanExplanationMarkup(value);
+  const pieces = cleanText
+    .split(/(?<=[\u0964.!?])\s+|\n+/)
+    .map((piece) => piece.trim())
+    .filter(Boolean);
+  const chunks = [];
+  let current = "";
+
+  pieces.forEach((piece) => {
+    if (piece.length > 220) {
+      if (current) {
+        chunks.push(current);
+        current = "";
+      }
+
+      const lastLine = piece.split(/\s+/).reduce((line, word) => {
+        const next = line ? `${line} ${word}` : word;
+        if (next.length > 180) {
+          if (line) {
+            chunks.push(line);
+          }
+          return word;
+        }
+        return next;
+      }, "");
+      if (lastLine) {
+        chunks.push(lastLine);
+      }
+      return;
+    }
+
+    const next = current ? `${current} ${piece}` : piece;
+    if (next.length > 220) {
+      chunks.push(current);
+      current = piece;
+    } else {
+      current = next;
+    }
+  });
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks;
+}
+
+function getPreferredHindiVoice(voices) {
+  return (
+    voices.find((voice) => voice.lang?.toLowerCase() === "hi-in") ||
+    voices.find((voice) => voice.lang?.toLowerCase().startsWith("hi")) ||
+    voices.find((voice) => /hindi|kalpana|hemant/i.test(voice.name || "")) ||
+    voices.find((voice) => voice.lang?.toLowerCase().includes("in")) ||
+    null
+  );
+}
+
+function renderExplanationText(value) {
+  const lines = String(value ?? "").replace(/\r/g, "").split("\n");
+  const nodes = [];
+  let paragraph = [];
+  let bullets = [];
+
+  function flushParagraph() {
+    if (!paragraph.length) {
+      return;
+    }
+
+    nodes.push(
+      <p className="scheme-explain-sheet__paragraph" key={`p-${nodes.length}`}>
+        {cleanExplanationMarkup(paragraph.join(" "))}
+      </p>
+    );
+    paragraph = [];
+  }
+
+  function flushBullets() {
+    if (!bullets.length) {
+      return;
+    }
+
+    nodes.push(
+      <ul className="scheme-explain-sheet__list" key={`ul-${nodes.length}`}>
+        {bullets.map((item, index) => (
+          <li key={`${item}-${index}`}>{cleanExplanationMarkup(item)}</li>
+        ))}
+      </ul>
+    );
+    bullets = [];
+  }
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushParagraph();
+      flushBullets();
+      return;
+    }
+
+    const bulletMatch = trimmed.match(/^[*-]\s+(.+)$/);
+    if (bulletMatch) {
+      flushParagraph();
+      bullets.push(bulletMatch[1]);
+      return;
+    }
+
+    const headingMatch = trimmed.match(/^\*\*(.+?)\*\*$/);
+    if (headingMatch) {
+      flushParagraph();
+      flushBullets();
+      nodes.push(
+        <h4 className="scheme-explain-sheet__heading" key={`h-${nodes.length}`}>
+          {cleanExplanationMarkup(headingMatch[1])}
+        </h4>
+      );
+      return;
+    }
+
+    flushBullets();
+    paragraph.push(trimmed);
+  });
+
+  flushParagraph();
+  flushBullets();
+
+  return nodes.length ? nodes : <p className="scheme-explain-sheet__paragraph">{cleanExplanationMarkup(value)}</p>;
+}
 
 export default function SchemeCard({
   schemeId,
@@ -47,6 +189,10 @@ export default function SchemeCard({
   const [reportNote, setReportNote] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [reportSuccessMessage, setReportSuccessMessage] = useState("");
+  const speechChunksRef = useRef([]);
+  const speechStopRequestedRef = useRef(false);
+  const speechVoiceRetryRef = useRef(false);
+  const speechStartTimerRef = useRef(null);
 
   function toSentenceCase(value) {
     return String(value ?? "")
@@ -125,6 +271,10 @@ export default function SchemeCard({
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
 
     return () => {
+      speechStopRequestedRef.current = true;
+      if (speechStartTimerRef.current) {
+        window.clearTimeout(speechStartTimerRef.current);
+      }
       window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
       window.speechSynthesis.cancel();
     };
@@ -197,6 +347,11 @@ export default function SchemeCard({
     }
 
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      speechStopRequestedRef.current = true;
+      if (speechStartTimerRef.current) {
+        window.clearTimeout(speechStartTimerRef.current);
+        speechStartTimerRef.current = null;
+      }
       window.speechSynthesis.cancel();
     }
     setIsSpeakingExplanation(false);
@@ -209,36 +364,81 @@ export default function SchemeCard({
       return;
     }
 
-    if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+    if (isSpeakingExplanation || window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+      speechStopRequestedRef.current = true;
+      if (speechStartTimerRef.current) {
+        window.clearTimeout(speechStartTimerRef.current);
+        speechStartTimerRef.current = null;
+      }
       window.speechSynthesis.cancel();
       setIsSpeakingExplanation(false);
       return;
     }
 
-    const preferredVoice =
-      availableVoices.find((voice) => voice.lang?.toLowerCase().startsWith("hi")) ||
-      availableVoices.find((voice) => voice.lang?.toLowerCase().includes("in")) ||
-      availableVoices[0];
-
-    if (!preferredVoice) {
-      window.alert("Is browser me speech voice available nahi hai.");
+    const chunks = createSpeechChunks(schemeExplanation);
+    if (!chunks.length) {
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(schemeExplanation);
-    utterance.lang = preferredVoice.lang || "hi-IN";
-    utterance.voice = preferredVoice;
-    utterance.rate = 0.95;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-    utterance.onstart = () => setIsSpeakingExplanation(true);
-    utterance.onend = () => setIsSpeakingExplanation(false);
-    utterance.onerror = () => {
+    const latestVoices = window.speechSynthesis.getVoices();
+    const preferredVoice = getPreferredHindiVoice(latestVoices.length ? latestVoices : availableVoices);
+
+    speechChunksRef.current = chunks;
+    speechStopRequestedRef.current = false;
+    speechVoiceRetryRef.current = false;
+
+    function speakChunk(index, useDefaultVoice = false) {
+      if (speechStopRequestedRef.current) {
+        setIsSpeakingExplanation(false);
+        return;
+      }
+
+      const text = speechChunksRef.current[index];
+      if (!text) {
+        setIsSpeakingExplanation(false);
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = preferredVoice?.lang || "hi-IN";
+      if (preferredVoice && !useDefaultVoice) {
+        utterance.voice = preferredVoice;
+      }
+      utterance.rate = 0.92;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.onstart = () => setIsSpeakingExplanation(true);
+      utterance.onend = () => speakChunk(index + 1, useDefaultVoice);
+      utterance.onerror = (event) => {
+        const errorName = event?.error || "";
+        if (speechStopRequestedRef.current || errorName === "canceled" || errorName === "interrupted") {
+          setIsSpeakingExplanation(false);
+          return;
+        }
+
+        if (preferredVoice && !useDefaultVoice && !speechVoiceRetryRef.current) {
+          speechVoiceRetryRef.current = true;
+          speakChunk(index, true);
+          return;
+        }
+
+        setIsSpeakingExplanation(false);
+        window.alert("Voice playback start nahi ho paya.");
+      };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    try {
+      window.speechSynthesis.cancel();
+      setIsSpeakingExplanation(true);
+      speechStartTimerRef.current = window.setTimeout(() => {
+        speechStartTimerRef.current = null;
+        speakChunk(0);
+      }, 80);
+    } catch (error) {
       setIsSpeakingExplanation(false);
       window.alert("Voice playback start nahi ho paya.");
-    };
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    }
   }
 
   function openReportSheet(event) {
@@ -507,7 +707,7 @@ export default function SchemeCard({
                         {isSpeakingExplanation ? "Roko" : "Suno"}
                       </button>
                     </div>
-                    <pre className="scheme-explain-sheet__text">{schemeExplanation}</pre>
+                    <div className="scheme-explain-sheet__text">{renderExplanationText(schemeExplanation)}</div>
                   </>
                 )}
               </div>

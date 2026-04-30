@@ -3269,10 +3269,36 @@ select {
 
 .scheme-explain-sheet__text {
   margin: 0;
-  white-space: pre-wrap;
   font: inherit;
   line-height: 1.7;
   color: #27413b;
+}
+
+.scheme-explain-sheet__heading {
+  margin: 22px 0 10px;
+  color: #243a35;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.scheme-explain-sheet__heading:first-child {
+  margin-top: 0;
+}
+
+.scheme-explain-sheet__paragraph {
+  margin: 0 0 18px;
+}
+
+.scheme-explain-sheet__list {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.scheme-explain-sheet__list li {
+  padding-left: 4px;
 }
 
 .profile-create-modal {
