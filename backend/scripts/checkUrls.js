@@ -215,7 +215,7 @@ async function runUrlCheck(options = parseArgs()) {
 
     let query = Scheme.find(
       filter,
-      { schemeId: 1, name: 1, applyUrl: 1 }
+      { schemeId: 1, name: 1, applyUrl: 1, originalApplyUrl: 1, applyUrlStatus: 1, applyUrlFinal: 1 }
     ).sort({ schemeId: 1 });
 
     if (options.limit > 0) {

@@ -4,6 +4,7 @@ const express = require("express");
 const { connectMongo } = require("./config/mongo");
 const { ensureDatabaseSchema } = require("./config/postgres");
 const { startDeadlineTrackerScheduler } = require("./services/deadlineTrackerService");
+const { startUrlHealthScheduler } = require("./services/urlHealthSchedulerService");
 
 const adminRoutes = require("./routes/admin");
 const adminAuthRoutes = require("./routes/adminAuth");
@@ -120,6 +121,7 @@ if (require.main === module) {
   });
 
   startDeadlineTrackerScheduler();
+  startUrlHealthScheduler();
 
   ensureDatabaseSchema()
     .catch((error) => {

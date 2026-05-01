@@ -376,48 +376,42 @@ schemeSchema.index(
   }
 );
 
-schemeSchema.pre("validate", function validateEligibilityRanges(next) {
+schemeSchema.pre("validate", function validateEligibilityRanges() {
   const e = this.eligibility;
 
   if (e) {
     if (e.minAge !== null && e.maxAge !== null && e.minAge > e.maxAge) {
-      return next(new Error("eligibility.minAge cannot be greater than eligibility.maxAge"));
+      throw new Error("eligibility.minAge cannot be greater than eligibility.maxAge");
     }
 
     if (e.landOwned && e.landOwned.min > e.landOwned.max) {
-      return next(new Error("eligibility.landOwned.min cannot be greater than landOwned.max"));
+      throw new Error("eligibility.landOwned.min cannot be greater than landOwned.max");
     }
   }
-
-  next();
 });
 
-schemeSchema.pre("validate", function validateDeadline(next) {
+schemeSchema.pre("validate", function validateDeadline() {
   const d = this.deadline;
 
   if (!d) {
-    return next();
+    return;
   }
 
   if (d.opens && d.closes && d.opens > d.closes) {
-    return next(new Error("deadline.opens cannot be after deadline.closes"));
+    throw new Error("deadline.opens cannot be after deadline.closes");
   }
 
   if (d.recurring && (d.recurringMonth === null || d.recurringDay === null)) {
-    return next(new Error("Recurring deadlines require both recurringMonth and recurringDay"));
+    throw new Error("Recurring deadlines require both recurringMonth and recurringDay");
   }
-
-  next();
 });
 
-schemeSchema.pre("validate", function validateOfflineAddress(next) {
+schemeSchema.pre("validate", function validateOfflineAddress() {
   if ((this.applyMode === "offline" || this.applyMode === "both") && !this.officeAddress) {
     console.warn(
       `[scheme] ${this.schemeId}: applyMode is '${this.applyMode}' but officeAddress is empty`
     );
   }
-
-  next();
 });
 
 module.exports = {
