@@ -450,6 +450,8 @@ const en = {
     whatsappDocuments: "Documents: {{documents}}",
     whatsappApply: "Apply: {{url}}",
     whatsappDetails: "Details: {{url}}",
+    fallbackWarning: "This link may be outdated - search on MyScheme",
+    fallbackWarningHi: "Yeh link purana ho sakta hai - MyScheme par khojen",
   },
   kiosk: {
     eyebrow: "ASSISTED MODE",

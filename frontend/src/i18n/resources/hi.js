@@ -420,6 +420,8 @@ const hi = {
     whatsappDocuments: "दस्तावेज़: {{documents}}",
     whatsappApply: "आवेदन: {{url}}",
     whatsappDetails: "विवरण: {{url}}",
+    fallbackWarning: "This link may be outdated - search on MyScheme",
+    fallbackWarningHi: "यह लिंक पुराना हो सकता है - MyScheme पर खोजें",
   },
   kiosk: {
     eyebrow: "सहायता मोड",

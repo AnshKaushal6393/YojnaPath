@@ -183,7 +183,9 @@ export default function SchemeDetail({
         schemeName={scheme.schemeName}
         benefitAmount={scheme.benefitAmount}
         applyUrl={scheme.applyUrl}
+        applyUrlFinal={scheme.applyUrlFinal}
         applyUrlRedirect={scheme.applyUrlRedirect}
+        applyUrlStatus={scheme.applyUrlStatus}
         urlStatus={scheme.urlStatus}
         documents={scheme.documents}
         schemeUrl={schemeUrl}

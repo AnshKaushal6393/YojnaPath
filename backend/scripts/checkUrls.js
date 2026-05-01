@@ -9,6 +9,7 @@ const DEFAULT_TIMEOUT_MS = 8000;
 const DEFAULT_BATCH_DELAY_MS = 500;
 const DEFAULT_DB_RETRIES = 4;
 const DEFAULT_DB_RETRY_DELAY_MS = 2500;
+const MYSCHEME_SEARCH_BASE_URL = "https://www.myscheme.gov.in/search";
 
 function wait(ms) {
   return new Promise((resolve) => {
@@ -115,6 +116,51 @@ async function checkUrl(url, timeout = DEFAULT_TIMEOUT_MS) {
   }
 }
 
+function buildFallbackUrl(scheme = {}) {
+  const name = scheme?.name?.en || scheme?.name?.hi || scheme?.schemeId || "";
+  const params = new URLSearchParams();
+
+  if (name) {
+    params.set("keyword", name);
+  }
+
+  return params.toString() ? `${MYSCHEME_SEARCH_BASE_URL}?${params.toString()}` : MYSCHEME_SEARCH_BASE_URL;
+}
+
+function isMySchemeSearchUrl(value) {
+  return String(value || "").startsWith(MYSCHEME_SEARCH_BASE_URL);
+}
+
+function buildSchemeUrlUpdate(scheme, result, checkedAt = new Date()) {
+  const redirected = result.finalUrl && result.finalUrl !== scheme.applyUrl;
+  const fallbackUrl = buildFallbackUrl(scheme);
+  const hasFallback =
+    scheme?.applyUrlStatus === "fallback" ||
+    isMySchemeSearchUrl(scheme?.applyUrlFinal) ||
+    Boolean(scheme?.originalApplyUrl);
+  const shouldKeepFallback = !result.alive && hasFallback;
+  const applyUrlStatus = shouldKeepFallback
+    ? "fallback"
+    : result.alive
+      ? (redirected ? "redirected" : "ok")
+      : "dead";
+  const applyUrlFinal = shouldKeepFallback
+    ? fallbackUrl
+    : result.finalUrl || null;
+
+  return {
+    urlStatus: result.alive ? "live" : "dead",
+    urlCheckedAt: checkedAt,
+    urlHttpStatus: result.status,
+    applyUrlStatus,
+    applyUrlCheckedAt: checkedAt,
+    applyUrlFinal,
+    applyUrlError: result.error || null,
+    originalApplyUrl: scheme?.originalApplyUrl || (shouldKeepFallback ? scheme?.applyUrl || null : null),
+    ...(redirected ? { applyUrlRedirect: result.finalUrl } : { applyUrlRedirect: null }),
+  };
+}
+
 function isRetryableMongoError(error) {
   const message = String(error?.message || "");
   return (
@@ -193,23 +239,12 @@ async function runUrlCheck(options = parseArgs()) {
       for (let j = 0; j < batch.length; j += 1) {
         const scheme = batch[j];
         const result = results[j];
-        const redirected = result.finalUrl && result.finalUrl !== scheme.applyUrl;
-        const applyUrlStatus = result.alive ? (redirected ? "redirected" : "ok") : "dead";
         const checkedAt = new Date();
 
         await updateSchemeUrlStatus(
           scheme.schemeId,
           {
-            $set: {
-              urlStatus: result.alive ? "live" : "dead",
-              urlCheckedAt: checkedAt,
-              urlHttpStatus: result.status,
-              applyUrlStatus,
-              applyUrlCheckedAt: checkedAt,
-              applyUrlFinal: result.finalUrl || null,
-              applyUrlError: result.error || null,
-              ...(redirected ? { applyUrlRedirect: result.finalUrl } : { applyUrlRedirect: null }),
-            },
+            $set: buildSchemeUrlUpdate(scheme, result, checkedAt),
           },
           options
         );
@@ -246,7 +281,10 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildFallbackUrl,
+  buildSchemeUrlUpdate,
   checkUrl,
+  isMySchemeSearchUrl,
   parseArgs,
   runUrlCheck,
   updateSchemeUrlStatus,

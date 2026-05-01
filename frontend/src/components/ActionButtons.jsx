@@ -4,7 +4,9 @@ export default function ActionButtons({
   schemeName,
   benefitAmount,
   applyUrl,
+  applyUrlFinal,
   applyUrlRedirect,
+  applyUrlStatus,
   urlStatus,
   documents,
   schemeUrl,
@@ -15,14 +17,28 @@ export default function ActionButtons({
   isTrackPending,
 }) {
   const { t, i18n } = useTranslation();
-  const resolvedApplyUrl = getApplyUrl({ schemeName, applyUrl, applyUrlRedirect, urlStatus });
-  const isDeadUrl = urlStatus === "dead";
+  const useFallback = applyUrlStatus === "fallback" || urlStatus === "dead";
+  const resolvedApplyUrl = getApplyUrl({
+    schemeName,
+    applyUrl,
+    applyUrlFinal,
+    applyUrlRedirect,
+    applyUrlStatus,
+    urlStatus,
+  });
   const isHindi = i18n.resolvedLanguage?.toLowerCase().startsWith("hi");
 
   function getApplyUrl(scheme) {
+    if (scheme.applyUrlStatus === "fallback") {
+      return scheme.applyUrlFinal || buildMySchemeSearchUrl(scheme.schemeName);
+    }
+
     if (scheme.urlStatus === "dead") {
-      const searchQuery = encodeURIComponent(scheme.schemeName || "");
-      return `https://www.myscheme.gov.in/search?keyword=${searchQuery}`;
+      return buildMySchemeSearchUrl(scheme.schemeName);
+    }
+
+    if (scheme.applyUrlFinal && scheme.applyUrlStatus === "redirected") {
+      return scheme.applyUrlFinal;
     }
 
     if (scheme.applyUrlRedirect) {
@@ -30,6 +46,23 @@ export default function ActionButtons({
     }
 
     return scheme.applyUrl;
+  }
+
+  function buildMySchemeSearchUrl(name) {
+    if (!name) {
+      return "https://www.myscheme.gov.in/search";
+    }
+
+    const searchQuery = encodeURIComponent(name);
+    return `https://www.myscheme.gov.in/search?keyword=${searchQuery}`;
+  }
+
+  function getFallbackWarning() {
+    if (isHindi) {
+      return t("actions.fallbackWarningHi");
+    }
+
+    return t("actions.fallbackWarning");
   }
 
   function handleWhatsappShare() {
@@ -54,12 +87,10 @@ export default function ActionButtons({
 
   return (
     <div className="detail-actions">
-      {isDeadUrl ? (
+      {useFallback ? (
         <p className="detail-actions__url-warning" role="status">
           <span aria-hidden="true">{"\u26A0\uFE0F"}</span>{" "}
-          {isHindi
-            ? "यह लिंक पुराना हो सकता है — MyScheme पर खोजें"
-            : "This link may be outdated — search on MyScheme"}
+          {getFallbackWarning()}
         </p>
       ) : null}
       {resolvedApplyUrl ? (
@@ -70,7 +101,7 @@ export default function ActionButtons({
           className="detail-card__apply btn-primary tap-target"
         >
           <span className="type-label">
-            {isDeadUrl ? t("actions.findOnMyScheme") : t("actions.applyNow")}
+            {useFallback ? t("actions.findOnMyScheme") : t("actions.applyNow")}
           </span>
         </a>
       ) : null}

@@ -206,7 +206,6 @@ async function auditSchemeUrls(options = parseArgs()) {
       const fallbackUrl = buildFallbackUrl(scheme);
       const shouldRepair = options.repair && result.status === "dead";
       const nextStatus = shouldRepair ? "fallback" : result.status;
-      const nextApplyUrl = shouldRepair ? fallbackUrl : scheme.applyUrl;
       const errorSuffix = result.statusCode ? ` (${result.statusCode})` : "";
 
       summary[nextStatus] = (summary[nextStatus] || 0) + 1;
@@ -215,7 +214,7 @@ async function auditSchemeUrls(options = parseArgs()) {
         [
           `[${nextStatus}]`,
           scheme.schemeId,
-          shouldRepair ? `${scheme.applyUrl} -> ${fallbackUrl}` : scheme.applyUrl,
+          shouldRepair ? `${scheme.applyUrl} => fallback ${fallbackUrl}` : scheme.applyUrl,
           result.error ? `- ${result.error}${errorSuffix}` : "",
         ]
           .filter(Boolean)
@@ -230,7 +229,6 @@ async function auditSchemeUrls(options = parseArgs()) {
 
         if (shouldRepair) {
           scheme.originalApplyUrl = scheme.originalApplyUrl || scheme.applyUrl;
-          scheme.applyUrl = nextApplyUrl;
         }
 
         await scheme.save();
