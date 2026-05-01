@@ -222,16 +222,18 @@ async function auditSchemeUrls(options = parseArgs()) {
       );
 
       if (!options.dryRun) {
-        scheme.applyUrlStatus = nextStatus;
-        scheme.applyUrlCheckedAt = new Date();
-        scheme.applyUrlFinal = shouldRepair ? fallbackUrl : result.finalUrl;
-        scheme.applyUrlError = result.error || null;
+        const update = {
+          applyUrlStatus: nextStatus,
+          applyUrlCheckedAt: new Date(),
+          applyUrlFinal: shouldRepair ? fallbackUrl : result.finalUrl,
+          applyUrlError: result.error || null,
+        };
 
         if (shouldRepair) {
-          scheme.originalApplyUrl = scheme.originalApplyUrl || scheme.applyUrl;
+          update.originalApplyUrl = scheme.originalApplyUrl || scheme.applyUrl;
         }
 
-        await scheme.save();
+        await Scheme.updateOne({ _id: scheme._id }, { $set: update });
         summary.updated += 1;
       }
     }

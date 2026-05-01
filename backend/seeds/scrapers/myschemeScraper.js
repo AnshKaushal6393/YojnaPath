@@ -7,6 +7,8 @@ const puppeteer = require("puppeteer");
 
 const SCRAPER_OUTPUT_PATH = path.join(__dirname, "..", "data", "puppeteer-schemes.json");
 const MYSCHEME_BASE_URL = "https://www.myscheme.gov.in";
+const MYSCHEME_HOSTNAME = new URL(MYSCHEME_BASE_URL).hostname;
+const SITEMAP_URL = `${MYSCHEME_BASE_URL}/sitemap.xml`;
 const SEARCH_URL = `${MYSCHEME_BASE_URL}/search`;
 const SEARCH_API_FRAGMENT = "/search/v6/schemes?";
 const DETAIL_API_BASE = "https://api.myscheme.gov.in/schemes/v6/public/schemes";
@@ -65,6 +67,142 @@ function fetchJson(url, headers, attempt = 1) {
       });
     }).on("error", reject);
   });
+}
+
+function fetchText(url, headers = {}, attempt = 1) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, { headers }, (response) => {
+        if (
+          response.statusCode &&
+          response.statusCode >= 300 &&
+          response.statusCode < 400 &&
+          response.headers.location
+        ) {
+          response.resume();
+          resolve(fetchText(response.headers.location, headers, attempt));
+          return;
+        }
+
+        let data = "";
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          data += chunk;
+        });
+        response.on("end", () => {
+          if (!response.statusCode || response.statusCode >= 400) {
+            if (attempt < 3) {
+              setTimeout(() => {
+                fetchText(url, headers, attempt + 1).then(resolve).catch(reject);
+              }, 1000 * attempt);
+              return;
+            }
+
+            reject(
+              new Error(
+                `Request failed for ${url} with status ${response.statusCode}: ${data.slice(0, 200)}`
+              )
+            );
+            return;
+          }
+
+          resolve(data);
+        });
+      })
+      .on("error", (error) => {
+        if (attempt < 3) {
+          setTimeout(() => {
+            fetchText(url, headers, attempt + 1).then(resolve).catch(reject);
+          }, 1000 * attempt);
+          return;
+        }
+        reject(error);
+      });
+  });
+}
+
+function decodeXmlEntities(text = "") {
+  return String(text)
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function parseSitemapXml(xml = "") {
+  return [...String(xml).matchAll(/<loc>([^<]+)<\/loc>/gi)]
+    .map((match) => decodeXmlEntities(match[1]).trim())
+    .filter(Boolean);
+}
+
+function normalizeMySchemeUrl(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== MYSCHEME_HOSTNAME) {
+      return null;
+    }
+
+    parsed.hash = "";
+    parsed.search = "";
+    return parsed.toString().replace(/\/+$/, "");
+  } catch {
+    return null;
+  }
+}
+
+function extractSchemeSlugFromUrl(url) {
+  const normalizedUrl = normalizeMySchemeUrl(url);
+  if (!normalizedUrl) {
+    return null;
+  }
+
+  const match = normalizedUrl.match(/\/schemes\/([^/?#]+)/i);
+  return match ? decodeURIComponent(match[1]).trim() : null;
+}
+
+async function fetchSchemeUrlsFromSitemap(url = SITEMAP_URL, visited = new Set()) {
+  const normalizedUrl = normalizeMySchemeUrl(url);
+  if (!normalizedUrl || visited.has(normalizedUrl)) {
+    return [];
+  }
+
+  visited.add(normalizedUrl);
+  const xml = await fetchText(normalizedUrl, {
+    accept: "application/xml,text/xml;q=0.9,*/*;q=0.8",
+    "user-agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+  });
+
+  const locs = parseSitemapXml(xml);
+  const directSchemeUrls = [];
+  const childSitemaps = [];
+
+  for (const loc of locs) {
+    const normalizedLoc = normalizeMySchemeUrl(loc);
+    if (!normalizedLoc) {
+      continue;
+    }
+
+    if (extractSchemeSlugFromUrl(normalizedLoc)) {
+      directSchemeUrls.push(normalizedLoc);
+      continue;
+    }
+
+    if (/\.xml$/i.test(normalizedLoc)) {
+      childSitemaps.push(normalizedLoc);
+    }
+  }
+
+  if (!childSitemaps.length) {
+    return [...new Set(directSchemeUrls)];
+  }
+
+  const nestedResults = await Promise.all(
+    childSitemaps.map((childUrl) => fetchSchemeUrlsFromSitemap(childUrl, visited))
+  );
+
+  return [...new Set([...directSchemeUrls, ...nestedResults.flat()])];
 }
 
 function slugToSchemeId(slug) {
@@ -252,20 +390,123 @@ async function withBrowser(task, options = {}) {
   }
 }
 
-async function scrapeListingPages(options = {}) {
-  const { maxSchemes = null } = options;
-
+async function discoverApiKey(options = {}) {
   return withBrowser(async (browser) => {
     const page = await browser.newPage();
     let apiKey = null;
-    const seenItems = new Map();
-    let totalAvailable = null;
 
     page.on("request", (request) => {
       if (request.method() === "GET" && request.url().includes(SEARCH_API_FRAGMENT)) {
         apiKey = apiKey || request.headers()["x-api-key"] || null;
       }
     });
+
+    await page.goto(SEARCH_URL, { waitUntil: "domcontentloaded", timeout: 180000 });
+    await wait(5000);
+
+    if (!apiKey) {
+      throw new Error("Unable to discover myScheme API key from the live search page");
+    }
+
+    return apiKey;
+  }, options);
+}
+
+async function enrichSitemapEntries(entries = [], apiKey) {
+  if (!entries.length || !apiKey) {
+    return entries;
+  }
+
+  const headers = {
+    "x-api-key": apiKey,
+    accept: "application/json, text/plain, */*",
+    "user-agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "accept-language": "en-US,en;q=0.9",
+  };
+  const slugParam = entries.map((entry) => entry.slug).filter(Boolean).join(",");
+
+  if (!slugParam) {
+    return entries;
+  }
+
+  try {
+    const payload = await fetchJson(
+      `${SEARCH_API_BASE}?lang=en&keyword=&sort=&from=0&size=${entries.length}&slug=${encodeURIComponent(slugParam)}`,
+      headers
+    );
+    const items = payload?.data?.hits?.items ?? [];
+    const bySlug = new Map(
+      items
+        .map((item) => item?.fields || null)
+        .filter((fields) => fields?.slug)
+        .map((fields) => [
+          fields.slug,
+          {
+            title: fields.schemeName,
+            ministry: fields.nodalMinistryName,
+            summary: fields.briefDescription,
+            tags: fields.tags || [],
+            categories: fields.schemeCategory || [],
+            level: fields.level || "",
+            beneficiaryStates: fields.beneficiaryState || [],
+          },
+        ])
+    );
+
+    return entries.map((entry) => ({
+      ...entry,
+      ...(bySlug.get(entry.slug) || {}),
+    }));
+  } catch (error) {
+    console.warn(`[myscheme] Unable to enrich sitemap entries from search API: ${error.message}`);
+    return entries;
+  }
+}
+
+async function scrapeListingPages(options = {}) {
+  const { maxSchemes = null } = options;
+  const apiKey = await discoverApiKey(options);
+
+  try {
+    const schemeUrls = await fetchSchemeUrlsFromSitemap();
+    const items = schemeUrls
+      .map((detailUrl) => {
+        const slug = extractSchemeSlugFromUrl(detailUrl);
+        if (!slug) {
+          return null;
+        }
+
+        return {
+          slug,
+          detailUrl,
+          title: "",
+          ministry: "",
+          summary: "",
+          tags: [],
+          categories: [],
+          level: "",
+          beneficiaryStates: [],
+        };
+      })
+      .filter(Boolean)
+      .slice(0, maxSchemes ?? Number.MAX_SAFE_INTEGER);
+
+    const enrichedItems = await enrichSitemapEntries(items, apiKey);
+
+    return {
+      apiKey,
+      totalAvailable: schemeUrls.length,
+      items: enrichedItems,
+    };
+  } catch (error) {
+    console.warn(`[myscheme] Sitemap discovery failed, falling back to live search scroll: ${error.message}`);
+  }
+
+  return withBrowser(async (browser) => {
+    const page = await browser.newPage();
+    const seenItems = new Map();
+    let totalAvailable = null;
 
     page.on("response", async (response) => {
       if (!response.url().includes(SEARCH_API_FRAGMENT)) {
@@ -301,10 +542,6 @@ async function scrapeListingPages(options = {}) {
 
     await page.goto(SEARCH_URL, { waitUntil: "domcontentloaded", timeout: 180000 });
     await wait(5000);
-
-    if (!apiKey) {
-      throw new Error("Unable to discover myScheme API key from the live search page");
-    }
 
     let idleRounds = 0;
     let previousCount = 0;
@@ -553,6 +790,11 @@ if (require.main === module) {
 module.exports = {
   MYSCHEME_BASE_URL,
   SCRAPER_OUTPUT_PATH,
+  SITEMAP_URL,
+  discoverApiKey,
+  extractSchemeSlugFromUrl,
+  fetchSchemeUrlsFromSitemap,
+  parseSitemapXml,
   scrapeListingPages,
   scrapeMyScheme,
   scrapeSchemeDetail,
