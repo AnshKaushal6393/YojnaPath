@@ -40,10 +40,6 @@ if (typeof window !== "undefined") {
   }
 }
 
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-});
-
 function renderApp() {
   ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
