@@ -30,6 +30,31 @@ The repository is split into:
 - Admin dashboard with users, schemes, analytics, reports, and settings
 - Runtime schema bootstrap for safer deployment on evolving databases
 
+## Lighthouse Snapshot
+
+Latest production audit for `https://yojna-path.vercel.app/`:
+
+<p align="center">
+  <img src="docs/lighthouse-scorecard.svg" alt="YojnaPath Lighthouse scores: 97 Performance, 96 Accessibility, 100 Best Practices, 100 SEO" width="100%" />
+</p>
+
+| Category | Score |
+| --- | ---: |
+| Performance | 97 |
+| Accessibility | 96 |
+| Best Practices | 100 |
+| SEO | 100 |
+
+Core metrics from the same run:
+
+- First Contentful Paint: `0.4s`
+- Largest Contentful Paint: `0.4s`
+- Total Blocking Time: `0ms`
+- Cumulative Layout Shift: `0.086`
+- Speed Index: `1.4s`
+
+These scores reflect the mobile-focused optimization work in this repository, including image sizing, SEO hardening, PWA tuning, deferred service worker registration, and startup bundle reduction.
+
 ## Tech Stack
 
 ### Frontend
