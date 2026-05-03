@@ -85,6 +85,51 @@ PostgreSQL MongoDB  Redis
    +---------------------> Users, profiles, applications, analytics, admin data
 ```
 
+## Production Scaling Workflow
+
+This project does not require a load balancer for local development or small demo traffic, but it is designed in a way that can scale behind one for production-style deployments.
+
+```text
+User Browser / Mobile PWA
+          |
+          v
+ CDN / Static Frontend Hosting
+          |
+          v
+ Reverse Proxy / Load Balancer
+          |
+    +-----+-----+-----+
+    |     |     |     |
+    v     v     v     v
+ API-1  API-2  API-3  API-N
+    |      |      |      |
+    +------+------+------+
+           |
+           v
+ PostgreSQL + MongoDB + Redis
+```
+
+### How the workflow works
+
+1. The frontend is served as static assets through a CDN or frontend host.
+2. API traffic goes through a reverse proxy or load balancer such as Nginx, AWS ALB, or Render edge routing.
+3. The load balancer distributes requests across multiple Express API instances.
+4. All API instances connect to the same PostgreSQL, MongoDB, and Redis services.
+5. Because authentication is token-based and shared services hold app state, requests do not need to stay on a single server instance.
+
+### Why this is a good interview talking point
+
+- It shows you understand the difference between building an MVP and designing for scale.
+- The backend already enables `trust proxy`, which is important when Express runs behind a proxy or load balancer.
+- Redis-backed helpers for OTP and caching fit well in a multi-instance deployment because shared cache/state is better than per-server state.
+- The React frontend and Express backend are already separated, which makes horizontal API scaling easier.
+
+### Honest engineering note
+
+If you discuss this in an interview, frame it as a production-ready scaling approach, not as a feature already fully deployed in this repository.
+
+One important limitation in the current code is that some rate limiting logic uses in-memory buckets inside the Node process. That works on a single backend instance, but for strict consistency behind a load balancer it should be moved to Redis or another shared store.
+
 ## End-to-End Flow
 
 1. Users sign in with phone OTP, email OTP, or Google.
@@ -486,6 +531,7 @@ If you want to make this README even stronger later, the next good additions wou
 - sample admin login/bootstrap instructions
 - scheme ingestion workflow documentation
 - API request/response examples
+- deployment diagram showing CDN, load balancer, and shared data services
 
 ## License
 

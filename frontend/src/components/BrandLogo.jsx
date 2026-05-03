@@ -15,7 +15,7 @@ export default function BrandLogo({
   const intrinsicSize =
     variant === "gov"
       ? { width: 380, height: 84 }
-      : { width: 360, height: 72 };
+      : { width: 396, height: 72 };
 
   return (
     <img
