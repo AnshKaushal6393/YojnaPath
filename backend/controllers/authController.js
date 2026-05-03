@@ -63,6 +63,7 @@ function serializeUser(user) {
     name: user.name || null,
     photoUrl: user.photo_url || null,
     photoType: user.photo_type || "none",
+    registrationComplete: Boolean(user.onboarding_done),
     onboardingDone: Boolean(user.onboarding_done),
     lang: user.lang,
     needsRegistration: !user.name || !user.photo_url,

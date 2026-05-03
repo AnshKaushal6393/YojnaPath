@@ -96,6 +96,7 @@ function UserMobileCard({ user, onOpen }) {
   const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
   const profileReady = isProfileReady(visibleProfile);
   const hasProfiles = Boolean(user.primaryProfile?.profileName || user.displayProfile?.profileName);
+  const registrationComplete = Boolean(user.registrationComplete ?? user.onboardingDone);
 
   return (
     <button
@@ -119,8 +120,8 @@ function UserMobileCard({ user, onOpen }) {
             <Badge variant="default" className="px-2.5 py-1 text-[11px] text-slate-300">
               {userType}
             </Badge>
-            <Badge variant={user.onboardingDone ? "success" : "default"} className="px-2.5 py-1 text-[11px]">
-              {user.onboardingDone ? "Registered" : "Registration pending"}
+            <Badge variant={registrationComplete ? "success" : "default"} className="px-2.5 py-1 text-[11px]">
+              {registrationComplete ? "Registered" : "Registration pending"}
             </Badge>
             <Badge
               variant={profileReady ? "info" : hasProfiles ? "warning" : "default"}
@@ -286,13 +287,14 @@ export default function AdminUsersPage() {
           const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
           const profileReady = isProfileReady(visibleProfile);
           const hasProfiles = Boolean(user.primaryProfile?.profileName || user.displayProfile?.profileName);
+          const registrationComplete = Boolean(user.registrationComplete ?? user.onboardingDone);
 
           return (
             <div className="text-sm text-slate-300">
               <span className="block">{visibleProfile?.state || "NA"}</span>
               <span className="mt-1 block">{userType}</span>
               <Badge variant="default" className="mt-2 px-2.5 py-1 text-[11px] text-slate-400">
-                {user.onboardingDone ? "Registration complete" : "Registration pending"}
+                {registrationComplete ? "Registration complete" : "Registration pending"}
               </Badge>
               <Badge
                 variant={profileReady ? "info" : hasProfiles ? "warning" : "default"}

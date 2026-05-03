@@ -344,6 +344,7 @@ export default function AdminUserDetailPage() {
   const visibleProfile = user?.displayProfile || user?.primaryProfile || null;
   const profileReady = isProfileReady(visibleProfile);
   const hasProfiles = Boolean(user?.profiles?.length);
+  const registrationComplete = Boolean(user?.registrationComplete ?? user?.onboardingDone);
   const hasRecentMatchLogs = Boolean(user?.recentMatches?.length);
   const hasMatchSummary = Boolean(
     matchSummary.matchRuns || matchSummary.totalMatches || matchSummary.totalNearMisses
@@ -438,8 +439,8 @@ export default function AdminUserDetailPage() {
                         <h3 className="text-2xl font-semibold text-white sm:text-3xl">
                           {user.name || "Unknown user"}
                         </h3>
-                        <Badge variant={user.onboardingDone ? "success" : "warning"}>
-                          {user.onboardingDone ? "Registration complete" : "Registration pending"}
+                        <Badge variant={registrationComplete ? "success" : "warning"}>
+                          {registrationComplete ? "Registration complete" : "Registration pending"}
                         </Badge>
                         <Badge variant={profileReady ? "info" : hasProfiles ? "warning" : "default"}>
                           {profileReady ? "Profile ready" : hasProfiles ? "Profile incomplete" : "No profile"}
