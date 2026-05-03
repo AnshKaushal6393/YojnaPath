@@ -8,6 +8,55 @@
   A full-stack government scheme discovery platform for matching users and families with relevant welfare benefits.
 </p>
 
+<p align="center">
+  <a href="https://yojna-path.vercel.app/"><strong>Live Demo</strong></a>
+  ·
+  <a href="#lighthouse-snapshot">Lighthouse</a>
+  ·
+  <a href="#screenshots">Screenshots</a>
+  ·
+  <a href="#tech-stack">Tech Stack</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-React%2018-61dafb?style=for-the-badge&logo=react&logoColor=06121b" alt="React 18 badge" />
+  <img src="https://img.shields.io/badge/Build-Vite-646cff?style=for-the-badge&logo=vite&logoColor=ffffff" alt="Vite badge" />
+  <img src="https://img.shields.io/badge/Backend-Express-111827?style=for-the-badge&logo=express&logoColor=ffffff" alt="Express badge" />
+  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=ffffff" alt="PostgreSQL badge" />
+  <img src="https://img.shields.io/badge/Database-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=ffffff" alt="MongoDB badge" />
+  <img src="https://img.shields.io/badge/PWA-Installable-0f766e?style=for-the-badge&logo=googlechrome&logoColor=ffffff" alt="PWA badge" />
+</p>
+
+<p align="center">
+  <strong>50+ real users onboarded</strong>
+  ·
+  <strong>Bilingual Hindi + English UX</strong>
+  ·
+  <strong>OTP + Google sign-in</strong>
+  ·
+  <strong>Admin analytics + kiosk workflows</strong>
+</p>
+
+## Live Demo
+
+- Production app: `https://yojna-path.vercel.app/`
+
+## Product Highlights
+
+| Area | What YojnaPath delivers |
+| --- | --- |
+| User onboarding | OTP login, Google sign-in, profile creation, family member management, and photo-based identity setup |
+| Scheme discovery | Rules-based scheme matching, near-miss analysis, saved schemes, and personalized results |
+| Actionability | Deadline calendar, application tracking, reminder flows, and printable kiosk result sheets |
+| Accessibility | Mobile-first UI, Hindi-English support, installable PWA behavior, and low-friction guided flows |
+| Operations | Admin dashboard, analytics, reports, scheme moderation, exports, and runtime-safe schema evolution |
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/app-ui-preview.svg" alt="YojnaPath app preview showing home, scheme matching, and profile flows" width="100%" />
+</p>
+
 ## Overview
 
 YojnaPath is a full-stack platform built for Indian users to discover, understand, and track government welfare schemes. It supports account registration, family profile creation, scheme matching, near-miss analysis, deadline discovery, kiosk-assisted usage, and a complete admin console for operations and analytics.
@@ -16,6 +65,33 @@ The repository is split into:
 
 - `frontend/`: React + Vite client
 - `backend/`: Express API with PostgreSQL, MongoDB, Redis-backed helpers, Cloudinary uploads, and admin tooling
+
+## Architecture
+
+```text
+User / CSC Operator
+        |
+        v
+React + Vite PWA
+        |
+        v
+Express API Layer
+   |        |        |
+   v        v        v
+PostgreSQL MongoDB  Redis
+   |        |        |
+   |        |        +--> OTP / cache / scheduler helpers
+   |        +------------> Scheme content + eligibility metadata
+   +---------------------> Users, profiles, applications, analytics, admin data
+```
+
+## End-to-End Flow
+
+1. Users sign in with phone OTP, email OTP, or Google.
+2. They create their own profile or add family-member profiles with demographic and eligibility details.
+3. The matching engine evaluates profile attributes against scheme eligibility criteria and returns exact matches plus near misses.
+4. Users save schemes, track applications, review deadlines, and revisit recommendations through the PWA.
+5. Admins monitor usage, scheme quality, analytics, reports, and kiosk activity through the operations console.
 
 ## Highlights
 
