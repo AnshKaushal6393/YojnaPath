@@ -58,15 +58,6 @@ The repository is split into:
 - `frontend/`: React + Vite client
 - `backend/`: Express API with PostgreSQL, MongoDB, Redis-backed helpers, Cloudinary uploads, and admin tooling
 
-## Interview Talking Points
-
-- YojnaPath uses a separated frontend and backend architecture, which makes deployment and scaling cleaner than a tightly coupled monolith.
-- The React and Vite PWA focuses on mobile-first access, bilingual UX, and low-friction onboarding for real users and kiosk operators.
-- The Express API centralizes authentication, profile management, scheme matching, admin analytics, and operational workflows.
-- PostgreSQL, MongoDB, and Redis each serve a distinct role, which is a good example of choosing storage based on access patterns instead of forcing everything into one database.
-- The production scaling workflow shows how the backend could run behind a load balancer with multiple API instances and shared services.
-- A realistic engineering caveat is that some rate limiting still uses in-memory state, so Redis-backed shared throttling would be the next step for true multi-instance consistency.
-
 ## Architecture
 
 <p align="center">
@@ -75,7 +66,7 @@ The repository is split into:
 
 ## Production Scaling Workflow
 
-This project does not require a load balancer for local development or small demo traffic, but it is designed in a way that can scale behind one for production-style deployments.
+The separated frontend/backend architecture and token-based authentication support horizontal scaling behind a load balancer.
 
 <p align="center">
   <img src="docs/load-balancer-workflow.svg" alt="YojnaPath production workflow showing users, CDN hosting, a load balancer, multiple API instances, and shared PostgreSQL, MongoDB, and Redis services" width="100%" />
@@ -88,19 +79,6 @@ This project does not require a load balancer for local development or small dem
 3. The load balancer distributes requests across multiple Express API instances.
 4. All API instances connect to the same PostgreSQL, MongoDB, and Redis services.
 5. Because authentication is token-based and shared services hold app state, requests do not need to stay on a single server instance.
-
-### Why this is a good interview talking point
-
-- It shows you understand the difference between building an MVP and designing for scale.
-- The backend already enables `trust proxy`, which is important when Express runs behind a proxy or load balancer.
-- Redis-backed helpers for OTP and caching fit well in a multi-instance deployment because shared cache/state is better than per-server state.
-- The React frontend and Express backend are already separated, which makes horizontal API scaling easier.
-
-### Honest engineering note
-
-If you discuss this in an interview, frame it as a production-ready scaling approach, not as a feature already fully deployed in this repository.
-
-One important limitation in the current code is that some rate limiting logic uses in-memory buckets inside the Node process. That works on a single backend instance, but for strict consistency behind a load balancer it should be moved to Redis or another shared store.
 
 ## End-to-End Flow
 
@@ -486,25 +464,3 @@ These scripts support admin creation, scheme ingestion, URL checking, and conten
 - Backend can be hosted on Render
 - Set `FRONTEND_URL` and `CORS_ORIGIN` correctly on the backend
 - If PostgreSQL uses SSL, set `PGSSLMODE=require`
-
-## Known Operational Notes
-
-- Cloudinary images may trigger browser privacy warnings like "Tracking Prevention blocked access to storage" on some browsers. This is usually a browser privacy message, not an application crash.
-- Admin image-heavy pages were optimized to avoid duplicate hidden-layout rendering and reduce repeated third-party image requests.
-- Admin payloads now distinguish account registration state from profile readiness for scheme matching.
-
-## Recommended README Add-ons
-
-If you want to make this README even stronger later, the next good additions would be:
-
-- project screenshots
-- architecture diagram
-- sample `.env.example` files
-- sample admin login/bootstrap instructions
-- scheme ingestion workflow documentation
-- API request/response examples
-- deployment diagram showing CDN, load balancer, and shared data services
-
-## License
-
-No license file is currently included in this repository. Add one if you want to open-source or formally share the project.
