@@ -7,6 +7,7 @@ const { getNearMisses, matchScheme } = require("../engine/matcher");
 const { recordKioskPdfDownload } = require("./analyticsService");
 
 const PHOTO_TYPES = ["camera", "upload", "generated", "none"];
+let profileUserTypeColumnPromise;
 
 function normalizeOptionalString(value) {
   if (value == null) {
@@ -33,6 +34,31 @@ function buildDateSeries(days = 30) {
   }
 
   return series;
+}
+
+async function hasProfilesUserTypeColumn() {
+  if (!profileUserTypeColumnPromise) {
+    profileUserTypeColumnPromise = (async () => {
+      const pool = getPool();
+      const result = await pool.query(
+        `
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'profiles'
+            AND column_name = 'user_type'
+          LIMIT 1
+        `
+      );
+
+      return result.rows.length > 0;
+    })().catch((error) => {
+      profileUserTypeColumnPromise = null;
+      throw error;
+    });
+  }
+
+  return profileUserTypeColumnPromise;
 }
 
 async function getAnalyticsOverview() {
@@ -189,12 +215,14 @@ async function getAnalyticsSchemes() {
 
   await ensureDatabaseSchema();
   const pool = getPool();
+  const hasUserTypeColumn = await hasProfilesUserTypeColumn();
+  const selectedUserTypeColumn = hasUserTypeColumn ? "p.user_type," : "NULL::VARCHAR(30) AS user_type,";
   const [schemes, primaryProfiles, applications] = await Promise.all([
     Scheme.find({ active: true }).sort({ schemeId: 1 }).lean(),
     pool.query(`
       SELECT
         p.state,
-        p.user_type,
+        ${selectedUserTypeColumn}
         p.occupation,
         p.annual_income,
         p.caste,
@@ -228,7 +256,7 @@ async function getAnalyticsSchemes() {
     : await pool.query(`
         SELECT
           p.state,
-          p.user_type,
+          ${selectedUserTypeColumn}
           p.occupation,
           p.annual_income,
           p.caste,

@@ -5,8 +5,52 @@ const { ensureFunnelSchema } = require("./funnelService");
 const { getPool, ensureDatabaseSchema } = require("../config/postgres");
 const { Scheme } = require("../models/Scheme");
 
+let profileUserTypeColumnPromise;
+
 function isMissingRelationError(error) {
   return error?.code === "42P01";
+}
+
+function isSchemaCompatibilityError(error) {
+  const code = String(error?.code || "");
+  return code === "42P01" || code === "42703" || code === "42883";
+}
+
+async function safeQuery(promise, fallbackResult) {
+  try {
+    return await promise;
+  } catch (error) {
+    if (isSchemaCompatibilityError(error)) {
+      return fallbackResult;
+    }
+
+    throw error;
+  }
+}
+
+async function hasProfilesUserTypeColumn() {
+  if (!profileUserTypeColumnPromise) {
+    profileUserTypeColumnPromise = (async () => {
+      const pool = getPool();
+      const result = await pool.query(
+        `
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'profiles'
+            AND column_name = 'user_type'
+          LIMIT 1
+        `
+      );
+
+      return result.rows.length > 0;
+    })().catch((error) => {
+      profileUserTypeColumnPromise = null;
+      throw error;
+    });
+  }
+
+  return profileUserTypeColumnPromise;
 }
 
 async function getAdminOverview() {
@@ -51,54 +95,46 @@ async function getAdminStats() {
   await ensureDatabaseSchema();
 
   const pool = getPool();
-  const usersPromise = pool.query("SELECT COUNT(*)::INT AS count FROM users");
-  const userTypesPromise = pool
-    .query(`
-      SELECT COALESCE(user_type, occupation, 'unknown') AS key, COUNT(*)::INT AS count
+  const hasUserTypeColumn = await hasProfilesUserTypeColumn();
+  const profileTypeExpression = hasUserTypeColumn
+    ? "COALESCE(user_type, occupation, 'unknown')"
+    : "COALESCE(occupation, 'unknown')";
+  const usersPromise = safeQuery(
+    pool.query("SELECT COUNT(*)::INT AS count FROM users"),
+    { rows: [{ count: 0 }] }
+  );
+  const userTypesPromise = safeQuery(
+    pool.query(`
+      SELECT ${profileTypeExpression} AS key, COUNT(*)::INT AS count
       FROM profiles
-      GROUP BY COALESCE(user_type, occupation, 'unknown')
+      GROUP BY ${profileTypeExpression}
       ORDER BY count DESC, key ASC
-    `)
-    .catch((error) => {
-      if (isMissingRelationError(error)) {
-        return { rows: [] };
-      }
-
-      throw error;
-    });
-  const matchesPromise = pool
-    .query(
+    `),
+    { rows: [] }
+  );
+  const matchesPromise = safeQuery(
+    pool.query(
       `
         SELECT
           COUNT(*)::INT AS count,
           COALESCE(SUM(near_miss_count), 0)::INT AS near_miss_sum
         FROM match_logs
       `
-    )
-    .catch((error) => {
-      if (isMissingRelationError(error)) {
-        return { rows: [{ count: 0, near_miss_sum: 0 }] };
-      }
-
-      throw error;
-    });
-  const todayPromise = pool
-    .query(
+    ),
+    { rows: [{ count: 0, near_miss_sum: 0 }] }
+  );
+  const todayPromise = safeQuery(
+    pool.query(
       `
         SELECT COUNT(*)::INT AS count
         FROM match_logs
         WHERE created_at >= CURRENT_DATE
       `
-    )
-    .catch((error) => {
-      if (isMissingRelationError(error)) {
-        return { rows: [{ count: 0 }] };
-      }
-
-      throw error;
-    });
-  const topSchemePromise = pool
-    .query(
+    ),
+    { rows: [{ count: 0 }] }
+  );
+  const topSchemePromise = safeQuery(
+    pool.query(
       `
         SELECT scheme_id, COUNT(*)::INT AS count
         FROM match_logs
@@ -108,20 +144,18 @@ async function getAdminStats() {
         ORDER BY count DESC, scheme_id ASC
         LIMIT 1
       `
-    )
-    .catch((error) => {
-      if (isMissingRelationError(error)) {
-        return { rows: [] };
-      }
-
-      throw error;
-    });
-  const photoStatsPromise = pool.query(`
-    SELECT photo_type, COUNT(*)::INT AS count
-    FROM users
-    GROUP BY photo_type
-    ORDER BY photo_type ASC
-  `);
+    ),
+    { rows: [] }
+  );
+  const photoStatsPromise = safeQuery(
+    pool.query(`
+      SELECT photo_type, COUNT(*)::INT AS count
+      FROM users
+      GROUP BY photo_type
+      ORDER BY photo_type ASC
+    `),
+    { rows: [{ photo_type: "none", count: 0 }] }
+  );
   const activeSchemesPromise = isMongoReady()
     ? Scheme.countDocuments({ active: true }).catch(() => 0)
     : Promise.resolve(0);
