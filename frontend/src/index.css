@@ -263,7 +263,7 @@ select {
 
 .app-shell {
   min-height: 100vh;
-  padding: var(--sp24) var(--sp16) calc(var(--sp24) + 72px);
+  padding: var(--sp24) var(--sp16) calc(var(--sp24) + 72px + env(safe-area-inset-bottom, 0px));
 }
 
 .home-page {
@@ -2416,12 +2416,14 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 1000;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sp8);
-  padding: var(--sp8) var(--sp16);
+  padding: var(--sp8) var(--sp16) calc(var(--sp8) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border);
   background-color: var(--surface);
+  box-shadow: 0 -10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .bottom-nav__item {
