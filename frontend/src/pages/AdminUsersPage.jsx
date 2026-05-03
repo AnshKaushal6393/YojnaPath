@@ -86,7 +86,8 @@ function FilterField({ label, children }) {
 }
 
 function UserMobileCard({ user, onOpen }) {
-  const userType = getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation);
+  const visibleProfile = user.displayProfile || user.primaryProfile || null;
+  const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
 
   return (
     <button
@@ -103,7 +104,7 @@ function UserMobileCard({ user, onOpen }) {
               <p className="mt-1 truncate text-xs text-slate-400">{user.phone || "No phone"}</p>
             </div>
             <Badge variant="default" className="shrink-0 px-2 py-1 text-[10px] text-slate-300">
-              {user.primaryProfile?.state || "NA"}
+              {visibleProfile?.state || "NA"}
             </Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -218,9 +219,9 @@ export default function AdminUsersPage() {
             <div>
               <span className="block text-sm font-semibold text-white">{user.name || "Unknown"}</span>
               <span className="mt-1 block text-xs text-slate-400">{user.phone}</span>
-              {user.primaryProfile?.profileName ? (
+              {(user.displayProfile?.profileName || user.primaryProfile?.profileName) ? (
                 <span className="mt-1 block text-xs text-slate-500">
-                  Profile: {user.primaryProfile.profileName}
+                  Profile: {user.displayProfile?.profileName || user.primaryProfile?.profileName}
                 </span>
               ) : null}
             </div>
@@ -230,14 +231,15 @@ export default function AdminUsersPage() {
       {
         id: "state",
         header: "State / Type",
-        accessorFn: (row) => row.primaryProfile?.state || "NA",
+        accessorFn: (row) => row.displayProfile?.state || row.primaryProfile?.state || "NA",
         cell: ({ row }) => {
           const user = row.original;
-          const userType = getUserTypeLabel(user.primaryProfile?.userType || user.primaryProfile?.occupation);
+          const visibleProfile = user.displayProfile || user.primaryProfile || null;
+          const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
 
           return (
             <div className="text-sm text-slate-300">
-              <span className="block">{user.primaryProfile?.state || "NA"}</span>
+              <span className="block">{visibleProfile?.state || "NA"}</span>
               <span className="mt-1 block">{userType}</span>
               <Badge variant="default" className="mt-2 px-2.5 py-1 text-[11px] text-slate-400">
                 {user.onboardingDone ? "Onboarding complete" : "Onboarding pending"}

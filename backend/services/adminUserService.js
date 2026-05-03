@@ -168,6 +168,26 @@ function getProfileCompletenessScore(profile) {
   );
 }
 
+function buildProfileOrderClause(alias) {
+  return `
+    CASE WHEN ${alias}.is_primary THEN 1000 ELSE 0 END DESC,
+    CASE WHEN ${alias}.state IS NOT NULL AND ${alias}.state <> '' THEN 100 ELSE 0 END DESC,
+    CASE
+      WHEN COALESCE(${alias}.user_type, ${alias}.occupation) IS NOT NULL
+        AND COALESCE(${alias}.user_type, ${alias}.occupation) <> ''
+      THEN 100
+      ELSE 0
+    END DESC,
+    CASE WHEN ${alias}.photo_url IS NOT NULL AND ${alias}.photo_url <> '' THEN 10 ELSE 0 END DESC,
+    CASE WHEN ${alias}.gender IS NOT NULL AND ${alias}.gender <> '' THEN 5 ELSE 0 END DESC,
+    CASE WHEN ${alias}.caste IS NOT NULL AND ${alias}.caste <> '' THEN 5 ELSE 0 END DESC,
+    CASE WHEN ${alias}.age IS NOT NULL THEN 2 ELSE 0 END DESC,
+    ${alias}.is_primary DESC,
+    ${alias}.updated_at DESC,
+    ${alias}.id ASC
+  `;
+}
+
 function pickDisplayProfile(profiles = []) {
   return [...profiles].sort((left, right) => {
     const scoreDifference = getProfileCompletenessScore(right) - getProfileCompletenessScore(left);
@@ -228,7 +248,7 @@ async function listAdminUsers(options = {}) {
           p.*,
           ROW_NUMBER() OVER (
             PARTITION BY p.user_id
-            ORDER BY p.is_primary DESC, p.updated_at DESC, p.id ASC
+            ORDER BY ${buildProfileOrderClause("p")}
           ) AS profile_rank
         FROM profiles p
       ),
@@ -705,8 +725,8 @@ async function exportAdminUsersCsv() {
       [
         user.id,
         user.name,
-        user.primaryProfile?.state || "",
-        user.primaryProfile?.userType || user.primaryProfile?.occupation || "",
+        user.displayProfile?.state || user.primaryProfile?.state || "",
+        user.displayProfile?.userType || user.displayProfile?.occupation || user.primaryProfile?.userType || user.primaryProfile?.occupation || "",
         user.stats?.totalMatches || 0,
       ]
         .map(escapeCsv)

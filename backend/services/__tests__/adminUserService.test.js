@@ -80,6 +80,53 @@ describe("adminUserService", () => {
     });
   });
 
+  test("listAdminUsers prefers the most complete profile for list data", async () => {
+    const pool = {
+      query: jest.fn().mockResolvedValue({
+        rows: [
+          {
+            id: "user-2",
+            phone: "8888888888",
+            name: "Asha",
+            photo_url: null,
+            photo_type: "none",
+            onboarding_done: true,
+            lang: "hi",
+            created_at: "2026-04-17T10:00:00.000Z",
+            last_login: "2026-04-18T10:00:00.000Z",
+            registration_completed_at: "2026-04-17T09:30:00.000Z",
+            profile_name: "Asha Devi",
+            relation: "self",
+            profile_photo_url: "https://cdn.example.com/asha.jpg",
+            state: "UP",
+            user_type: "farmer",
+            occupation: "farmer",
+            district: "Varanasi",
+            match_runs: 1,
+            total_matches: 2,
+            total_near_misses: 0,
+            total_count: 1,
+          },
+        ],
+      }),
+    };
+    getPool.mockReturnValue(pool);
+
+    const { listAdminUsers } = loadAdminUserService();
+    const payload = await listAdminUsers({ page: 1, limit: 10 });
+
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining("CASE WHEN p.state IS NOT NULL AND p.state <> '' THEN 100 ELSE 0 END DESC"),
+      [null, null, null, null, 10, 0]
+    );
+    expect(payload.users[0].displayProfile).toMatchObject({
+      profileName: "Asha Devi",
+      state: "UP",
+      userType: "farmer",
+      photoUrl: "https://cdn.example.com/asha.jpg",
+    });
+  });
+
   test("getAdminUserById returns display profile and display photo fallback", async () => {
     const pool = {
       query: jest
