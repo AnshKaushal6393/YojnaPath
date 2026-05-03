@@ -25,8 +25,8 @@ export default function NotFoundPage() {
   }, [navigate, redirectTarget]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.2),_transparent_30%),linear-gradient(180deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] px-4 py-10 text-slate-50">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-4xl items-center">
+    <main className="min-h-[100svh] bg-[radial-gradient(circle_at_top,_rgba(34,197,94,0.2),_transparent_30%),linear-gradient(180deg,_#020617_0%,_#0f172a_50%,_#111827_100%)] px-4 py-10 text-slate-50">
+      <div className="mx-auto flex min-h-[calc(100svh-5rem)] max-w-4xl items-center">
         <section className="w-full rounded-[32px] border border-white/10 bg-white/[0.06] p-8 shadow-[0_24px_80px_rgba(15,23,42,0.25)] backdrop-blur">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-300">
             Route not found

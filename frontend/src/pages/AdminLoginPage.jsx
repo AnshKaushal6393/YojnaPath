@@ -35,13 +35,13 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-6 text-slate-50 sm:px-6 lg:px-8">
+    <main className="relative min-h-[100svh] overflow-hidden bg-slate-950 px-4 py-6 text-slate-50 sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_35%,transparent_75%)]" />
       <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[min(760px,100vw)] -translate-x-1/2 rounded-full bg-emerald-400/15 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-180px] right-[-120px] h-[420px] w-[420px] rounded-full bg-cyan-400/10 blur-3xl" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.12),transparent_34%)]" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center justify-center">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-6xl items-center justify-center">
         <div className="grid w-full items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)] lg:gap-14">
           <section className="hidden max-w-xl lg:block">
             <BrandLogo variant="light" alt="YojnaPath Admin" className="mb-6" />

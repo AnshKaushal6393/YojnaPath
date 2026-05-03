@@ -105,8 +105,8 @@ const { type: typeFromState, identifier: identifierFromState } = location.state 
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900">
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-93.75 items-center">
+    <main className="min-h-[100svh] bg-slate-50 px-4 py-8 text-slate-900">
+      <div className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-93.75 items-center">
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
           <div className="mb-8 space-y-3">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
