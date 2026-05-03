@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import BrandLogo from "../components/BrandLogo";
 import InstallAppButton from "../components/InstallAppButton";
 import { fetchSavedProfile, isProfileReadyForMatching } from "../lib/onboardApi";
 import { loadGoogleIdentityScript } from "../lib/googleAuth";
@@ -171,6 +172,7 @@ export default function Login() {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-[420px] items-center">
         <div className="w-full rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-6">
           <div className="mb-8 space-y-3">
+            <BrandLogo variant="dark" alt="YojnaPath" className="mb-2" />
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">
               {t("auth.login.eyebrow")}
             </p>

@@ -5,6 +5,7 @@ import { clearAdminToken } from "../lib/adminAuthStorage";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import BrandLogo from "../components/BrandLogo";
 
 const ADMIN_NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", end: true },
@@ -42,6 +43,7 @@ export default function AdminShell() {
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
               <div className="min-w-0">
+                <BrandLogo variant="light" alt="YojnaPath Admin" compact className="mb-3" />
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
                   YojnaPath Admin
                 </p>

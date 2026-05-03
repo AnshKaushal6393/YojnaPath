@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 84" role="img" aria-label="YojnaPath government themed logo">
+  <defs>
+    <linearGradient id="yp-gov-path" x1="10" y1="10" x2="48" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="52%" stop-color="#16A34A" />
+      <stop offset="100%" stop-color="#0F766E" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(4 10)">
+    <rect width="64" height="64" rx="18" fill="#F8FAFC" />
+    <rect x="35" y="14" width="11" height="14" rx="3" fill="#DBEAFE" />
+    <path d="M18 16h11.5l8.1 12.8L45.5 16H54L41.9 35.2V48H33V35.2z" fill="url(#yp-gov-path)" />
+    <path d="M15 16h9.4l9.7 15.7L28.4 48H19l5.9-14.1z" fill="#1E3A8A" opacity="0.98" />
+    <circle cx="42" cy="21" r="2" fill="#2563EB" />
+  </g>
+
+  <g transform="translate(84 18)">
+    <text
+      x="0"
+      y="24"
+      fill="#0F172A"
+      font-size="28"
+      font-weight="700"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+    >
+      YojnaPath
+    </text>
+    <text
+      x="0"
+      y="46"
+      fill="#334155"
+      font-size="11"
+      font-weight="600"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+      letter-spacing="0.9"
+    >
+      PUBLIC SCHEME ACCESS FOR PEOPLE AND FAMILIES
+    </text>
+    <rect x="0" y="55" width="92" height="4" rx="2" fill="#F59E0B" />
+    <rect x="100" y="55" width="92" height="4" rx="2" fill="#16A34A" />
+    <rect x="200" y="55" width="92" height="4" rx="2" fill="#2563EB" />
+  </g>
+</svg>

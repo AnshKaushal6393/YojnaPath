@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" role="img" aria-label="YojnaPath logo">
+  <defs>
+    <linearGradient id="yp-logo-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8FBF4" />
+      <stop offset="100%" stop-color="#D4F4E8" />
+    </linearGradient>
+    <linearGradient id="yp-logo-path" x1="28" y1="26" x2="84" y2="96" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22B07D" />
+      <stop offset="100%" stop-color="#0F6E56" />
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="560" height="160" rx="28" fill="#081824" />
+
+  <g transform="translate(24 24)">
+    <rect width="112" height="112" rx="28" fill="url(#yp-logo-bg)" />
+    <rect x="62" y="22" width="20" height="24" rx="6" fill="#BEECD8" />
+    <path
+      d="M28 26h20l14.3 22.6L76.2 26H92L70.6 60v22H54.8V60z"
+      fill="url(#yp-logo-path)"
+    />
+    <path
+      d="M22 26h15.5l17.3 28L44.7 82H29.2l10.1-28z"
+      fill="#0B5A47"
+      opacity="0.96"
+    />
+    <circle cx="74" cy="34" r="4" fill="#22B07D" />
+  </g>
+
+  <g transform="translate(164 52)">
+    <text
+      x="0"
+      y="28"
+      fill="#F6FAF8"
+      font-size="42"
+      font-weight="700"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+      letter-spacing="0.2"
+    >
+      YojnaPath
+    </text>
+    <text
+      x="0"
+      y="68"
+      fill="#9DB5AB"
+      font-size="18"
+      font-weight="500"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+    >
+      Discover, match, and track government schemes with clarity.
+    </text>
+  </g>
+</svg>

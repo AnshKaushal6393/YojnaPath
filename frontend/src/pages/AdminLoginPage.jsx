@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BrandLogo from "../components/BrandLogo";
 import { loginAdmin } from "../lib/adminApi";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -43,6 +44,7 @@ export default function AdminLoginPage() {
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl items-center justify-center">
         <div className="grid w-full items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,440px)] lg:gap-14">
           <section className="hidden max-w-xl lg:block">
+            <BrandLogo variant="light" alt="YojnaPath Admin" className="mb-6" />
             <Badge variant="success" className="mb-5 w-fit uppercase tracking-[0.18em]">
               YojnaPath Admin
             </Badge>
@@ -56,6 +58,7 @@ export default function AdminLoginPage() {
 
           <Card className="mx-auto w-full max-w-[440px] rounded-[20px] p-0 shadow-[0_24px_60px_rgba(15,23,42,0.35)] sm:rounded-[24px]">
             <CardHeader className="space-y-3 px-5 pt-5 sm:px-6 sm:pt-6">
+              <BrandLogo variant="light" alt="YojnaPath Admin" compact className="mb-1 lg:hidden" />
               <Badge variant="success" className="w-fit uppercase tracking-[0.18em] lg:hidden">
                 YojnaPath Admin
               </Badge>

@@ -1,5 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YojnaPath logo">
-  <rect width="64" height="64" rx="18" fill="#E1F5EE"/>
-  <path d="M19 16h12.5l8 13.2L48 16h8.5L43.7 35.7V48H35V35.7z" fill="#1D9E75"/>
-  <path d="M16 16h9.6l10.4 17.2L29.9 48h-9.6l6.1-14.8z" fill="#0F6E56"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="YojnaPath icon">
+  <defs>
+    <linearGradient id="yp-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8FBF4" />
+      <stop offset="100%" stop-color="#D4F4E8" />
+    </linearGradient>
+    <linearGradient id="yp-path" x1="18" y1="14" x2="45" y2="49" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#22B07D" />
+      <stop offset="100%" stop-color="#0F6E56" />
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="18" fill="url(#yp-bg)" />
+  <rect x="35" y="14" width="11" height="14" rx="3" fill="#BEECD8" />
+  <path
+    d="M18 16h11.5l8.1 12.8L45.5 16H54L41.9 35.2V48H33V35.2z"
+    fill="url(#yp-path)"
+  />
+  <path
+    d="M15 16h9.4l9.7 15.7L28.4 48H19l5.9-14.1z"
+    fill="#0B5A47"
+    opacity="0.96"
+  />
+  <circle cx="42" cy="21" r="2" fill="#22B07D" />
 </svg>

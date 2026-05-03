@@ -631,17 +631,19 @@ async function getAdminUserLiveMatches(userId) {
 
   const sourceProfile = user.displayProfile || user.primaryProfile;
   const derivedOccupation = sourceProfile?.occupation || sourceProfile?.userType;
-  if (!sourceProfile?.state || !derivedOccupation) {
-    return {
-      userId,
-      profileReady: false,
-      count: 0,
-      nearMissCount: 0,
-      schemes: [],
-      nearMisses: [],
-      message: "Primary profile is incomplete for live matching",
-    };
-  }
+const missing = [];
+  if (!sourceProfile?.state) missing.push("state");
+  if (!derivedOccupation) missing.push("userType/occupation");
+  return {
+    userId,
+    profileReady: false,
+    count: 0,
+    nearMissCount: 0,
+    schemes: [],
+    nearMisses: [],
+    message: `Profile missing ${missing.join(", ")} for live matching`,
+    missingFields: missing,
+  };
 
   const profile = {
     state: sourceProfile.state,

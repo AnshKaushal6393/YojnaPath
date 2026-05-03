@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 72" role="img" aria-label="YojnaPath logo light">
+  <defs>
+    <linearGradient id="yp-light-path" x1="10" y1="10" x2="48" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(4 4)">
+    <rect width="64" height="64" rx="18" fill="#ECFDF5" />
+    <rect x="35" y="14" width="11" height="14" rx="3" fill="#BBF7D0" />
+    <path d="M18 16h11.5l8.1 12.8L45.5 16H54L41.9 35.2V48H33V35.2z" fill="url(#yp-light-path)" />
+    <path d="M15 16h9.4l9.7 15.7L28.4 48H19l5.9-14.1z" fill="#065F46" opacity="0.98" />
+    <circle cx="42" cy="21" r="2" fill="#34D399" />
+  </g>
+
+  <g transform="translate(84 15)">
+    <text
+      x="0"
+      y="24"
+      fill="#F8FAFC"
+      font-size="28"
+      font-weight="700"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+    >
+      YojnaPath
+    </text>
+    <text
+      x="0"
+      y="46"
+      fill="#94A3B8"
+      font-size="11"
+      font-weight="600"
+      font-family="Noto Sans, Inter, Segoe UI, Arial, sans-serif"
+      letter-spacing="0.9"
+    >
+      SCHEME DISCOVERY AND ELIGIBILITY GUIDANCE
+    </text>
+  </g>
+</svg>

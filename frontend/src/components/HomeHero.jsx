@@ -1,5 +1,6 @@
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
 import { useTranslation } from "react-i18next";
+import BrandLogo from "./BrandLogo";
 import InstallAppButton from "./InstallAppButton";
 
 export default function HomeHero({
@@ -20,7 +21,7 @@ export default function HomeHero({
       <div className="home-hero__shape home-hero__shape--three" aria-hidden="true" />
 
       <div className="home-hero__topbar">
-        <p className="type-display">{t("common.appName")}</p>
+        <BrandLogo variant="gov" alt={t("common.appName")} className="home-hero__brand" />
         <div className="home-hero__controls">
           <div className="language-toggle" aria-label={t("profile.languageTitle")}>
             <button

@@ -503,8 +503,24 @@ export default function AdminUserDetailPage() {
               label="Eligible now"
               value={formatNumber(liveMatches?.count || 0)}
               tone="emerald"
-              helper={liveMatches?.profileReady === false ? liveMatches.message || "Profile incomplete" : "Live snapshot"}
-            />
+              helper={
+                liveMatches?.profileReady === false 
+                  ? liveMatches.message || "Profile incomplete" 
+                  : "Live snapshot"
+              }
+            >
+              {liveMatches?.profileReady === false && liveMatches?.missingFields?.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {liveMatches.missingFields.map((field) => (
+                    <Badge key={field} variant="destructive" className="text-xs">
+                      {field}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </StatCard>
+
+
           </section>
 
           <section className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
