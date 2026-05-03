@@ -644,6 +644,7 @@ module.exports = {
   ALLOWED_OCCUPATIONS,
   ALLOWED_USER_TYPES,
   deleteProfileByUserId,
+  ensureProfilesSchema,
   getProfileByUserId,
   listProfilesByUserId,
   upsertProfile,

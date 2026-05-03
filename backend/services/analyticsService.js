@@ -403,6 +403,7 @@ async function getImpactStats() {
 
 module.exports = {
   buildImpactStats,
+  ensureAnalyticsSchema,
   getImpactStats,
   recordKioskPdfDownload,
   recordKioskUsage,

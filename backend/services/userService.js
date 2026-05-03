@@ -220,6 +220,7 @@ async function findOrCreateUserByGoogleProfile(profile, lang = "hi") {
 
 module.exports = {
   completeUserRegistration,
+  ensureUserColumns,
   findOrCreateUserByGoogleProfile,
   findOrCreateUserByPhone,
   findOrCreateUserByIdentifier,

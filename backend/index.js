@@ -2,8 +2,8 @@ require("./config/env");
 
 const express = require("express");
 const { connectMongo } = require("./config/mongo");
-const { ensureDatabaseSchema } = require("./config/postgres");
 const { startDeadlineTrackerScheduler } = require("./services/deadlineTrackerService");
+const { runStartupSchemaBootstrap } = require("./services/schemaBootstrapService");
 const { startUrlHealthScheduler } = require("./services/urlHealthSchedulerService");
 
 const adminRoutes = require("./routes/admin");
@@ -123,10 +123,18 @@ if (require.main === module) {
   startDeadlineTrackerScheduler();
   startUrlHealthScheduler();
 
-  ensureDatabaseSchema()
+  runStartupSchemaBootstrap()
+    .then((result) => {
+      if (!result.ok) {
+        result.failures.forEach(({ name, error }) => {
+          console.warn(`[postgres:${name}] ${error?.message || error}`);
+        });
+        console.warn("[postgres] Backend will continue, but some runtime migrations did not finish.");
+      }
+    })
     .catch((error) => {
       console.warn(`[postgres] ${error.message}`);
-      console.warn("[postgres] Backend will continue, but auth/profile features may fail until schema setup succeeds.");
+      console.warn("[postgres] Backend will continue, but startup schema bootstrap failed.");
     })
     .finally(() => {
       app.listen(port, () => {
