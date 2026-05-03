@@ -116,7 +116,6 @@ function ProfileCard({ user, profile }) {
     { label: "Gender", value: profile.gender || "NA" },
     { label: "Age", value: profile.age ?? "NA" },
     { label: "Caste", value: profile.caste || "NA" },
-    { label: "District", value: profile.district || "NA" },
     { label: "Annual income", value: profile.annualIncome != null ? `Rs ${formatNumber(profile.annualIncome)}` : "NA" },
     { label: "Land acres", value: profile.landAcres != null ? formatNumber(profile.landAcres) : "NA" },
     { label: "Disability %", value: profile.disabilityPct != null ? `${formatNumber(profile.disabilityPct)}%` : "NA" },
