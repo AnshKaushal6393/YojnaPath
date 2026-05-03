@@ -901,6 +901,8 @@ export default function ProfilePage() {
                         <img
                           src={newMemberPhotoUrl}
                           alt="Selected family member"
+                          width="80"
+                          height="80"
                           className="h-20 w-20 rounded-full border border-emerald-100 object-cover"
                         />
                         <div className="min-w-0 flex-1">

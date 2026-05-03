@@ -69,6 +69,8 @@ function UserPhoto({ user, size = "default" }) {
         <img
           src={thumbnail}
           alt={user.name || "User photo"}
+          width={size === "sm" ? 48 : 56}
+          height={size === "sm" ? 48 : 56}
           className="h-full w-full object-cover"
           loading="lazy"
           decoding="async"

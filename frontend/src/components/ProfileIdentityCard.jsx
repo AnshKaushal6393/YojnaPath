@@ -28,6 +28,8 @@ export default function ProfileIdentityCard({
         <img
           src={photoUrl}
           alt={name || "Profile photo"}
+          width="72"
+          height="72"
           className="profile-identity-card__photo"
         />
       ) : (

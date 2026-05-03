@@ -1,4 +1,4 @@
-import i18n from "./index";
+import i18n, { ensureLanguageResources } from "./index";
 
 export const APP_LANGUAGE_KEY = "yojnapath_lang";
 
@@ -50,6 +50,7 @@ export function resolvePreferredLanguage({ explicitLang = "", state = "", fallba
 
 export async function setAppLanguage(lang) {
   const nextLang = lang === "hi" ? "hi" : "en";
+  await ensureLanguageResources(nextLang);
 
   if (typeof window !== "undefined") {
     window.localStorage.setItem(APP_LANGUAGE_KEY, nextLang);

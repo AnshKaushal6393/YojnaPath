@@ -46,7 +46,15 @@ function PhotoFrame({ src, alt, size = "lg" }) {
   return (
     <div className={`${sizeClass} overflow-hidden border border-white/10 bg-slate-950/80`}>
       {src ? (
-        <img src={src} alt={alt} className="h-full w-full object-cover" />
+        <img
+          src={src}
+          alt={alt}
+          width={size === "sm" ? 64 : 128}
+          height={size === "sm" ? 64 : 128}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
         <div className="flex h-full w-full items-center justify-center px-2 text-center text-xs text-slate-500">
           No photo
