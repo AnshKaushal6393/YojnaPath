@@ -3,7 +3,7 @@ const express = require("express");
 const {
   getAllSchemesLightweight,
   getSchemeById,
-  getTopSchemesByUserType,
+  getTopSchemes,
   getUrgentSchemes,
   matchSchemes,
   explainScheme,
@@ -19,7 +19,8 @@ router.post("/:id/explain", attachUserIfPresent, explainScheme);
 router.post("/:id/report", attachUserIfPresent, reportSchemeIssue);
 router.get("/all", getAllSchemesLightweight);
 router.get("/urgent", getUrgentSchemes);
-router.get("/top/:userType", getTopSchemesByUserType);
+router.get("/top", getTopSchemes);
+router.get("/top/:userType", getTopSchemes);
 router.get("/:id", getSchemeById);
 
 module.exports = router;

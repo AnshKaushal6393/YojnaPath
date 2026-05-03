@@ -146,7 +146,7 @@ export async function fetchHomeData(profileId) {
   if (isProfileReadyForMatching(savedProfile)) {
     const query = buildTopSchemesQuery(savedProfile);
     const [topSchemes, personalizedResults] = await Promise.all([
-      apiGet(`/api/schemes/top/${encodeURIComponent(savedProfile.selectedUserType)}?${query}`),
+      apiGet(`/api/schemes/top?${query}`),
       fetchResultsData(profileId),
     ]);
 

@@ -31,7 +31,7 @@ const { topSchemesCache } = require("../../services/topSchemesCache");
 const { recordMatchAnalytics } = require("../../services/analyticsService");
 const {
   getSchemeById,
-  getTopSchemesByUserType,
+  getTopSchemes,
   getUrgentSchemes,
   matchSchemes,
 } = require("../schemesController");
@@ -158,7 +158,7 @@ describe("schemesController", () => {
     ]);
   });
 
-  test("getTopSchemesByUserType returns cached payload when available", async () => {
+  test("getTopSchemes returns cached payload when available", async () => {
     topSchemesCache.get.mockResolvedValue({
       userType: "farmer",
       count: 1,
@@ -166,7 +166,6 @@ describe("schemesController", () => {
     });
     const req = {
       method: "GET",
-      params: { userType: "farmer" },
       query: {
         state: "UP",
         occupation: "farmer",
@@ -182,7 +181,7 @@ describe("schemesController", () => {
     };
     const res = createResponse();
 
-    await getTopSchemesByUserType(req, res);
+    await getTopSchemes(req, res);
 
     expect(getMatchingSchemes).not.toHaveBeenCalled();
     expect(res.json).toHaveBeenCalledWith({
@@ -192,16 +191,15 @@ describe("schemesController", () => {
     });
   });
 
-  test("getTopSchemesByUserType rejects requests without live profile input", async () => {
+  test("getTopSchemes rejects requests without live profile input", async () => {
     const req = {
       method: "GET",
-      params: { userType: "farmer" },
       query: {},
       body: {},
     };
     const res = createResponse();
 
-    await getTopSchemesByUserType(req, res);
+    await getTopSchemes(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
