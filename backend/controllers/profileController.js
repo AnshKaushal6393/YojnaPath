@@ -2,6 +2,7 @@ const {
   ALLOWED_CASTES,
   ALLOWED_GENDERS,
   ALLOWED_OCCUPATIONS,
+  ALLOWED_USER_TYPES,
   deleteProfileByUserId,
   getProfileByUserId,
   listProfilesByUserId,
@@ -79,6 +80,7 @@ function buildProfilePayload(body) {
     profileName: normalizeOptionalString(body?.profileName ?? body?.profile_name),
     relation: normalizeOptionalString(body?.relation),
     state: normalizeOptionalString(body?.state)?.toUpperCase() ?? null,
+    userType: normalizeOptionalString(body?.userType ?? body?.user_type)?.toLowerCase() ?? null,
     occupation: normalizeOptionalString(body?.occupation),
     annualIncome: normalizeInteger(annualIncomeRaw, 0),
     caste: normalizeOptionalString(body?.caste)?.toLowerCase() ?? null,
@@ -97,6 +99,7 @@ function buildProfilePayload(body) {
 function hasEligibilityInputs(profile) {
   return Boolean(
     profile.state ||
+      profile.userType ||
       profile.occupation ||
       profile.annualIncome > 0 ||
       profile.caste ||
@@ -119,9 +122,13 @@ function validateProfilePayload(profile) {
 
   if (
     shouldValidateEligibility &&
-    (!profile.occupation || !ALLOWED_OCCUPATIONS.includes(profile.occupation))
+    (!profile.userType || !ALLOWED_USER_TYPES.includes(profile.userType))
   ) {
-    return "occupation must be one of the supported user types";
+    return "userType must be one of the supported user types";
+  }
+
+  if (profile.occupation && !ALLOWED_OCCUPATIONS.includes(profile.occupation)) {
+    return "occupation must be one of the supported occupations";
   }
 
   if (Number.isNaN(profile.annualIncome) || profile.annualIncome < 0) {

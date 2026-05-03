@@ -4,6 +4,7 @@ const {
   getNearMisses,
   getMatchingSchemes,
   matchScheme,
+  occupationMatches,
 } = require("../matcher");
 
 function createProfile(overrides = {}) {
@@ -255,5 +256,34 @@ describe("Phase 1 matcher required tests", () => {
     expect(fail.type).toBe("maxAnnualIncome");
     expect(message.en).toContain("above the");
     expect(message.en).toContain("Rs. 2,00,000");
+  });
+
+  test("14. business user type matches self-employed style scheme occupations", () => {
+    expect(occupationMatches("business", ["self_employed"])).toBe(true);
+    expect(occupationMatches("business", ["shopkeeper"])).toBe(true);
+    expect(occupationMatches("business", ["artisan"])).toBe(true);
+  });
+
+  test("15. worker user type matches granular labour occupations", () => {
+    expect(occupationMatches("worker", ["daily_wage"])).toBe(true);
+    expect(occupationMatches("worker", ["migrant_worker"])).toBe(true);
+    expect(occupationMatches("worker", ["private_job"])).toBe(true);
+  });
+
+  test("16. farmer user type matches agricultural labour schemes", () => {
+    const profile = createProfile({ occupation: "farmer" });
+    const scheme = createScheme({
+      eligibility: {
+        ...createScheme().eligibility,
+        occupation: ["agricultural_labour"],
+      },
+    });
+
+    expect(matchScheme(profile, scheme)).toBe(true);
+  });
+
+  test("17. unrelated occupation groups still do not match", () => {
+    expect(occupationMatches("business", ["government_job"])).toBe(false);
+    expect(occupationMatches("student", ["daily_wage"])).toBe(false);
   });
 });

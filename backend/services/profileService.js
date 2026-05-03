@@ -14,12 +14,30 @@ const ALLOWED_OCCUPATIONS = [
   "housing",
   "senior",
   "disability",
+  "agricultural_labour",
+  "fisherman",
+  "self_employed",
   "shopkeeper",
   "artisan",
+  "domestic_worker",
+  "private_job",
+  "government_job",
   "daily_wage",
+  "unemployed",
   "retired",
   "disabled",
   "migrant_worker",
+];
+const ALLOWED_USER_TYPES = [
+  "farmer",
+  "business",
+  "women",
+  "student",
+  "worker",
+  "health",
+  "housing",
+  "senior",
+  "disability",
 ];
 
 let ensureProfilesSchemaPromise = null;
@@ -55,6 +73,8 @@ async function ensureProfilesSchema() {
               ADD COLUMN IF NOT EXISTS photo_url TEXT;
             ALTER TABLE profiles
               ADD COLUMN IF NOT EXISTS is_primary BOOLEAN NOT NULL DEFAULT FALSE;
+            ALTER TABLE profiles
+              ADD COLUMN IF NOT EXISTS user_type VARCHAR(30);
             UPDATE profiles p
             SET
               profile_name = COALESCE(NULLIF(u.name, ''), 'Family member'),
@@ -68,6 +88,20 @@ async function ensureProfilesSchema() {
             UPDATE profiles
             SET is_primary = TRUE
             WHERE is_primary IS NULL;
+            UPDATE profiles
+            SET user_type = occupation
+            WHERE user_type IS NULL
+              AND occupation IN (
+                'farmer',
+                'business',
+                'women',
+                'student',
+                'worker',
+                'health',
+                'housing',
+                'senior',
+                'disability'
+              );
             ALTER TABLE profiles
               ALTER COLUMN profile_name SET NOT NULL;
             ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_occupation_check;
@@ -84,12 +118,36 @@ async function ensureProfilesSchema() {
                   'housing',
                   'senior',
                   'disability',
+                  'agricultural_labour',
+                  'fisherman',
+                  'self_employed',
                   'shopkeeper',
                   'artisan',
+                  'domestic_worker',
+                  'private_job',
+                  'government_job',
                   'daily_wage',
+                  'unemployed',
                   'retired',
                   'disabled',
                   'migrant_worker'
+                )
+              );
+            ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_type_check;
+            ALTER TABLE profiles
+              ADD CONSTRAINT profiles_user_type_check
+              CHECK (
+                user_type IS NULL
+                OR user_type IN (
+                  'farmer',
+                  'business',
+                  'women',
+                  'student',
+                  'worker',
+                  'health',
+                  'housing',
+                  'senior',
+                  'disability'
                 )
               );
             CREATE UNIQUE INDEX profiles_one_primary_per_user_idx
@@ -125,7 +183,7 @@ function mapProfileRow(row) {
     isPrimary: row.is_primary,
     state: row.state,
     occupation: row.occupation,
-    userType: row.occupation || null,
+    userType: row.user_type || row.occupation || null,
     annualIncome: row.annual_income,
     caste: row.caste,
     gender: row.gender,
@@ -142,7 +200,7 @@ function mapProfileRow(row) {
       photoUrl: displayPhotoUrl,
       state: row.state,
       occupation: row.occupation,
-      userType: row.occupation || null,
+      userType: row.user_type || row.occupation || null,
       gender: row.gender,
       caste: row.caste,
       age: row.age,
@@ -175,6 +233,7 @@ async function getProfileByUserId(userId, profileId = null) {
         p.photo_url,
         p.is_primary,
         p.state,
+        p.user_type,
         p.occupation,
         p.annual_income,
         p.caste,
@@ -213,6 +272,7 @@ async function listProfilesByUserId(userId) {
         p.photo_url,
         p.is_primary,
         p.state,
+        p.user_type,
         p.occupation,
         p.annual_income,
         p.caste,
@@ -283,16 +343,17 @@ async function upsertProfile(userId, profileId, profile) {
             relation = $4,
             photo_url = COALESCE($5, photo_url),
             state = $6,
-            occupation = $7,
-            annual_income = $8,
-            caste = $9,
-            gender = $10,
-            age = $11,
-            land_acres = $12,
-            disability_pct = $13,
-            is_student = $14,
-            is_migrant = $15,
-            district = $16,
+            user_type = $7,
+            occupation = $8,
+            annual_income = $9,
+            caste = $10,
+            gender = $11,
+            age = $12,
+            land_acres = $13,
+            disability_pct = $14,
+            is_student = $15,
+            is_migrant = $16,
+            district = $17,
           updated_at = NOW()
           WHERE user_id = $1 AND id = $2
           RETURNING
@@ -303,6 +364,7 @@ async function upsertProfile(userId, profileId, profile) {
             photo_url,
             is_primary,
             state,
+            user_type,
             occupation,
             annual_income,
             caste,
@@ -321,6 +383,7 @@ async function upsertProfile(userId, profileId, profile) {
           profile.relation,
           profile.photoUrl,
           profile.state,
+          profile.userType,
           profile.occupation,
           profile.annualIncome,
           profile.caste,
@@ -343,6 +406,7 @@ async function upsertProfile(userId, profileId, profile) {
             is_primary,
             photo_url,
             state,
+            user_type,
             occupation,
             annual_income,
             caste,
@@ -356,7 +420,7 @@ async function upsertProfile(userId, profileId, profile) {
             updated_at
           )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW()
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW()
           )
           RETURNING
             id,
@@ -366,6 +430,7 @@ async function upsertProfile(userId, profileId, profile) {
             photo_url,
             is_primary,
             state,
+            user_type,
             occupation,
             annual_income,
             caste,
@@ -384,6 +449,7 @@ async function upsertProfile(userId, profileId, profile) {
           existingCount === 0 || isOwnerProfile,
           profile.photoUrl,
           profile.state,
+          profile.userType,
           profile.occupation,
           profile.annualIncome,
           profile.caste,
@@ -423,6 +489,7 @@ async function upsertProfile(userId, profileId, profile) {
             p.photo_url,
             p.is_primary,
             p.state,
+            p.user_type,
             p.occupation,
             p.annual_income,
             p.caste,
@@ -539,6 +606,7 @@ async function deleteProfileByUserId(userId, profileId) {
           p.photo_url,
           p.is_primary,
           p.state,
+          p.user_type,
           p.occupation,
           p.annual_income,
           p.caste,
@@ -574,6 +642,7 @@ module.exports = {
   ALLOWED_CASTES,
   ALLOWED_GENDERS,
   ALLOWED_OCCUPATIONS,
+  ALLOWED_USER_TYPES,
   deleteProfileByUserId,
   getProfileByUserId,
   listProfilesByUserId,

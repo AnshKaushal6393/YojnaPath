@@ -298,7 +298,7 @@ export default function ProfilePage() {
     onSuccess: async (result) => {
       const createdProfileId = result.profile?.id || "";
       const createdProfileName = newMemberName.trim();
-      const createdUserType = result.profile?.occupation || "farmer";
+      const createdUserType = result.profile?.userType || result.profile?.occupation || "farmer";
       const createdFormState = createEmptyFormState();
       const createdPhotoUrl = newMemberPhotoUrl;
 
@@ -963,7 +963,7 @@ export default function ProfilePage() {
 
                   {memberCameraOpen ? (
                     <div className="space-y-3 rounded-3xl border border-emerald-100 bg-white p-3">
-                      <div className="overflow-hidden rounded-[24px] bg-slate-950">
+                      <div className="overflow-hidden rounded-3xl bg-slate-950">
                         <video
                           ref={memberVideoRef}
                           playsInline

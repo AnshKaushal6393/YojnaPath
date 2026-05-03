@@ -49,6 +49,21 @@ CREATE TABLE IF NOT EXISTS profiles (
     CHECK (gender IN ('male', 'female', 'other')),
   caste VARCHAR(10)
     CHECK (caste IN ('sc', 'st', 'obc', 'general')),
+  user_type VARCHAR(30)
+    CHECK (
+      user_type IS NULL
+      OR user_type IN (
+        'farmer',
+        'business',
+        'women',
+        'worker',
+        'health',
+        'housing',
+        'senior',
+        'disability',
+        'student'
+      )
+    ),
   occupation VARCHAR(30)
     CHECK (
       occupation IN (
@@ -60,9 +75,16 @@ CREATE TABLE IF NOT EXISTS profiles (
         'housing',
         'senior',
         'disability',
+        'agricultural_labour',
+        'fisherman',
+        'self_employed',
         'shopkeeper',
         'artisan',
+        'domestic_worker',
+        'private_job',
+        'government_job',
         'daily_wage',
+        'unemployed',
         'student',
         'retired',
         'disabled',

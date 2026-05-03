@@ -154,7 +154,7 @@ export async function fetchResultsData(profileId) {
     apiGet(
       `/api/schemes/urgent?${new URLSearchParams({
         state: payload.state,
-        occupation: payload.occupation,
+        userType: payload.userType,
         annualIncome: String(payload.annualIncome ?? ""),
         gender: String(payload.gender ?? ""),
         age: String(payload.age ?? ""),

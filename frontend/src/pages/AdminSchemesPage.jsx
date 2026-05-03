@@ -105,7 +105,7 @@ function SchemeMobileCard({ scheme, isSelected, isChecked, onOpen, onToggle, onE
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="break-words text-sm font-semibold text-white">{scheme.name?.en || "Untitled"}</p>
+              <p className="wrap-break-word text-sm font-semibold text-white">{scheme.name?.en || "Untitled"}</p>
               <p className="mt-1 break-all text-xs text-slate-400">{scheme.schemeId}</p>
             </div>
             <ToneBadge tone={scheme.active ? "emerald" : "rose"}>
@@ -542,7 +542,7 @@ export default function AdminSchemesPage() {
 
             <div className="hidden overflow-hidden rounded-[22px] border border-white/10 lg:block">
               <div className="overflow-x-auto">
-                <div className="min-w-[860px] bg-slate-950/60">
+                <div className="min-w-215 bg-slate-950/60">
                   <div className="grid grid-cols-[0.35fr_1.1fr_1fr_0.8fr_0.8fr_0.8fr] gap-3 bg-white/10 px-4 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
                     <label className="flex items-center gap-2">
                       <input
@@ -590,7 +590,7 @@ export default function AdminSchemesPage() {
                         </span>
                         <span>
                           <span className="block break-all text-sm font-semibold text-white">{scheme.schemeId}</span>
-                          <span className="mt-1 block break-words text-xs text-slate-400">
+                          <span className="mt-1 block wrap-break-word text-xs text-slate-400">
                             {scheme.name?.en || "Untitled"}
                           </span>
                           <span className="mt-1 block text-xs text-slate-500">
@@ -702,9 +702,9 @@ export default function AdminSchemesPage() {
         <CardContent className="px-4 pt-0 pb-4 sm:px-6 sm:pb-6">
           {selectedScheme ? (
             <div className="space-y-4">
-              <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
-                <p className="break-words text-lg font-semibold text-white">{selectedScheme.name?.en || "Untitled"}</p>
-                <p className="mt-1 break-words text-sm leading-6 text-slate-300">
+              <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
+                <p className="wrap-break-word text-lg font-semibold text-white">{selectedScheme.name?.en || "Untitled"}</p>
+                <p className="mt-1 wrap-break-word text-sm leading-6 text-slate-300">
                   {selectedScheme.name?.hi || "No Hindi title"}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -719,17 +719,17 @@ export default function AdminSchemesPage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
+                <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Key details</p>
                   <div className="mt-3 space-y-2 text-sm leading-6 text-slate-300">
                     <p>Ministry: {selectedScheme.ministry || "Unknown"}</p>
                     <p>Apply mode: {selectedScheme.applyMode || "Unknown"}</p>
-                    <p className="break-words">Apply URL: {selectedScheme.applyUrl || "Missing"}</p>
+                    <p className="wrap-break-word">Apply URL: {selectedScheme.applyUrl || "Missing"}</p>
                     <p>Match count: {formatNumber(selectedScheme.matchCount)}</p>
                     <p>Updated: {formatDateTime(selectedScheme.updatedAt)}</p>
                   </div>
                 </div>
-                <div className="rounded-[24px] border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
+                <div className="rounded-3xl border border-white/10 bg-slate-950/60 p-4 shadow-inner shadow-slate-950/30">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Review reasons</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {selectedScheme.reviewReasons?.length ? (
@@ -755,7 +755,7 @@ export default function AdminSchemesPage() {
               </div>
 
               {(selectedScheme.reviewReasons?.includes("dead_url") || selectedScheme.reviewAction) ? (
-                <div className="rounded-[24px] border border-amber-400/20 bg-amber-400/10 p-4 shadow-inner shadow-amber-950/20">
+                <div className="rounded-3xl border border-amber-400/20 bg-amber-400/10 p-4 shadow-inner shadow-amber-950/20">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.16em] text-amber-100">Dead URL triage</p>
@@ -840,7 +840,7 @@ export default function AdminSchemesPage() {
                   ) : null}
 
                   {selectedScheme.reviewAction?.reviewedAt ? (
-                    <p className="mt-3 break-words text-xs text-slate-400">
+                    <p className="mt-3 wrap-break-word  text-xs text-slate-400">
                       Last triaged {formatDateTime(selectedScheme.reviewAction.reviewedAt)}
                       {selectedScheme.reviewAction.reviewedBy ? ` by ${selectedScheme.reviewAction.reviewedBy}` : ""}
                     </p>
@@ -868,7 +868,7 @@ export default function AdminSchemesPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-[24px] border border-dashed border-white/10 bg-slate-950/50 p-6 text-sm text-slate-400">
+            <div className="rounded-3xl border border-dashed border-white/10 bg-slate-950/50 p-6 text-sm text-slate-400">
               Pick any scheme from the list to inspect its data and review flags.
             </div>
           )}

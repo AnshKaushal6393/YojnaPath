@@ -69,7 +69,6 @@ export default function HomePage() {
   const [offlineBannerDismissed, setOfflineBannerDismissed] = useState(false);
   const [pendingSwitchName, setPendingSwitchName] = useState("");
   const [switchNotice, setSwitchNotice] = useState("");
-  const cachedDateLabel = useMemo(() => formatCachedDate(new Date("2026-03-25")), []);
   const draftStorageMode = getProfileDraftStorageMode(activeProfileId);
 
   const homeQuery = useQuery({
@@ -102,6 +101,10 @@ export default function HomePage() {
   const displayedProfileId = savedProfileQuery.data?.id || localDraft?.id || activeProfileId;
   const urgentSchemes = homeQuery.data?.urgent || [];
   const urgencyText = buildUrgencyText(urgentSchemes, t);
+  const cachedDateLabel = useMemo(() => {
+    const sourceTimestamp = homeQuery.dataUpdatedAt || Date.now();
+    return formatCachedDate(new Date(sourceTimestamp));
+  }, [homeQuery.dataUpdatedAt]);
   const activeProfileName = savedProfileQuery.data?.profileName || localDraft?.profileName || "";
   const activeProfilePhotoUrl =
     savedProfileQuery.data?.displayPhotoUrl || savedProfileQuery.data?.photoUrl || "";

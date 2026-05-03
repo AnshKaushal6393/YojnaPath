@@ -73,10 +73,23 @@ function normalizeBoolean(value, fallback = false) {
   return null;
 }
 
+function normalizeUserTypeValue(value) {
+  const normalized = normalizeOptionalString(value)?.toLowerCase() ?? null;
+  return normalized ? normalized.replace(/[-\s]+/g, "_") : null;
+}
+
+function resolveMatchOccupation(source = {}) {
+  return (
+    normalizeOptionalString(source.occupation) ||
+    normalizeUserTypeValue(source.userType ?? source.user_type)
+  );
+}
+
 function buildMatchProfile(source = {}) {
   return {
     state: normalizeOptionalString(source.state)?.toUpperCase() ?? null,
-    occupation: normalizeOptionalString(source.occupation),
+    userType: normalizeUserTypeValue(source.userType ?? source.user_type),
+    occupation: resolveMatchOccupation(source),
     annual_income: normalizeInteger(source.annualIncome ?? source.annual_income ?? source.income, null),
     caste: normalizeOptionalString(source.caste)?.toLowerCase() ?? null,
     gender: normalizeOptionalString(source.gender)?.toLowerCase() ?? null,
@@ -93,7 +106,7 @@ function validateMatchProfile(profile) {
   }
 
   if (!profile.occupation) {
-    return "occupation is required";
+    return "occupation or userType is required";
   }
 
   if (profile.annual_income != null && (Number.isNaN(profile.annual_income) || profile.annual_income < 0)) {
@@ -137,19 +150,12 @@ function buildVisibleSchemeQuery() {
   };
 }
 
-function normalizeUserType(userType) {
-  return String(userType || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[-\s]+/g, "_");
-}
-
 function hasMatchInputs(profile) {
   return Object.values(profile || {}).some((value) => value !== undefined && value !== null && value !== "");
 }
 
-function buildCacheKey(userType, profile) {
-  return `${userType}:${JSON.stringify(profile)}`;
+function buildCacheKey(profile) {
+  return JSON.stringify(profile);
 }
 
 async function matchSchemes(req, res) {
@@ -255,21 +261,16 @@ async function getUrgentSchemes(req, res) {
   return res.json(urgentMatches);
 }
 
-async function getTopSchemesByUserType(req, res) {
+async function getTopSchemes(req, res) {
   if (!isMongoReady()) {
     return res.status(503).json({ message: "MongoDB is unavailable" });
   }
 
-  const userType = normalizeUserType(req.params.userType);
   const rawInput = {
     ...(req.method === "GET" ? req.query : {}),
     ...(req.body || {}),
   };
   const profile = getRequestProfile(req);
-
-  if (!userType) {
-    return res.status(400).json({ message: "Unsupported userType" });
-  }
 
   if (!hasMatchInputs(rawInput)) {
     return res.status(400).json({
@@ -282,7 +283,7 @@ async function getTopSchemesByUserType(req, res) {
     return res.status(400).json({ message: validationError });
   }
 
-  const cacheKey = buildCacheKey(userType, profile);
+  const cacheKey = buildCacheKey(profile);
   const cached = await topSchemesCache.get(cacheKey);
   if (cached) {
     return res.json(cached);
@@ -294,7 +295,7 @@ async function getTopSchemesByUserType(req, res) {
   });
 
   const payload = {
-    userType,
+    userType: profile.userType || profile.occupation || null,
     count: result.schemes.length,
     schemes: result.schemes,
   };
@@ -363,11 +364,10 @@ module.exports = {
   getRequestProfile,
   hasMatchInputs,
   getSchemeById,
-  getTopSchemesByUserType,
+  getTopSchemes,
   getUrgentSchemes,
   matchSchemes,
   explainScheme,
   reportSchemeIssue,
-  normalizeUserType,
   validateMatchProfile,
 };

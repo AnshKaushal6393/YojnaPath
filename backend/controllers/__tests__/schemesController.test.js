@@ -78,7 +78,7 @@ describe("schemesController", () => {
     await matchSchemes(req, res);
 
     expect(getMatchingSchemes).toHaveBeenCalledWith(
-      {
+      expect.objectContaining({
         state: "UP",
         occupation: "farmer",
         annual_income: 100000,
@@ -88,7 +88,7 @@ describe("schemesController", () => {
         landAcres: 1,
         disabilityPct: 0,
         isStudent: false,
-      },
+      }),
       {
         limitMatches: 50,
         limitNearMisses: 10,
@@ -207,5 +207,44 @@ describe("schemesController", () => {
     expect(res.json).toHaveBeenCalledWith({
       message: "Real-time top schemes require current profile inputs",
     });
+  });
+
+  test("matchSchemes accepts userType when occupation is omitted", async () => {
+    getMatchingSchemes.mockResolvedValue({
+      count: 0,
+      schemes: [],
+      nearMissCount: 0,
+      nearMisses: [],
+      totalScanned: 4,
+    });
+    const req = {
+      method: "POST",
+      body: {
+        state: "UP",
+        userType: "business",
+        income: 100000,
+        caste: "obc",
+        gender: "male",
+        age: 35,
+        landAcres: 1,
+        disabilityPct: 0,
+        isStudent: false,
+      },
+      user: {
+        id: "user-1",
+      },
+    };
+    const res = createResponse();
+
+    await matchSchemes(req, res);
+
+    expect(getMatchingSchemes).toHaveBeenCalledWith(
+      expect.objectContaining({
+        state: "UP",
+        userType: "business",
+        occupation: "business",
+      }),
+      expect.any(Object)
+    );
   });
 });

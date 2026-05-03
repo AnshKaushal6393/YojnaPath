@@ -5,12 +5,31 @@ function normalizePhone(phone) {
   return String(phone ?? "").replace(/\D/g, "");
 }
 
+function normalizeEmail(email) {
+  return String(email ?? "").trim().toLowerCase();
+}
+
+function getOtpIdentifierKey(req) {
+  const type = String(req.body?.type || "phone").trim().toLowerCase();
+  const identifier = String(req.body?.identifier || "").trim();
+
+  if (type === "phone") {
+    return normalizePhone(identifier);
+  }
+
+  if (type === "email") {
+    return `email:${normalizeEmail(identifier)}`;
+  }
+
+  return "";
+}
+
 const otpLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => normalizePhone(req.body?.phone) || ipKeyGenerator(req),
+  keyGenerator: (req) => getOtpIdentifierKey(req) || ipKeyGenerator(req),
   message: { error: "Too many OTP requests. Wait 10 minutes." },
 });
 
@@ -87,6 +106,7 @@ module.exports = {
   adminApiLimiter,
   adminLoginLimiter,
   generalApiLimiter,
+  getOtpIdentifierKey,
   matchLimiter,
   otpLimiter,
 };

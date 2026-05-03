@@ -1,6 +1,17 @@
 jest.mock("../../services/profileService", () => ({
   ALLOWED_CASTES: ["sc", "st", "obc", "general"],
   ALLOWED_GENDERS: ["male", "female", "other"],
+  ALLOWED_USER_TYPES: [
+    "farmer",
+    "business",
+    "women",
+    "student",
+    "worker",
+    "health",
+    "housing",
+    "senior",
+    "disability",
+  ],
   ALLOWED_OCCUPATIONS: [
     "farmer",
     "shopkeeper",
@@ -74,7 +85,7 @@ describe("profileController", () => {
       user: { id: "user-1" },
       body: {
         state: "",
-        occupation: "farmer",
+        userType: "farmer",
       },
     };
     const res = createResponse();
@@ -90,6 +101,7 @@ describe("profileController", () => {
     upsertProfile.mockResolvedValue({
       userId: "user-1",
       state: "MH",
+      userType: "worker",
       occupation: "migrant_worker",
       annualIncome: 90000,
       caste: "sc",
@@ -107,6 +119,7 @@ describe("profileController", () => {
       body: {
         profileId: null,
         state: "mh",
+        userType: "worker",
         occupation: "migrant_worker",
         annual_income: 90000,
         caste: "SC",
@@ -128,6 +141,7 @@ describe("profileController", () => {
       profileName: null,
       relation: null,
       state: "MH",
+      userType: "worker",
       occupation: "migrant_worker",
       annualIncome: 90000,
       caste: "sc",

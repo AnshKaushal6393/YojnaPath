@@ -140,7 +140,16 @@ async function getAdminSettings(options = {}) {
     return cachedSettings;
   }
 
-  const settings = await readAdminSettingsFromDb();
+  let settings;
+  try {
+    settings = await readAdminSettingsFromDb();
+  } catch (error) {
+    settings = {
+      ...DEFAULT_SETTINGS,
+      updatedAt: null,
+      updatedBy: null,
+    };
+  }
   cachedSettings = settings;
   cachedAt = now;
   return settings;

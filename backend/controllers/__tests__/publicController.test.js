@@ -4,6 +4,10 @@ jest.mock("../../models/Scheme", () => ({
   },
 }));
 
+jest.mock("../../config/mongo", () => ({
+  isMongoReady: jest.fn(() => true),
+}));
+
 jest.mock("../../services/analyticsService", () => ({
   getImpactStats: jest.fn(),
 }));

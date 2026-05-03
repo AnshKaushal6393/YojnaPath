@@ -115,7 +115,8 @@ export function isProfileReadyForMatching(profile) {
 export function buildProfilePayload(selectedUserType, formState, lang = "hi") {
   return {
     state: mapState(formState.state),
-    occupation: selectedUserType || null,
+    userType: selectedUserType || null,
+    occupation: null,
     annualIncome: INCOME_MAP[formState.incomeBand] ?? 0,
     caste: formState.caste || null,
     gender: formState.gender || null,

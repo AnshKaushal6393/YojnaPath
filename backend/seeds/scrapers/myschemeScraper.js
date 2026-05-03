@@ -868,18 +868,6 @@ async function scrapeSchemeDetail(entry, options = {}) {
     active: true,
     verified: true,
     source: "myscheme",
-    rawSections: {
-      details: descriptionText,
-      detailsHi: descriptionTextHi,
-      benefits: benefitsText,
-      benefitsHi: benefitsTextHi,
-      eligibility: eligibilityText,
-      eligibilityHi: eligibilityTextHi,
-      exclusions: exclusionsText,
-      applicationProcess: applicationProcessText,
-      faqs: faqText,
-    },
-    rawReferences: references,
   };
 }
 

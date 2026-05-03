@@ -54,9 +54,9 @@ async function getAdminStats() {
   const usersPromise = pool.query("SELECT COUNT(*)::INT AS count FROM users");
   const userTypesPromise = pool
     .query(`
-      SELECT COALESCE(occupation, 'unknown') AS key, COUNT(*)::INT AS count
+      SELECT COALESCE(user_type, occupation, 'unknown') AS key, COUNT(*)::INT AS count
       FROM profiles
-      GROUP BY COALESCE(occupation, 'unknown')
+      GROUP BY COALESCE(user_type, occupation, 'unknown')
       ORDER BY count DESC, key ASC
     `)
     .catch((error) => {

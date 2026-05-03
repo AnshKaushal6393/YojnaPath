@@ -194,6 +194,7 @@ async function getAnalyticsSchemes() {
     pool.query(`
       SELECT
         p.state,
+        p.user_type,
         p.occupation,
         p.annual_income,
         p.caste,
@@ -227,6 +228,7 @@ async function getAnalyticsSchemes() {
     : await pool.query(`
         SELECT
           p.state,
+          p.user_type,
           p.occupation,
           p.annual_income,
           p.caste,
@@ -248,7 +250,7 @@ async function getAnalyticsSchemes() {
   for (const row of profileRows) {
     const profile = {
       state: normalizeOptionalString(row.state)?.toUpperCase() || null,
-      occupation: normalizeOptionalString(row.occupation) || null,
+      occupation: normalizeOptionalString(row.occupation || row.user_type) || null,
       annual_income: Number.isFinite(Number(row.annual_income)) ? Number(row.annual_income) : null,
       caste: normalizeOptionalString(row.caste)?.toLowerCase() || null,
       gender: normalizeOptionalString(row.gender)?.toLowerCase() || null,

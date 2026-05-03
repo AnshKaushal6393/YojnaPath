@@ -14,6 +14,81 @@ const EDUCATION_LEVELS = [
   "postgraduate",
 ];
 
+// Frontend profiles intentionally use a smaller set of user types than the
+// scheme dataset. Expand them into compatible scheme occupations here so
+// matching remains stable without forcing users through a much more detailed
+// occupation form.
+const OCCUPATION_COMPATIBILITY = {
+  farmer: ["farmer", "agricultural_labour", "fisherman"],
+  agricultural_labour: ["agricultural_labour", "farmer"],
+  fisherman: ["fisherman", "farmer"],
+  business: ["self_employed", "shopkeeper", "artisan"],
+  self_employed: ["self_employed", "shopkeeper", "artisan", "business"],
+  shopkeeper: ["shopkeeper", "self_employed", "business"],
+  artisan: ["artisan", "self_employed", "business"],
+  worker: ["daily_wage", "migrant_worker", "domestic_worker", "private_job", "agricultural_labour"],
+  daily_wage: ["daily_wage", "worker"],
+  migrant_worker: ["migrant_worker", "daily_wage", "worker"],
+  domestic_worker: ["domestic_worker", "worker"],
+  private_job: ["private_job", "worker"],
+  government_job: ["government_job"],
+  student: ["student"],
+  senior: ["retired", "unemployed", "senior"],
+  retired: ["retired", "senior"],
+  unemployed: ["unemployed", "senior", "disability", "health", "housing", "women"],
+  disability: [
+    "unemployed",
+    "daily_wage",
+    "migrant_worker",
+    "domestic_worker",
+    "private_job",
+    "self_employed",
+    "shopkeeper",
+    "artisan",
+    "retired",
+    "disability",
+  ],
+  health: [
+    "unemployed",
+    "daily_wage",
+    "migrant_worker",
+    "domestic_worker",
+    "private_job",
+    "government_job",
+    "self_employed",
+    "shopkeeper",
+    "artisan",
+    "retired",
+    "health",
+  ],
+  housing: [
+    "unemployed",
+    "daily_wage",
+    "migrant_worker",
+    "domestic_worker",
+    "private_job",
+    "government_job",
+    "self_employed",
+    "shopkeeper",
+    "artisan",
+    "retired",
+    "housing",
+  ],
+  women: [
+    "unemployed",
+    "daily_wage",
+    "migrant_worker",
+    "domestic_worker",
+    "private_job",
+    "government_job",
+    "self_employed",
+    "shopkeeper",
+    "artisan",
+    "retired",
+    "women",
+  ],
+};
+
 const EDUCATION_LABELS = {
   none: { en: "no formal education", hi: "कोई औपचारिक शिक्षा नहीं" },
   "5th": { en: "5th pass", hi: "5वीं पास" },
@@ -127,6 +202,39 @@ function getEducationLabel(level, locale = "en") {
   return locale === "hi" ? labels.hi : labels.en;
 }
 
+function normalizeOccupationValue(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[-\s]+/g, "_");
+}
+
+function expandOccupationCompatibility(value) {
+  const normalized = normalizeOccupationValue(value);
+  if (!normalized) {
+    return new Set();
+  }
+
+  const compatible = OCCUPATION_COMPATIBILITY[normalized] || [normalized];
+  return new Set([normalized, ...compatible.map(normalizeOccupationValue)]);
+}
+
+function occupationMatches(profileOccupation, schemeOccupations = []) {
+  if (!Array.isArray(schemeOccupations) || schemeOccupations.length === 0) {
+    return true;
+  }
+
+  const profileOptions = expandOccupationCompatibility(profileOccupation);
+  if (!profileOptions.size) {
+    return false;
+  }
+
+  return schemeOccupations.some((schemeOccupation) => {
+    const schemeOptions = expandOccupationCompatibility(schemeOccupation);
+    return [...schemeOptions].some((option) => profileOptions.has(option));
+  });
+}
+
 function buildRuleChecks(profile, scheme) {
   const e = scheme?.eligibility ?? {};
   const profileOccupation = profile?.occupation ?? null;
@@ -148,7 +256,7 @@ function buildRuleChecks(profile, scheme) {
     {
       key: "occupation",
       applies: Boolean(e.occupation?.length),
-      passed: !e.occupation?.length || e.occupation.includes(profileOccupation),
+      passed: occupationMatches(profileOccupation, e.occupation),
     },
     {
       key: "beneficiaryType",
@@ -251,7 +359,7 @@ function getFailedCriteria(profile, scheme) {
   const profileIncome = profile?.annual_income ?? profile?.income ?? null;
   const fails = [];
 
-  if (e.occupation?.length && !e.occupation.includes(profile?.occupation)) {
+  if (e.occupation?.length && !occupationMatches(profile?.occupation, e.occupation)) {
     fails.push({ type: "occupation", required: e.occupation });
   }
 
@@ -531,5 +639,6 @@ module.exports = {
   getMatchingSchemes,
   matchScore,
   matchScheme,
+  occupationMatches,
   totalCriteria,
 };

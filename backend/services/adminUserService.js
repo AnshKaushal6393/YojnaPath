@@ -96,12 +96,16 @@ function mapMatchRow(row) {
     sessionType: row.session_type || "web",
     state: row.state || null,
     occupation: row.occupation || null,
-    userType: row.occupation || null,
+    userType: getStoredUserType(row),
     matchCount: Number(row.match_count || 0),
     nearMissCount: Number(row.near_miss_count || 0),
     schemeIds: Array.isArray(row.scheme_ids) ? row.scheme_ids : [],
     lang: row.lang || null,
   };
+}
+
+function getStoredUserType(row) {
+  return row.user_type || row.occupation || null;
 }
 
 function mapProfileRow(row) {
@@ -118,7 +122,7 @@ function mapProfileRow(row) {
     gender: row.gender || null,
     caste: row.caste || null,
     occupation: row.occupation || null,
-    userType: row.occupation || null,
+    userType: getStoredUserType(row),
     state: row.state || null,
     annualIncome: row.annual_income == null ? null : Number(row.annual_income),
     district: row.district || null,
@@ -135,7 +139,7 @@ function mapProfileRow(row) {
       gender: row.gender || null,
       caste: row.caste || null,
       occupation: row.occupation || null,
-      userType: row.occupation || null,
+      userType: getStoredUserType(row),
       state: row.state || null,
       annualIncome: row.annual_income == null ? null : Number(row.annual_income),
       district: row.district || null,
@@ -156,7 +160,7 @@ function getProfileCompletenessScore(profile) {
   return (
     (profile.isPrimary ? 1000 : 0) +
     (profile.state ? 100 : 0) +
-    (profile.occupation ? 100 : 0) +
+    ((profile.occupation || profile.userType) ? 100 : 0) +
     (profile.photoUrl ? 10 : 0) +
     (profile.gender ? 5 : 0) +
     (profile.caste ? 5 : 0) +
@@ -244,6 +248,7 @@ async function listAdminUsers(options = {}) {
           rp.relation,
           rp.photo_url AS profile_photo_url,
           rp.state,
+          rp.user_type,
           rp.occupation,
           rp.district,
           COALESCE(match_summary.match_runs, 0)::INT AS match_runs,
@@ -253,7 +258,7 @@ async function listAdminUsers(options = {}) {
           u.last_login AS sort_last_login,
           COALESCE(u.name, rp.profile_name, '') AS sort_name,
           COALESCE(rp.state, '') AS sort_state,
-          COALESCE(rp.occupation, '') AS sort_user_type,
+          COALESCE(rp.user_type, rp.occupation, '') AS sort_user_type,
           COALESCE(match_summary.match_runs, 0)::INT AS sort_match_runs,
           COALESCE(match_summary.total_matches, 0)::INT AS sort_total_matches,
           COALESCE(match_summary.total_near_misses, 0)::INT AS sort_total_near_misses,
@@ -272,7 +277,7 @@ async function listAdminUsers(options = {}) {
           WHERE ml.user_id = u.id
         ) AS match_summary ON TRUE
         WHERE ($1::TEXT IS NULL OR rp.state = $1)
-          AND ($2::TEXT IS NULL OR rp.occupation = $2)
+          AND ($2::TEXT IS NULL OR COALESCE(rp.user_type, rp.occupation) = $2)
           AND (
             $3::TEXT IS NULL
             OR u.name ILIKE '%' || $3 || '%'
@@ -323,7 +328,7 @@ async function listAdminUsers(options = {}) {
         photoUrl: row.photo_url || row.profile_photo_url || null,
         state: row.state || null,
         occupation: row.occupation || null,
-        userType: row.occupation || null,
+        userType: getStoredUserType(row),
         district: row.district || null,
       },
       displayProfile: {
@@ -332,7 +337,7 @@ async function listAdminUsers(options = {}) {
         photoUrl: row.photo_url || row.profile_photo_url || null,
         state: row.state || null,
         occupation: row.occupation || null,
-        userType: row.occupation || null,
+        userType: getStoredUserType(row),
         district: row.district || null,
       },
       stats: {
@@ -406,6 +411,7 @@ async function getAdminUserById(userId) {
         is_primary,
         gender,
         caste,
+        user_type,
         occupation,
         state,
         annual_income,
@@ -561,7 +567,8 @@ async function getAdminUserLiveMatches(userId) {
   }
 
   const sourceProfile = user.displayProfile || user.primaryProfile;
-  if (!sourceProfile?.state || !sourceProfile?.occupation) {
+  const derivedOccupation = sourceProfile?.occupation || sourceProfile?.userType;
+  if (!sourceProfile?.state || !derivedOccupation) {
     return {
       userId,
       profileReady: false,
@@ -575,7 +582,7 @@ async function getAdminUserLiveMatches(userId) {
 
   const profile = {
     state: sourceProfile.state,
-    occupation: sourceProfile.occupation,
+    occupation: derivedOccupation,
     annual_income: sourceProfile.annualIncome ?? 0,
     caste: sourceProfile.caste || null,
     gender: sourceProfile.gender || null,
@@ -699,7 +706,7 @@ async function exportAdminUsersCsv() {
         user.id,
         user.name,
         user.primaryProfile?.state || "",
-        user.primaryProfile?.occupation || "",
+        user.primaryProfile?.userType || user.primaryProfile?.occupation || "",
         user.stats?.totalMatches || 0,
       ]
         .map(escapeCsv)

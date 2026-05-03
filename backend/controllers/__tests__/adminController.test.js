@@ -220,10 +220,13 @@ describe("adminController", () => {
     expect(listAdminUsers).toHaveBeenCalledWith({
       page: "2",
       limit: "25",
+      maxLimit: 100,
       state: "UP",
       userType: "farmer",
       search: "ram",
       hasPhoto: "true",
+      sortBy: null,
+      sortDir: null,
     });
     expect(res.json).toHaveBeenCalledWith({
       page: 2,
