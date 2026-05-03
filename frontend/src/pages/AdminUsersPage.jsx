@@ -66,7 +66,13 @@ function UserPhoto({ user, size = "default" }) {
   return (
     <div className={`${sizeClass} shrink-0 overflow-hidden border border-white/10 bg-slate-900/80`}>
       {thumbnail ? (
-        <img src={thumbnail} alt={user.name || "User photo"} className="h-full w-full object-cover" />
+        <img
+          src={thumbnail}
+          alt={user.name || "User photo"}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
         <div className="flex h-full w-full items-center justify-center px-1 text-center text-[10px] leading-3 text-slate-500">
           No photo
@@ -137,10 +143,44 @@ function UserMobileCard({ user, onOpen }) {
   );
 }
 
+function useDesktopLayout(breakpoint = 1024) {
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") {
+      return true;
+    }
+
+    return window.innerWidth >= breakpoint;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    const handleChange = (event) => {
+      setIsDesktop(event.matches);
+    };
+
+    setIsDesktop(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, [breakpoint]);
+
+  return isDesktop;
+}
+
 export default function AdminUsersPage() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState(createEmptyFilters);
   const [isExporting, setIsExporting] = useState(false);
+  const isDesktopLayout = useDesktopLayout();
 
   const usersQuery = useQuery({
     queryKey: ["admin-users", filters],
@@ -405,89 +445,91 @@ export default function AdminUsersPage() {
           </div>
         ) : null}
 
-        <div className="mt-6 grid gap-3 lg:hidden">
-          {usersQuery.isLoading ? (
-            <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
-              Loading users...
-            </div>
-          ) : null}
-          {!usersQuery.isLoading && users.length === 0 ? (
-            <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
-              No users match the current filters.
-            </div>
-          ) : null}
-          {users.map((user) => (
-            <UserMobileCard
-              key={user.id}
-              user={user}
-              onOpen={() => navigate(`/admin/users/${user.id}`)}
-            />
-          ))}
-        </div>
-
-        <div className="mt-6 hidden overflow-hidden rounded-[20px] border border-white/10 lg:block xl:rounded-[24px]">
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1080px] bg-slate-950/60">
-              <TableHeader className="bg-white/10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="border-b border-white/10 hover:bg-transparent">
-                    {headerGroup.headers.map((header) => {
-                      const sortBy = header.column.id;
-                      const isSorted = filters.sortBy === sortBy;
-                      const direction = filters.sortDir;
-
-                      return (
-                        <TableHead key={header.id}>
-                          {header.isPlaceholder ? null : header.column.getCanSort() === false ? (
-                            header.column.columnDef.header
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleSortChange(sortBy)}
-                              className="inline-flex items-center gap-2 transition hover:text-white"
-                            >
-                              {flexRender(header.column.columnDef.header, header.getContext())}
-                              <SortPill active={isSorted} direction={direction} />
-                            </button>
-                          )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {usersQuery.isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="px-4 py-6 text-sm text-slate-400">
-                      Loading users...
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-                {!usersQuery.isLoading && users.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="px-4 py-6 text-sm text-slate-400">
-                      No users match the current filters.
-                    </TableCell>
-                  </TableRow>
-                ) : null}
-                {table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/admin/users/${row.original.id}`)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+        {!isDesktopLayout ? (
+          <div className="mt-6 grid gap-3">
+            {usersQuery.isLoading ? (
+              <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
+                Loading users...
+              </div>
+            ) : null}
+            {!usersQuery.isLoading && users.length === 0 ? (
+              <div className="rounded-[20px] border border-white/10 bg-slate-950/70 p-4 text-sm text-slate-400">
+                No users match the current filters.
+              </div>
+            ) : null}
+            {users.map((user) => (
+              <UserMobileCard
+                key={user.id}
+                user={user}
+                onOpen={() => navigate(`/admin/users/${user.id}`)}
+              />
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="mt-6 overflow-hidden rounded-[20px] border border-white/10 xl:rounded-[24px]">
+            <div className="overflow-x-auto">
+              <Table className="min-w-[1080px] bg-slate-950/60">
+                <TableHeader className="bg-white/10">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="border-b border-white/10 hover:bg-transparent">
+                      {headerGroup.headers.map((header) => {
+                        const sortBy = header.column.id;
+                        const isSorted = filters.sortBy === sortBy;
+                        const direction = filters.sortDir;
+
+                        return (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder ? null : header.column.getCanSort() === false ? (
+                              header.column.columnDef.header
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleSortChange(sortBy)}
+                                className="inline-flex items-center gap-2 transition hover:text-white"
+                              >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                <SortPill active={isSorted} direction={direction} />
+                              </button>
+                            )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {usersQuery.isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="px-4 py-6 text-sm text-slate-400">
+                        Loading users...
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                  {!usersQuery.isLoading && users.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="px-4 py-6 text-sm text-slate-400">
+                        No users match the current filters.
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                  {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/admin/users/${row.original.id}`)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
 
         <div className="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <p className="text-sm text-slate-400">
