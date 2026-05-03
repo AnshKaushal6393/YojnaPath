@@ -4,6 +4,7 @@ const { isMongoReady } = require("../config/mongo");
 const { getMatchingSchemes } = require("../engine/matcher");
 const { configureCloudinary } = require("../config/cloudinary");
 const { ensureDatabaseSchema, getPool } = require("../config/postgres");
+let profileUserTypeColumnPromise;
 
 function normalizePage(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -108,6 +109,31 @@ function getStoredUserType(row) {
   return row.user_type || row.occupation || null;
 }
 
+async function hasProfilesUserTypeColumn() {
+  if (!profileUserTypeColumnPromise) {
+    profileUserTypeColumnPromise = (async () => {
+      const pool = getPool();
+      const result = await pool.query(
+        `
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name = 'profiles'
+            AND column_name = 'user_type'
+          LIMIT 1
+        `
+      );
+
+      return result.rows.length > 0;
+    })().catch((error) => {
+      profileUserTypeColumnPromise = null;
+      throw error;
+    });
+  }
+
+  return profileUserTypeColumnPromise;
+}
+
 function mapProfileRow(row) {
   const displayPhotoUrl = row.photo_url || row.account_photo_url || null;
 
@@ -168,13 +194,22 @@ function getProfileCompletenessScore(profile) {
   );
 }
 
-function buildProfileOrderClause(alias) {
+function buildProfileTypeExpression(alias, hasUserTypeColumn, fallback = "NULL") {
+  if (hasUserTypeColumn) {
+    return `COALESCE(${alias}.user_type, ${alias}.occupation${fallback ? `, ${fallback}` : ""})`;
+  }
+
+  return `COALESCE(${alias}.occupation${fallback ? `, ${fallback}` : ""})`;
+}
+
+function buildProfileOrderClause(alias, hasUserTypeColumn) {
+  const profileTypeExpression = buildProfileTypeExpression(alias, hasUserTypeColumn);
   return `
     CASE WHEN ${alias}.is_primary THEN 1000 ELSE 0 END DESC,
     CASE WHEN ${alias}.state IS NOT NULL AND ${alias}.state <> '' THEN 100 ELSE 0 END DESC,
     CASE
-      WHEN COALESCE(${alias}.user_type, ${alias}.occupation) IS NOT NULL
-        AND COALESCE(${alias}.user_type, ${alias}.occupation) <> ''
+      WHEN ${profileTypeExpression} IS NOT NULL
+        AND ${profileTypeExpression} <> ''
       THEN 100
       ELSE 0
     END DESC,
@@ -241,6 +276,9 @@ async function listAdminUsers(options = {}) {
   const effectiveSortDir = sortDir || activeSort.defaultDir;
 
   const pool = getPool();
+  const hasUserTypeColumn = await hasProfilesUserTypeColumn();
+  const selectedProfileTypeColumn = hasUserTypeColumn ? "rp.user_type," : "NULL::VARCHAR(30) AS user_type,";
+  const selectedProfileTypeExpression = buildProfileTypeExpression("rp", hasUserTypeColumn, "''");
   const result = await pool.query(
     `
       WITH ranked_profiles AS (
@@ -248,7 +286,7 @@ async function listAdminUsers(options = {}) {
           p.*,
           ROW_NUMBER() OVER (
             PARTITION BY p.user_id
-            ORDER BY ${buildProfileOrderClause("p")}
+            ORDER BY ${buildProfileOrderClause("p", hasUserTypeColumn)}
           ) AS profile_rank
         FROM profiles p
       ),
@@ -268,7 +306,7 @@ async function listAdminUsers(options = {}) {
           rp.relation,
           rp.photo_url AS profile_photo_url,
           rp.state,
-          rp.user_type,
+          ${selectedProfileTypeColumn}
           rp.occupation,
           rp.district,
           COALESCE(match_summary.match_runs, 0)::INT AS match_runs,
@@ -278,7 +316,7 @@ async function listAdminUsers(options = {}) {
           u.last_login AS sort_last_login,
           COALESCE(u.name, rp.profile_name, '') AS sort_name,
           COALESCE(rp.state, '') AS sort_state,
-          COALESCE(rp.user_type, rp.occupation, '') AS sort_user_type,
+          ${selectedProfileTypeExpression} AS sort_user_type,
           COALESCE(match_summary.match_runs, 0)::INT AS sort_match_runs,
           COALESCE(match_summary.total_matches, 0)::INT AS sort_total_matches,
           COALESCE(match_summary.total_near_misses, 0)::INT AS sort_total_near_misses,
@@ -297,7 +335,7 @@ async function listAdminUsers(options = {}) {
           WHERE ml.user_id = u.id
         ) AS match_summary ON TRUE
         WHERE ($1::TEXT IS NULL OR rp.state = $1)
-          AND ($2::TEXT IS NULL OR COALESCE(rp.user_type, rp.occupation) = $2)
+          AND ($2::TEXT IS NULL OR ${selectedProfileTypeExpression} = $2)
           AND (
             $3::TEXT IS NULL
             OR u.name ILIKE '%' || $3 || '%'
@@ -401,6 +439,8 @@ async function getAdminUserById(userId) {
   console.log(`[ADMIN] Fetching user ${userId} profiles...`);
 
   const pool = getPool();
+  const hasUserTypeColumn = await hasProfilesUserTypeColumn();
+  const selectedProfileTypeColumn = hasUserTypeColumn ? "user_type," : "NULL::VARCHAR(30) AS user_type,";
   const userPromise = pool.query(
     `
       SELECT
@@ -431,7 +471,7 @@ async function getAdminUserById(userId) {
         is_primary,
         gender,
         caste,
-        user_type,
+        ${selectedProfileTypeColumn}
         occupation,
         state,
         annual_income,

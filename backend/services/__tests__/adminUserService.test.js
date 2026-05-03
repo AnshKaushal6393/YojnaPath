@@ -32,31 +32,39 @@ describe("adminUserService", () => {
 
   test("listAdminUsers returns normalized display photo and display profile", async () => {
     const pool = {
-      query: jest.fn().mockResolvedValue({
-        rows: [
-          {
-            id: "user-1",
-            phone: "9999999999",
-            name: "Sanjay Kumar",
-            photo_url: null,
-            photo_type: "upload",
-            onboarding_done: true,
-            lang: "hi",
-            created_at: "2026-04-17T10:00:00.000Z",
-            last_login: "2026-04-18T10:00:00.000Z",
-            registration_completed_at: "2026-04-17T09:30:00.000Z",
-            profile_name: "Sanjay Kumar",
-            relation: null,
-            profile_photo_url: "https://cdn.example.com/profile.jpg",
-            state: "UP",
-            occupation: "farmer",
-            district: "Varanasi",
-            match_runs: 3,
-            total_matches: 12,
-            total_near_misses: 4,
-            total_count: 1,
-          },
-        ],
+      query: jest.fn((sql) => {
+        const text = String(sql);
+
+        if (text.includes("information_schema.columns")) {
+          return Promise.resolve({ rows: [{ "?column?": 1 }] });
+        }
+
+        return Promise.resolve({
+          rows: [
+            {
+              id: "user-1",
+              phone: "9999999999",
+              name: "Sanjay Kumar",
+              photo_url: null,
+              photo_type: "upload",
+              onboarding_done: true,
+              lang: "hi",
+              created_at: "2026-04-17T10:00:00.000Z",
+              last_login: "2026-04-18T10:00:00.000Z",
+              registration_completed_at: "2026-04-17T09:30:00.000Z",
+              profile_name: "Sanjay Kumar",
+              relation: null,
+              profile_photo_url: "https://cdn.example.com/profile.jpg",
+              state: "UP",
+              occupation: "farmer",
+              district: "Varanasi",
+              match_runs: 3,
+              total_matches: 12,
+              total_near_misses: 4,
+              total_count: 1,
+            },
+          ],
+        });
       }),
     };
     getPool.mockReturnValue(pool);
@@ -82,32 +90,40 @@ describe("adminUserService", () => {
 
   test("listAdminUsers prefers the most complete profile for list data", async () => {
     const pool = {
-      query: jest.fn().mockResolvedValue({
-        rows: [
-          {
-            id: "user-2",
-            phone: "8888888888",
-            name: "Asha",
-            photo_url: null,
-            photo_type: "none",
-            onboarding_done: true,
-            lang: "hi",
-            created_at: "2026-04-17T10:00:00.000Z",
-            last_login: "2026-04-18T10:00:00.000Z",
-            registration_completed_at: "2026-04-17T09:30:00.000Z",
-            profile_name: "Asha Devi",
-            relation: "self",
-            profile_photo_url: "https://cdn.example.com/asha.jpg",
-            state: "UP",
-            user_type: "farmer",
-            occupation: "farmer",
-            district: "Varanasi",
-            match_runs: 1,
-            total_matches: 2,
-            total_near_misses: 0,
-            total_count: 1,
-          },
-        ],
+      query: jest.fn((sql) => {
+        const text = String(sql);
+
+        if (text.includes("information_schema.columns")) {
+          return Promise.resolve({ rows: [{ "?column?": 1 }] });
+        }
+
+        return Promise.resolve({
+          rows: [
+            {
+              id: "user-2",
+              phone: "8888888888",
+              name: "Asha",
+              photo_url: null,
+              photo_type: "none",
+              onboarding_done: true,
+              lang: "hi",
+              created_at: "2026-04-17T10:00:00.000Z",
+              last_login: "2026-04-18T10:00:00.000Z",
+              registration_completed_at: "2026-04-17T09:30:00.000Z",
+              profile_name: "Asha Devi",
+              relation: "self",
+              profile_photo_url: "https://cdn.example.com/asha.jpg",
+              state: "UP",
+              user_type: "farmer",
+              occupation: "farmer",
+              district: "Varanasi",
+              match_runs: 1,
+              total_matches: 2,
+              total_near_misses: 0,
+              total_count: 1,
+            },
+          ],
+        });
       }),
     };
     getPool.mockReturnValue(pool);
@@ -129,54 +145,79 @@ describe("adminUserService", () => {
 
   test("getAdminUserById returns display profile and display photo fallback", async () => {
     const pool = {
-      query: jest
-        .fn()
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              name: "Account Owner",
-              lang: "hi",
-              photo_url: "https://cdn.example.com/account.jpg",
-            },
-          ],
-        })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              id: "profile-1",
-              user_id: "user-1",
-              profile_name: "Sanjay Kumar",
-              relation: null,
-              photo_url: null,
-              is_primary: true,
-              state: "UP",
-              occupation: "farmer",
-              annual_income: 120000,
-              caste: "obc",
-              gender: "male",
-              age: 24,
-              land_acres: 1.5,
-              disability_pct: 0,
-              is_student: false,
-              is_migrant: false,
-              district: "Varanasi",
-              account_photo_url: "https://cdn.example.com/account.jpg",
-            },
-          ],
-        })
-        .mockResolvedValueOnce({ rows: [] })
-        .mockResolvedValueOnce({ rows: [] })
-        .mockResolvedValueOnce({ rows: [] })
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              match_runs: 0,
-              total_matches: 0,
-              total_near_misses: 0,
-              last_match_at: null,
-            },
-          ],
-        }),
+      query: jest.fn((sql) => {
+        const text = String(sql);
+
+        if (text.includes("information_schema.columns")) {
+          return Promise.resolve({ rows: [{ "?column?": 1 }] });
+        }
+
+        if (text.includes("FROM users u")) {
+          return Promise.resolve({
+            rows: [
+              {
+                name: "Account Owner",
+                lang: "hi",
+                photo_url: "https://cdn.example.com/account.jpg",
+              },
+            ],
+          });
+        }
+
+        if (text.includes("FROM profiles")) {
+          return Promise.resolve({
+            rows: [
+              {
+                id: "profile-1",
+                user_id: "user-1",
+                profile_name: "Sanjay Kumar",
+                relation: null,
+                photo_url: null,
+                is_primary: true,
+                state: "UP",
+                occupation: "farmer",
+                annual_income: 120000,
+                caste: "obc",
+                gender: "male",
+                age: 24,
+                land_acres: 1.5,
+                disability_pct: 0,
+                is_student: false,
+                is_migrant: false,
+                district: "Varanasi",
+                account_photo_url: "https://cdn.example.com/account.jpg",
+              },
+            ],
+          });
+        }
+
+        if (text.includes("FROM saved_schemes")) {
+          return Promise.resolve({ rows: [] });
+        }
+
+        if (text.includes("FROM applications")) {
+          return Promise.resolve({ rows: [] });
+        }
+
+        if (text.includes("MAX(created_at)")) {
+          return Promise.resolve({
+            rows: [
+              {
+                match_runs: 0,
+                total_matches: 0,
+                total_near_misses: 0,
+                last_match_at: null,
+              },
+            ],
+          });
+        }
+
+        if (text.includes("FROM match_logs")) {
+          return Promise.resolve({ rows: [] });
+        }
+
+        return Promise.reject(new Error(`Unexpected query: ${text}`));
+      }),
     };
     getPool.mockReturnValue(pool);
 
@@ -195,6 +236,64 @@ describe("adminUserService", () => {
         profileName: "Sanjay Kumar",
         displayPhotoUrl: "https://cdn.example.com/account.jpg",
         userType: "farmer",
+      },
+    });
+  });
+
+  test("listAdminUsers falls back to occupation when profiles.user_type is missing", async () => {
+    const pool = {
+      query: jest.fn((sql) => {
+        const text = String(sql);
+
+        if (text.includes("information_schema.columns")) {
+          return Promise.resolve({ rows: [] });
+        }
+
+        if (text.includes("WITH ranked_profiles")) {
+          return Promise.resolve({
+            rows: [
+              {
+                id: "user-3",
+                phone: "7777777777",
+                name: "Ravi",
+                photo_url: null,
+                photo_type: "none",
+                onboarding_done: true,
+                lang: "hi",
+                created_at: "2026-04-17T10:00:00.000Z",
+                last_login: "2026-04-18T10:00:00.000Z",
+                registration_completed_at: "2026-04-17T09:30:00.000Z",
+                profile_name: "Ravi Kumar",
+                relation: "self",
+                profile_photo_url: null,
+                state: "UP",
+                user_type: null,
+                occupation: "worker",
+                district: "Lucknow",
+                match_runs: 0,
+                total_matches: 0,
+                total_near_misses: 0,
+                total_count: 1,
+              },
+            ],
+          });
+        }
+
+        return Promise.reject(new Error(`Unexpected query: ${text}`));
+      }),
+    };
+    getPool.mockReturnValue(pool);
+
+    const { listAdminUsers } = loadAdminUserService();
+    const payload = await listAdminUsers({ page: 1, limit: 10, userType: "worker" });
+
+    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining("COALESCE(p.occupation, NULL)"), expect.any(Array));
+    expect(payload.users[0]).toMatchObject({
+      name: "Ravi",
+      displayProfile: {
+        state: "UP",
+        occupation: "worker",
+        userType: "worker",
       },
     });
   });
