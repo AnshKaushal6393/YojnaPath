@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       VitePWA({
         registerType: "autoUpdate",
-        injectRegister: "auto",
+        injectRegister: false,
         includeAssets: ["yojnapath-favicon.svg"],
         manifest: {
           name: "YojnaPath",

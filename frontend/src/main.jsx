@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
-import { registerSW } from "virtual:pwa-register";
 import { i18nReady } from "./i18n";
 import App from "./App";
 import RouteErrorBoundary from "./components/RouteErrorBoundary";
@@ -26,7 +25,8 @@ const queryClient = new QueryClient({
   },
 });
 
-function registerServiceWorkerWhenIdle() {
+async function registerServiceWorkerWhenIdle() {
+  const { registerSW } = await import("virtual:pwa-register");
   registerSW({
     immediate: true,
   });
