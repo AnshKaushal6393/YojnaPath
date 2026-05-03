@@ -9,31 +9,16 @@
 </p>
 
 <p align="center">
-  <a href="https://yojna-path.vercel.app/"><strong>Live Demo</strong></a>
-  ·
-  <a href="#lighthouse-snapshot">Lighthouse</a>
-  ·
-  <a href="#screenshots">Screenshots</a>
-  ·
+  <a href="https://yojna-path.vercel.app/"><strong>Live Demo</strong></a> &middot;
+  <a href="#lighthouse-snapshot">Lighthouse</a> &middot;
+  <a href="#screenshots">Screenshots</a> &middot;
   <a href="#tech-stack">Tech Stack</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Frontend-React%2018-61dafb?style=for-the-badge&logo=react&logoColor=06121b" alt="React 18 badge" />
-  <img src="https://img.shields.io/badge/Build-Vite-646cff?style=for-the-badge&logo=vite&logoColor=ffffff" alt="Vite badge" />
-  <img src="https://img.shields.io/badge/Backend-Express-111827?style=for-the-badge&logo=express&logoColor=ffffff" alt="Express badge" />
-  <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=ffffff" alt="PostgreSQL badge" />
-  <img src="https://img.shields.io/badge/Database-MongoDB-13aa52?style=for-the-badge&logo=mongodb&logoColor=ffffff" alt="MongoDB badge" />
-  <img src="https://img.shields.io/badge/PWA-Installable-0f766e?style=for-the-badge&logo=googlechrome&logoColor=ffffff" alt="PWA badge" />
-</p>
-
-<p align="center">
-  <strong>50+ real users onboarded</strong>
-  ·
-  <strong>Bilingual Hindi + English UX</strong>
-  ·
-  <strong>OTP + Google sign-in</strong>
-  ·
+  <strong>50+ real users onboarded</strong> &middot;
+  <strong>Bilingual Hindi + English UX</strong> &middot;
+  <strong>OTP + Google sign-in</strong> &middot;
   <strong>Admin analytics + kiosk workflows</strong>
 </p>
 
@@ -57,6 +42,13 @@
   <img src="docs/app-ui-preview.svg" alt="YojnaPath app preview showing home, scheme matching, and profile flows" width="100%" />
 </p>
 
+Featured screens shown in the preview above:
+
+- `Home`: bilingual mobile-first landing experience with install prompt, category discovery, and recent matches
+- `Profile`: multi-profile account management, eligibility details, and assisted voice/data entry flows
+- `Results`: matched schemes, near-miss explanations, and category-based filtering
+- `Admin Dashboard`: operational analytics, system health, user growth, and scheme monitoring
+
 ## Overview
 
 YojnaPath is a full-stack platform built for Indian users to discover, understand, and track government welfare schemes. It supports account registration, family profile creation, scheme matching, near-miss analysis, deadline discovery, kiosk-assisted usage, and a complete admin console for operations and analytics.
@@ -65,6 +57,15 @@ The repository is split into:
 
 - `frontend/`: React + Vite client
 - `backend/`: Express API with PostgreSQL, MongoDB, Redis-backed helpers, Cloudinary uploads, and admin tooling
+
+## Interview Talking Points
+
+- YojnaPath uses a separated frontend and backend architecture, which makes deployment and scaling cleaner than a tightly coupled monolith.
+- The React and Vite PWA focuses on mobile-first access, bilingual UX, and low-friction onboarding for real users and kiosk operators.
+- The Express API centralizes authentication, profile management, scheme matching, admin analytics, and operational workflows.
+- PostgreSQL, MongoDB, and Redis each serve a distinct role, which is a good example of choosing storage based on access patterns instead of forcing everything into one database.
+- The production scaling workflow shows how the backend could run behind a load balancer with multiple API instances and shared services.
+- A realistic engineering caveat is that some rate limiting still uses in-memory state, so Redis-backed shared throttling would be the next step for true multi-instance consistency.
 
 ## Architecture
 
@@ -176,29 +177,29 @@ These scores reflect the mobile-focused optimization work in this repository, in
 
 ```text
 YojnaPath/
-├─ backend/
-│  ├─ config/
-│  ├─ controllers/
-│  ├─ db/
-│  ├─ engine/
-│  ├─ middleware/
-│  ├─ models/
-│  ├─ routes/
-│  ├─ scripts/
-│  ├─ seeds/
-│  ├─ services/
-│  └─ index.js
-├─ frontend/
-│  ├─ public/
-│  ├─ src/
-│  │  ├─ components/
-│  │  ├─ data/
-│  │  ├─ i18n/
-│  │  ├─ lib/
-│  │  ├─ pages/
-│  │  └─ utils/
-│  └─ vite.config.js
-└─ README.md
+|-- backend/
+|   |-- config/
+|   |-- controllers/
+|   |-- db/
+|   |-- engine/
+|   |-- middleware/
+|   |-- models/
+|   |-- routes/
+|   |-- scripts/
+|   |-- seeds/
+|   |-- services/
+|   `-- index.js
+|-- frontend/
+|   |-- public/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- data/
+|   |   |-- i18n/
+|   |   |-- lib/
+|   |   |-- pages/
+|   |   `-- utils/
+|   `-- vite.config.js
+`-- README.md
 ```
 
 ## Core User Flows
