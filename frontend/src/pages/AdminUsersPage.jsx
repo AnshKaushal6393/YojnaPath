@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
 import { downloadAdminUsersExport, fetchAdminUsers } from "../lib/adminApi";
-import { formatDateTime, formatNumber, getUserDisplayPhoto } from "../lib/adminUi";
+import { formatDateTime, formatNumber, getUserDisplayPhoto, isProfileReady } from "../lib/adminUi";
 import { USER_TYPE_OPTIONS } from "../data/profileOptions";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -94,6 +94,8 @@ function FilterField({ label, children }) {
 function UserMobileCard({ user, onOpen }) {
   const visibleProfile = user.displayProfile || user.primaryProfile || null;
   const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
+  const profileReady = isProfileReady(visibleProfile);
+  const hasProfiles = Boolean(user.primaryProfile?.profileName || user.displayProfile?.profileName);
 
   return (
     <button
@@ -118,7 +120,13 @@ function UserMobileCard({ user, onOpen }) {
               {userType}
             </Badge>
             <Badge variant={user.onboardingDone ? "success" : "default"} className="px-2.5 py-1 text-[11px]">
-              {user.onboardingDone ? "Complete" : "Pending"}
+              {user.onboardingDone ? "Registered" : "Registration pending"}
+            </Badge>
+            <Badge
+              variant={profileReady ? "info" : hasProfiles ? "warning" : "default"}
+              className="px-2.5 py-1 text-[11px]"
+            >
+              {profileReady ? "Profile ready" : hasProfiles ? "Profile incomplete" : "No profile"}
             </Badge>
           </div>
         </div>
@@ -276,13 +284,21 @@ export default function AdminUsersPage() {
           const user = row.original;
           const visibleProfile = user.displayProfile || user.primaryProfile || null;
           const userType = getUserTypeLabel(visibleProfile?.userType || visibleProfile?.occupation);
+          const profileReady = isProfileReady(visibleProfile);
+          const hasProfiles = Boolean(user.primaryProfile?.profileName || user.displayProfile?.profileName);
 
           return (
             <div className="text-sm text-slate-300">
               <span className="block">{visibleProfile?.state || "NA"}</span>
               <span className="mt-1 block">{userType}</span>
               <Badge variant="default" className="mt-2 px-2.5 py-1 text-[11px] text-slate-400">
-                {user.onboardingDone ? "Onboarding complete" : "Onboarding pending"}
+                {user.onboardingDone ? "Registration complete" : "Registration pending"}
+              </Badge>
+              <Badge
+                variant={profileReady ? "info" : hasProfiles ? "warning" : "default"}
+                className="mt-2 ml-2 px-2.5 py-1 text-[11px]"
+              >
+                {profileReady ? "Profile ready" : hasProfiles ? "Profile incomplete" : "No profile"}
               </Badge>
             </div>
           );

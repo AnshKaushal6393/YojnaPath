@@ -93,6 +93,14 @@ export function getProfileDisplayPhoto(user, profile) {
   return "";
 }
 
+export function isProfileReady(profile) {
+  if (!profile) {
+    return false;
+  }
+
+  return Boolean(profile.state && (profile.userType || profile.occupation));
+}
+
 export function summarizeMatchStats(user, matches = []) {
   const summary = user?.matchSummary || {};
   const matchRuns = Number(summary.matchRuns || 0);
