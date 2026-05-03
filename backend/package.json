@@ -9,6 +9,7 @@
     "create:admin": "node scripts/createAdmin.js",
     "seed:schemes": "node seeds/seedSchemes.js",
     "seed:myscheme": "node seeds/seedSchemes.js --source=puppeteer",
+    "seed:datagov": "node seeds/seedSchemes.js --source=datagov",
     "scrape:myscheme": "node seeds/scrapers/myschemeScraper.js",
     "check:urls": "node scripts/checkUrls.js",
     "audit:scheme-urls": "node scripts/auditSchemeUrls.js",

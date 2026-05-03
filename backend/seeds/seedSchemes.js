@@ -25,6 +25,13 @@ const HF_DATASET_REPO = process.env.HF_DATASET_REPO || "";
 const HF_DATASET_FILE = process.env.HF_DATASET_FILE || "";
 const HF_DATASET_REF = process.env.HF_DATASET_REF || "main";
 const HF_TOKEN = process.env.HF_TOKEN || process.env.HUGGINGFACE_TOKEN || "";
+const DATAGOV_API_URL = process.env.DATAGOV_API_URL || "";
+const DATAGOV_API_BASE = process.env.DATAGOV_API_BASE || "https://api.data.gov.in/resource";
+const DATAGOV_RESOURCE_ID = process.env.DATAGOV_RESOURCE_ID || "";
+const DATAGOV_API_KEY = process.env.DATAGOV_API_KEY || "";
+const DATAGOV_FORMAT = process.env.DATAGOV_FORMAT || "json";
+const DATAGOV_LIMIT = Math.max(Number(process.env.DATAGOV_LIMIT || 100), 1);
+const DATAGOV_MAX_RECORDS = Math.max(Number(process.env.DATAGOV_MAX_RECORDS || 1000), 1);
 
 const STATE_NAME_TO_CODE = {
   "andaman and nicobar islands": "AN",
@@ -154,6 +161,11 @@ function fetchText(url, headers = {}) {
 
     request.on("error", reject);
   });
+}
+
+async function fetchJson(url, headers = {}) {
+  const text = await fetchText(url, headers);
+  return JSON.parse(text);
 }
 
 function parseCsv(text) {
@@ -519,6 +531,229 @@ function huggingFaceRowToScheme(row) {
   return jsonRowToScheme(row);
 }
 
+function pickFirstNonEmpty(row, keys = []) {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value != null && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
+  return "";
+}
+
+function sanitizeUrlCandidate(value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(text)) {
+    return text;
+  }
+
+  return "";
+}
+
+function datagovRowToScheme(row) {
+  const schemeName = pickFirstNonEmpty(row, [
+    "scheme_name",
+    "scheme",
+    "title",
+    "name",
+    "scheme title",
+    "Scheme Name",
+    "Scheme",
+    "Title",
+    "Name",
+  ]);
+  const description = pickFirstNonEmpty(row, [
+    "description",
+    "brief_description",
+    "brief description",
+    "summary",
+    "details",
+    "Description",
+    "Summary",
+  ]);
+  const ministry = pickFirstNonEmpty(row, [
+    "ministry",
+    "ministry_name",
+    "department",
+    "organization",
+    "nodal_ministry",
+    "implementing_agency",
+    "Ministry",
+    "Department",
+    "Organization",
+  ]);
+  const benefits = pickFirstNonEmpty(row, [
+    "benefits",
+    "benefit",
+    "financial_assistance",
+    "assistance",
+    "Benefits",
+  ]);
+  const eligibilityText = pickFirstNonEmpty(row, [
+    "eligibility",
+    "eligibility_criteria",
+    "eligibility criteria",
+    "criteria",
+    "Eligibility",
+  ]);
+  const documentsText = pickFirstNonEmpty(row, [
+    "documents_required",
+    "documents",
+    "required_documents",
+    "Documents",
+  ]);
+  const applyUrl = sanitizeUrlCandidate(
+    pickFirstNonEmpty(row, [
+      "apply_url",
+      "application_url",
+      "official_website",
+      "website",
+      "url",
+      "reference_url",
+      "apply link",
+      "Apply URL",
+      "Official Website",
+      "URL",
+    ])
+  );
+  const state = normalizeState(
+    pickFirstNonEmpty(row, ["state", "beneficiary_state", "jurisdiction", "State"]),
+    pickFirstNonEmpty(row, ["level", "scheme_level", "Level"])
+  );
+  const tags = parseTags(
+    pickFirstNonEmpty(row, ["tags", "keywords", "keyword", "Tags", "Keywords"])
+  );
+  const categories = inferCategories(
+    pickFirstNonEmpty(row, ["category", "sector", "scheme_category", "Category", "Sector"]),
+    tags.join(","),
+    `${schemeName} ${description} ${benefits} ${eligibilityText}`
+  );
+
+  if (!schemeName) {
+    return null;
+  }
+
+  return normalizeScheme(
+    {
+      schemeId: `DATAGOV_${state}_${slugify(schemeName).toUpperCase()}`,
+      name: { en: schemeName, hi: schemeName },
+      description: {
+        en: description || benefits || "",
+        hi: description || benefits || "",
+      },
+      ministry: ministry || "Unknown",
+      categories: categories.length ? categories : ["finance"],
+      state,
+      eligibility: parseEligibility(eligibilityText),
+      benefitAmount: extractBenefitAmount(benefits || description),
+      benefitType: inferBenefitType(benefits || description),
+      documents: parseDocuments(documentsText),
+      applyUrl: applyUrl || "https://www.data.gov.in/",
+      applyMode: inferApplyMode(
+        pickFirstNonEmpty(row, ["application_process", "mode", "Application Process"]),
+        applyUrl
+      ),
+      tags,
+      active: true,
+      verified: true,
+      source: "datagov",
+    },
+    "datagov"
+  );
+}
+
+function buildDataGovApiUrl(offset = 0, limit = DATAGOV_LIMIT) {
+  if (DATAGOV_API_URL) {
+    const url = new URL(DATAGOV_API_URL);
+    if (!url.searchParams.has("format")) {
+      url.searchParams.set("format", DATAGOV_FORMAT);
+    }
+    if (!url.searchParams.has("offset")) {
+      url.searchParams.set("offset", String(offset));
+    }
+    if (!url.searchParams.has("limit")) {
+      url.searchParams.set("limit", String(limit));
+    }
+    if (DATAGOV_API_KEY && !url.searchParams.has("api-key")) {
+      url.searchParams.set("api-key", DATAGOV_API_KEY);
+    }
+    return url.toString();
+  }
+
+  if (!DATAGOV_RESOURCE_ID || !DATAGOV_API_KEY) {
+    return "";
+  }
+
+  const url = new URL(`${DATAGOV_API_BASE.replace(/\/+$/, "")}/${DATAGOV_RESOURCE_ID}`);
+  url.searchParams.set("api-key", DATAGOV_API_KEY);
+  url.searchParams.set("format", DATAGOV_FORMAT);
+  url.searchParams.set("offset", String(offset));
+  url.searchParams.set("limit", String(limit));
+  return url.toString();
+}
+
+function extractDataGovRecords(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.records)) {
+    return payload.records;
+  }
+
+  if (Array.isArray(payload?.result?.records)) {
+    return payload.result.records;
+  }
+
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
+
+  return [];
+}
+
+function persistDataGovCache(schemes) {
+  const filePath = path.join(DATA_DIR, "datagov-schemes.json");
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(schemes, null, 2));
+}
+
+async function loadDataGovRemoteSource() {
+  const firstUrl = buildDataGovApiUrl(0, DATAGOV_LIMIT);
+  if (!firstUrl) {
+    return [];
+  }
+
+  const rows = [];
+  const target = DATAGOV_MAX_RECORDS;
+
+  for (let offset = 0; offset < target; offset += DATAGOV_LIMIT) {
+    const url = buildDataGovApiUrl(offset, Math.min(DATAGOV_LIMIT, target - offset));
+    const payload = await fetchJson(url);
+    const batch = extractDataGovRecords(payload);
+
+    if (!batch.length) {
+      break;
+    }
+
+    rows.push(...batch);
+
+    if (batch.length < DATAGOV_LIMIT) {
+      break;
+    }
+  }
+
+  const schemes = rows.map(datagovRowToScheme).filter(Boolean);
+  if (schemes.length) {
+    persistDataGovCache(schemes);
+  }
+  return schemes;
+}
+
 function parseDatasetContent(fileName, content) {
   if (/\.csv$/i.test(fileName)) {
     return parseCsv(content);
@@ -669,6 +904,11 @@ async function loadPuppeteerSource() {
 }
 
 async function loadDataGovSource() {
+  const remoteRows = await loadDataGovRemoteSource();
+  if (remoteRows.length) {
+    return remoteRows;
+  }
+
   const filePath = path.join(DATA_DIR, "datagov-schemes.json");
   return readJsonArray(filePath).map((scheme) => normalizeScheme(scheme, "datagov"));
 }
@@ -794,9 +1034,12 @@ if (require.main === module) {
 }
 
 module.exports = {
+  buildDataGovApiUrl,
+  datagovRowToScheme,
   DEFAULT_SOURCE_ORDER,
   SOURCE_LOADERS,
   csvRowToScheme,
+  extractDataGovRecords,
   parseEligibility,
   parseCsv,
   loadHuggingFaceRemoteSource,

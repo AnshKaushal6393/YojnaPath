@@ -89,6 +89,16 @@ function requestUrl(url, { method = "HEAD", timeoutMs = DEFAULT_TIMEOUT_MS, redi
       return;
     }
 
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      resolve({
+        status: "dead",
+        statusCode: null,
+        finalUrl: parsed.toString(),
+        error: `Unsupported protocol: ${parsed.protocol}`,
+      });
+      return;
+    }
+
     const transport = parsed.protocol === "http:" ? http : https;
     const request = transport.request(
       parsed,

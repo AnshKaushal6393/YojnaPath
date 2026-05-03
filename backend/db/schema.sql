@@ -80,6 +80,10 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS profiles_one_primary_per_user_idx
+  ON profiles (user_id)
+  WHERE is_primary = TRUE;
+
 CREATE TABLE IF NOT EXISTS saved_schemes (
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   scheme_id VARCHAR(180) NOT NULL,

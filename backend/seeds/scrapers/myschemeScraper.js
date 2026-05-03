@@ -13,6 +13,8 @@ const SEARCH_URL = `${MYSCHEME_BASE_URL}/search`;
 const SEARCH_API_FRAGMENT = "/search/v6/schemes?";
 const DETAIL_API_BASE = "https://api.myscheme.gov.in/schemes/v6/public/schemes";
 const SEARCH_API_BASE = "https://api.myscheme.gov.in/search/v6/schemes";
+const MIN_EXPECTED_SITEMAP_SCHEME_URLS = 100;
+const SEARCH_API_PAGE_SIZE = 100;
 
 function wait(ms) {
   return new Promise((resolve) => {
@@ -136,7 +138,7 @@ function parseSitemapXml(xml = "") {
     .filter(Boolean);
 }
 
-function normalizeMySchemeUrl(url) {
+function normalizeMySchemeUrl(url, options = {}) {
   try {
     const parsed = new URL(url);
     if (parsed.hostname !== MYSCHEME_HOSTNAME) {
@@ -144,7 +146,9 @@ function normalizeMySchemeUrl(url) {
     }
 
     parsed.hash = "";
-    parsed.search = "";
+    if (!options.keepSearch) {
+      parsed.search = "";
+    }
     return parsed.toString().replace(/\/+$/, "");
   } catch {
     return null;
@@ -162,7 +166,7 @@ function extractSchemeSlugFromUrl(url) {
 }
 
 async function fetchSchemeUrlsFromSitemap(url = SITEMAP_URL, visited = new Set()) {
-  const normalizedUrl = normalizeMySchemeUrl(url);
+  const normalizedUrl = normalizeMySchemeUrl(url, { keepSearch: true });
   if (!normalizedUrl || visited.has(normalizedUrl)) {
     return [];
   }
@@ -179,7 +183,8 @@ async function fetchSchemeUrlsFromSitemap(url = SITEMAP_URL, visited = new Set()
   const childSitemaps = [];
 
   for (const loc of locs) {
-    const normalizedLoc = normalizeMySchemeUrl(loc);
+    const shouldKeepSearch = /\.xml(?:$|[?#])/i.test(loc);
+    const normalizedLoc = normalizeMySchemeUrl(loc, { keepSearch: shouldKeepSearch });
     if (!normalizedLoc) {
       continue;
     }
@@ -189,7 +194,7 @@ async function fetchSchemeUrlsFromSitemap(url = SITEMAP_URL, visited = new Set()
       continue;
     }
 
-    if (/\.xml$/i.test(normalizedLoc)) {
+    if (/\.xml(?:$|[?#])/i.test(normalizedLoc)) {
       childSitemaps.push(normalizedLoc);
     }
   }
@@ -390,14 +395,16 @@ async function withBrowser(task, options = {}) {
   }
 }
 
-async function discoverApiKey(options = {}) {
+async function discoverSearchContext(options = {}) {
   return withBrowser(async (browser) => {
     const page = await browser.newPage();
     let apiKey = null;
+    let requestHeaders = null;
 
     page.on("request", (request) => {
       if (request.method() === "GET" && request.url().includes(SEARCH_API_FRAGMENT)) {
         apiKey = apiKey || request.headers()["x-api-key"] || null;
+        requestHeaders = requestHeaders || request.headers();
       }
     });
 
@@ -408,7 +415,10 @@ async function discoverApiKey(options = {}) {
       throw new Error("Unable to discover myScheme API key from the live search page");
     }
 
-    return apiKey;
+    return {
+      apiKey,
+      requestHeaders: requestHeaders || {},
+    };
   }, options);
 }
 
@@ -464,12 +474,139 @@ async function enrichSitemapEntries(entries = [], apiKey) {
   }
 }
 
+function mapSearchApiItemToEntry(fields = {}) {
+  if (!fields.slug) {
+    return null;
+  }
+
+  return {
+    slug: fields.slug,
+    detailUrl: `${MYSCHEME_BASE_URL}/schemes/${fields.slug}`,
+    title: fields.schemeName || "",
+    ministry: fields.nodalMinistryName || "",
+    summary: fields.briefDescription || "",
+    tags: fields.tags || [],
+    categories: fields.schemeCategory || [],
+    level: fields.level || "",
+    beneficiaryStates: fields.beneficiaryState || [],
+  };
+}
+
+async function fetchListingPagesFromSearchApi(apiKey, options = {}) {
+  const { maxSchemes = null } = options;
+  const headers = {
+    "x-api-key": apiKey,
+    accept: "application/json, text/plain, */*",
+    "user-agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "accept-language": "en-US,en;q=0.9",
+  };
+  const target = maxSchemes ?? Number.POSITIVE_INFINITY;
+  const seenItems = new Map();
+  let totalAvailable = null;
+
+  for (let from = 0; from < target; from += SEARCH_API_PAGE_SIZE) {
+    const size = Math.min(SEARCH_API_PAGE_SIZE, target - from);
+    const url =
+      `${SEARCH_API_BASE}?lang=en&keyword=&sort=&from=${from}&size=${size}`;
+    const payload = await fetchJson(url, headers);
+    const items = payload?.data?.hits?.items ?? [];
+    totalAvailable = payload?.data?.summary?.total ?? totalAvailable;
+
+    for (const item of items) {
+      const entry = mapSearchApiItemToEntry(item?.fields || {});
+      if (entry) {
+        seenItems.set(entry.slug, entry);
+      }
+    }
+
+    if (!items.length || items.length < size) {
+      break;
+    }
+
+    if (totalAvailable && seenItems.size >= totalAvailable) {
+      break;
+    }
+  }
+
+  return {
+    totalAvailable,
+    items: Array.from(seenItems.values()).slice(0, maxSchemes ?? seenItems.size),
+  };
+}
+
+async function fetchListingPagesFromBrowserSearchApi(searchContext, options = {}) {
+  return withBrowser(async (browser) => {
+    const page = await browser.newPage();
+    await page.goto(SEARCH_URL, { waitUntil: "domcontentloaded", timeout: 180000 });
+    await wait(3000);
+    const apiPage = await browser.newPage();
+    const headerSource = searchContext.requestHeaders || {};
+    const extraHeaders = {
+      "x-api-key": searchContext.apiKey,
+      accept: headerSource.accept || "application/json, text/plain, */*",
+      "accept-language": headerSource["accept-language"] || "en-US,en;q=0.9",
+      referer: SEARCH_URL,
+    };
+    await apiPage.setExtraHTTPHeaders(extraHeaders);
+
+    const target = options.maxSchemes ?? Number.POSITIVE_INFINITY;
+    const seenItems = new Map();
+    let totalAvailable = null;
+
+    for (let from = 0; from < target; from += SEARCH_API_PAGE_SIZE) {
+      const size = Math.min(SEARCH_API_PAGE_SIZE, target - from);
+      const url = `${SEARCH_API_BASE}?lang=en&keyword=&sort=&from=${from}&size=${size}`;
+      const response = await apiPage.goto(url, { waitUntil: "networkidle0", timeout: 180000 });
+
+      if (!response || !response.ok()) {
+        throw new Error(`Browser session API request failed with status ${response ? response.status() : "unknown"}`);
+      }
+
+      const payload = JSON.parse(await response.text());
+      const items = payload?.data?.hits?.items ?? [];
+      totalAvailable = payload?.data?.summary?.total ?? totalAvailable;
+
+      for (const item of items) {
+        const entry = mapSearchApiItemToEntry(item?.fields || {});
+        if (entry) {
+          seenItems.set(entry.slug, entry);
+        }
+      }
+
+      if (!items.length || items.length < size) {
+        break;
+      }
+
+      if (totalAvailable && seenItems.size >= totalAvailable) {
+        break;
+      }
+    }
+
+    await apiPage.close();
+
+    return {
+      totalAvailable,
+      items: Array.from(seenItems.values()).slice(0, options.maxSchemes ?? seenItems.size),
+    };
+  }, options);
+}
+
 async function scrapeListingPages(options = {}) {
   const { maxSchemes = null } = options;
-  const apiKey = await discoverApiKey(options);
+  const searchContext = await discoverSearchContext(options);
+  const apiKey = searchContext.apiKey;
 
   try {
     const schemeUrls = await fetchSchemeUrlsFromSitemap();
+    console.log(`[myscheme] Sitemap discovered ${schemeUrls.length} scheme URL(s)`);
+
+    if (!maxSchemes && schemeUrls.length < MIN_EXPECTED_SITEMAP_SCHEME_URLS) {
+      throw new Error(
+        `Suspiciously low sitemap result (${schemeUrls.length} URLs); falling back to live search listing`
+      );
+    }
+
     const items = schemeUrls
       .map((detailUrl) => {
         const slug = extractSchemeSlugFromUrl(detailUrl);
@@ -493,6 +630,7 @@ async function scrapeListingPages(options = {}) {
       .slice(0, maxSchemes ?? Number.MAX_SAFE_INTEGER);
 
     const enrichedItems = await enrichSitemapEntries(items, apiKey);
+    console.log(`[myscheme] Using ${enrichedItems.length} sitemap listing item(s) for detail scraping`);
 
     return {
       apiKey,
@@ -501,6 +639,40 @@ async function scrapeListingPages(options = {}) {
     };
   } catch (error) {
     console.warn(`[myscheme] Sitemap discovery failed, falling back to live search scroll: ${error.message}`);
+  }
+
+  try {
+    const listing = await fetchListingPagesFromSearchApi(apiKey, options);
+    console.log(`[myscheme] Search API discovered ${listing.items.length} scheme listing item(s)`);
+
+    if (!listing.items.length) {
+      throw new Error("Search API returned 0 scheme listing items");
+    }
+
+    return {
+      apiKey,
+      totalAvailable: listing.totalAvailable,
+      items: listing.items,
+    };
+  } catch (error) {
+    console.warn(`[myscheme] Search API listing failed, falling back to browser scroll: ${error.message}`);
+  }
+
+  try {
+    const listing = await fetchListingPagesFromBrowserSearchApi(searchContext, options);
+    console.log(`[myscheme] Browser search API discovered ${listing.items.length} scheme listing item(s)`);
+
+    if (!listing.items.length) {
+      throw new Error("Browser search API returned 0 scheme listing items");
+    }
+
+    return {
+      apiKey,
+      totalAvailable: listing.totalAvailable,
+      items: listing.items,
+    };
+  } catch (error) {
+    console.warn(`[myscheme] Browser search API listing failed, falling back to browser scroll: ${error.message}`);
   }
 
   return withBrowser(async (browser) => {
@@ -562,6 +734,8 @@ async function scrapeListingPages(options = {}) {
         break;
       }
     }
+
+    console.log(`[myscheme] Live search discovered ${seenItems.size} scheme listing item(s)`);
 
     return {
       apiKey,
@@ -791,9 +965,12 @@ module.exports = {
   MYSCHEME_BASE_URL,
   SCRAPER_OUTPUT_PATH,
   SITEMAP_URL,
-  discoverApiKey,
+  discoverSearchContext,
   extractSchemeSlugFromUrl,
+  fetchListingPagesFromBrowserSearchApi,
+  fetchListingPagesFromSearchApi,
   fetchSchemeUrlsFromSitemap,
+  mapSearchApiItemToEntry,
   parseSitemapXml,
   scrapeListingPages,
   scrapeMyScheme,

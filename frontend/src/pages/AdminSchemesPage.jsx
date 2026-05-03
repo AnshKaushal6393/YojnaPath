@@ -190,9 +190,11 @@ export default function AdminSchemesPage() {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: ({ schemeId, status, note }) => reviewAdminScheme(schemeId, { status, note }),
+    mutationFn: ({ schemeId, status, note, applyUrl }) =>
+      reviewAdminScheme(schemeId, { status, note, applyUrl }),
     onSuccess: async (updatedScheme) => {
       setReviewNote(updatedScheme?.reviewAction?.note || "");
+      setReviewUrl(updatedScheme?.applyUrl || "");
       await queryClient.invalidateQueries({ queryKey: ["admin-schemes"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-scheme-flags"] });
       await queryClient.invalidateQueries({ queryKey: ["admin-scheme", selectedSchemeId] });

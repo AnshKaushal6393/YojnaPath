@@ -31,15 +31,14 @@ async function ensureProfilesSchema() {
       .query(`
         DO $$
         BEGIN
-          ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_is_primary_key;
-          ALTER TABLE profiles ADD CONSTRAINT profiles_user_id_is_primary_key UNIQUE (user_id, is_primary);
-
           IF EXISTS (
             SELECT 1
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 'profiles'
           ) THEN
+            ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_is_primary_key;
             ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_user_id_key;
+            DROP INDEX IF EXISTS profiles_one_primary_per_user_idx;
             ALTER TABLE profiles
               ALTER COLUMN state TYPE VARCHAR(50);
             ALTER TABLE profiles
@@ -93,6 +92,9 @@ async function ensureProfilesSchema() {
                   'migrant_worker'
                 )
               );
+            CREATE UNIQUE INDEX profiles_one_primary_per_user_idx
+              ON profiles (user_id)
+              WHERE is_primary = TRUE;
           END IF;
         END
         $$;

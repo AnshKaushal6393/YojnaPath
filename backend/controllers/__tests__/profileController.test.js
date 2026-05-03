@@ -125,6 +125,8 @@ describe("profileController", () => {
     await saveProfile(req, res);
 
     expect(upsertProfile).toHaveBeenCalledWith("user-1", null, {
+      profileName: null,
+      relation: null,
       state: "MH",
       occupation: "migrant_worker",
       annualIncome: 90000,
@@ -137,6 +139,7 @@ describe("profileController", () => {
       isMigrant: true,
       district: "Mumbai",
       lang: "en",
+      photoUrl: null,
     });
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       userId: "user-1",
