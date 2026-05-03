@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" role="img" aria-labelledby="title desc">
+  <title id="title">YojnaPath Load Balancer Workflow</title>
+  <desc id="desc">Production scaling diagram for YojnaPath showing browser clients, CDN hosting, a load balancer, horizontally scaled API instances, and shared PostgreSQL, MongoDB, and Redis services.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f3fbf7" />
+      <stop offset="100%" stop-color="#d9f5e8" />
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f4fbf7" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f8f69" />
+      <stop offset="100%" stop-color="#1db07d" />
+    </linearGradient>
+    <linearGradient id="api" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#153b31" />
+      <stop offset="100%" stop-color="#0f5a49" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto-start-reverse">
+      <path d="M1,1 L11,6 L1,11 Z" fill="#0f8f69" />
+    </marker>
+    <style>
+      .title { font: 700 44px 'Segoe UI', Inter, Arial, sans-serif; fill: #10221c; }
+      .subtitle { font: 500 20px 'Segoe UI', Inter, Arial, sans-serif; fill: #3f6258; }
+      .label { font: 700 24px 'Segoe UI', Inter, Arial, sans-serif; fill: #10221c; }
+      .boxText { font: 700 22px 'Segoe UI', Inter, Arial, sans-serif; fill: #10221c; }
+      .boxSub { font: 500 15px 'Segoe UI', Inter, Arial, sans-serif; fill: #58756b; }
+      .darkText { font: 700 22px 'Segoe UI', Inter, Arial, sans-serif; fill: #ffffff; }
+      .darkSub { font: 500 14px 'Segoe UI', Inter, Arial, sans-serif; fill: #d7efe6; }
+      .note { font: 600 15px 'Segoe UI', Inter, Arial, sans-serif; fill: #31564b; }
+      .pill { font: 700 14px 'Segoe UI', Inter, Arial, sans-serif; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="860" rx="32" fill="url(#bg)" />
+
+  <text x="72" y="88" class="title">Production Load Balancer Workflow</text>
+  <text x="72" y="122" class="subtitle">How YojnaPath can scale from a single demo deployment to a production-ready multi-instance backend</text>
+
+  <g filter="url(#shadow)">
+    <rect x="72" y="162" width="1256" height="640" rx="30" fill="rgba(255,255,255,0.58)" />
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="120" y="220" width="240" height="112" rx="28" fill="url(#card)" />
+    <text x="240" y="272" text-anchor="middle" class="boxText">Users</text>
+    <text x="240" y="299" text-anchor="middle" class="boxSub">Browser, mobile PWA, CSC operator</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="480" y="220" width="300" height="112" rx="28" fill="url(#card)" />
+    <text x="630" y="272" text-anchor="middle" class="boxText">CDN / Static Frontend Hosting</text>
+    <text x="630" y="299" text-anchor="middle" class="boxSub">Vite build served from Vercel or another static host</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="930" y="220" width="300" height="128" rx="32" fill="url(#accent)" />
+    <text x="1080" y="278" text-anchor="middle" class="darkText">Reverse Proxy / Load Balancer</text>
+    <text x="1080" y="306" text-anchor="middle" class="darkSub">Nginx, AWS ALB, Render edge routing</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="210" y="442" width="210" height="112" rx="28" fill="url(#api)" />
+    <text x="315" y="495" text-anchor="middle" class="darkText">API Instance 1</text>
+    <text x="315" y="522" text-anchor="middle" class="darkSub">Express server</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="455" y="442" width="210" height="112" rx="28" fill="url(#api)" />
+    <text x="560" y="495" text-anchor="middle" class="darkText">API Instance 2</text>
+    <text x="560" y="522" text-anchor="middle" class="darkSub">Express server</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="700" y="442" width="210" height="112" rx="28" fill="url(#api)" />
+    <text x="805" y="495" text-anchor="middle" class="darkText">API Instance 3</text>
+    <text x="805" y="522" text-anchor="middle" class="darkSub">Express server</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="945" y="442" width="210" height="112" rx="28" fill="url(#api)" />
+    <text x="1050" y="495" text-anchor="middle" class="darkText">API Instance N</text>
+    <text x="1050" y="522" text-anchor="middle" class="darkSub">Horizontal scaling</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="185" y="646" width="300" height="108" rx="28" fill="url(#card)" />
+    <text x="335" y="695" text-anchor="middle" class="boxText">PostgreSQL</text>
+    <text x="335" y="721" text-anchor="middle" class="boxSub">Users, profiles, admin state, analytics</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="550" y="646" width="300" height="108" rx="28" fill="url(#card)" />
+    <text x="700" y="695" text-anchor="middle" class="boxText">MongoDB</text>
+    <text x="700" y="721" text-anchor="middle" class="boxSub">Scheme content, metadata, ingestion output</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="915" y="646" width="300" height="108" rx="28" fill="url(#card)" />
+    <text x="1065" y="695" text-anchor="middle" class="boxText">Redis</text>
+    <text x="1065" y="721" text-anchor="middle" class="boxSub">OTP, cache, scheduler helpers, shared state</text>
+  </g>
+
+  <path d="M360 276 L480 276" fill="none" stroke="#0f8f69" stroke-width="6" marker-end="url(#arrow)" />
+  <path d="M780 276 L930 276" fill="none" stroke="#0f8f69" stroke-width="6" marker-end="url(#arrow)" />
+
+  <path d="M1080 348 L1080 394" fill="none" stroke="#0f8f69" stroke-width="6" marker-end="url(#arrow)" />
+  <path d="M1080 394 L315 394 L315 442" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M1080 394 L560 394 L560 442" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M1080 394 L805 394 L805 442" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M1080 394 L1050 394 L1050 442" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+
+  <path d="M315 554 L315 600 L335 600 L335 646" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M560 554 L560 600 L700 600 L700 646" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M805 554 L805 600 L1065 600 L1065 646" fill="none" stroke="#0f8f69" stroke-width="5" marker-end="url(#arrow)" />
+  <path d="M1050 554 L1050 600 L700 600 L700 646" fill="none" stroke="#0f8f69" stroke-width="5" stroke-dasharray="10 10" marker-end="url(#arrow)" />
+
+  <g>
+    <rect x="100" y="92" width="144" height="34" rx="17" fill="#0f8f69" />
+    <text x="172" y="114" text-anchor="middle" class="pill">Interview-ready</text>
+  </g>
+
+  <g>
+    <text x="120" y="380" class="note">Static frontend stays easy to host.</text>
+    <text x="120" y="403" class="note">API tier can scale horizontally without changing the client.</text>
+  </g>
+
+  <g>
+    <text x="880" y="588" class="note">Shared services prevent per-server lock-in.</text>
+    <text x="880" y="611" class="note">JWT auth and Redis-backed helpers fit multi-instance deployments.</text>
+  </g>
+</svg>

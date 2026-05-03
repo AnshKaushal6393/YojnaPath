@@ -68,46 +68,17 @@ The repository is split into:
 
 ## Architecture
 
-```text
-User / CSC Operator
-        |
-        v
-React + Vite PWA
-        |
-        v
-Express API Layer
-   |        |        |
-   v        v        v
-PostgreSQL MongoDB  Redis
-   |        |        |
-   |        |        +--> OTP / cache / scheduler helpers
-   |        +------------> Scheme content + eligibility metadata
-   +---------------------> Users, profiles, applications, analytics, admin data
-```
+<p align="center">
+  <img src="docs/architecture-diagram.svg" alt="YojnaPath core architecture showing users, the React and Vite PWA, the Express API layer, and PostgreSQL, MongoDB, and Redis services" width="100%" />
+</p>
 
 ## Production Scaling Workflow
 
 This project does not require a load balancer for local development or small demo traffic, but it is designed in a way that can scale behind one for production-style deployments.
 
-```text
-User Browser / Mobile PWA
-          |
-          v
- CDN / Static Frontend Hosting
-          |
-          v
- Reverse Proxy / Load Balancer
-          |
-    +-----+-----+-----+
-    |     |     |     |
-    v     v     v     v
- API-1  API-2  API-3  API-N
-    |      |      |      |
-    +------+------+------+
-           |
-           v
- PostgreSQL + MongoDB + Redis
-```
+<p align="center">
+  <img src="docs/load-balancer-workflow.svg" alt="YojnaPath production workflow showing users, CDN hosting, a load balancer, multiple API instances, and shared PostgreSQL, MongoDB, and Redis services" width="100%" />
+</p>
 
 ### How the workflow works
 
